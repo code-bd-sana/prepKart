@@ -64,7 +64,10 @@ export default function Testimonials() {
         </div>
 
         {/* Bottom Section */}
-        <div className="mt-20 bg-white rounded-2xl px-8 md:px-12 py-5 text-center max-w-[700px] mx-auto shadow-xl" id="partners">
+        <div
+          className="mt-20 bg-white rounded-2xl px-8 md:px-12 py-5 text-center max-w-[700px] mx-auto shadow-xl"
+          id="partners"
+        >
           <div className="text-center">
             <MdOutlineHandshake className="inline-flex mx-auto text-[60px] bg-[#4a9fd8] text-white p-1.5 rounded-full mb-2" />
             <h3 className="text-xl md:text-2xl font-semibold mb-3">
@@ -72,7 +75,7 @@ export default function Testimonials() {
             </h3>
             <p className="text-base md:text-sm mb-6 opacity-95">
               Are you local farmer or Grocery Store interested in Partnering
-              with PrepKart?
+              with PrepKART?
             </p>
             <div className="flex justify-center items-center gap-2 underline">
               <Mail className="h-5 w-5" />
