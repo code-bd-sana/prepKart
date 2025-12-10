@@ -287,7 +287,7 @@ export default function GroceryListDemo() {
           </p>
         </div>
 
-        <div className=" bg-white rounded-xl mx-auto max-w-[1200px]">
+        <div className="rounded-xl mx-auto max-w-[1200px]">
           {/* Card Header */}
           <div className="p-6 ">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -458,7 +458,7 @@ export default function GroceryListDemo() {
             </div>
 
             {/* Bottom Section */}
-            <div className="mt-16 bg-linear-to-r from-[#5a9e3a] to-[#4a9fd8] rounded-2xl px-8 md:px-12 py-3 text-center text-white max-w-[700px] mx-auto">
+            <div className="mt-16 bg-linear-to-r from-[#5a9e3a] to-[#4a9fd8] rounded-2xl px-8 md:px-16 py-8 text-center text-white max-w-[1500px] mx-auto">
               <div className="text-center">
                 <h3 className="text-xl md:text-3xl font-semibold mb-3">
                   Ready to Shop?
@@ -475,7 +475,7 @@ export default function GroceryListDemo() {
                   <ShoppingCart className="h-5 w-5" />
                   Order Ingredients on Instacart
                 </button>
-                <p className="text-base md:text-sm my-3 opacity-95">
+                <p className="text-base md:text-xs my-3 opacity-95">
                   Cart loads automatically with affiliate tracking
                 </p>
               </div>

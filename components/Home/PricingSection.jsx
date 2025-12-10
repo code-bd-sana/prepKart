@@ -2,7 +2,7 @@ import { Check, Lock } from "lucide-react";
 
 const tiers = [
   {
-    badge: "Free",
+    topLabel: "Free",
     highlight: false,
     title: "Perfect for trying out Prepcart",
     price: "$0",
@@ -76,52 +76,64 @@ const tiers = [
 export default function PricingSection() {
   return (
     <section className="py-8 md:py-20" id="pricing">
-      <div className="">
+      {/* Header */}
+      <div>
         <p className="text-sm text-red-700 bg-red-200 flex max-w-[260px] mx-auto text-center p-1.5 rounded-2xl mb-5">
-          🎉Lauch Promotions: 30% on all Plans!
+          🎉 Launch Promotions: 30% off all Plans!
         </p>
-        {/* Header */}
+
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-semibold text-[#1E1E1E] mb-3">
             Choose Your Plan
           </h2>
           <p className="text-base text-[#666666]">
-            Start free and upgrade anytime. All plans include our core Al meal
+            Start free and upgrade anytime. All plans include our core AI meal
             planning features.
           </p>
         </div>
       </div>
 
-      {/* Card */}
-      <div className="bg-white p-8 grid grid-cols-1 md:grid-cols-3 gap-6 container mx-auto px-4 max-w-[1300px]">
+      {/* Pricing Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 container mx-auto px-4 max-w-[1300px]">
         {tiers.map((tier, i) => (
           <div
             key={i}
-            className={`rounded-2xl border shadow-sm p-6 flex flex-col gap-4 relative ${
-              tier.highlight ? "border-red-400" : ""
-            }`}
+            className={`rounded-2xl border shadow-sm p-6 flex flex-col relative 
+              ${
+                tier.highlight
+                  ? "border-[#8cc63c] shadow-md"
+                  : "border-gray-200"
+              }
+            `}
           >
+            {/* Badge */}
             {tier.badge && (
               <div
-                className={`absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-xs font-semibold text-white ${
-                  tier.badge === "Best Value"
-                    ? "bg-[#4a9fd8]"
-                    : tier.badge === "Most Popular"
-                    ? "bg-red-500"
-                    : "bg-[#8cc63c]"
-                }`}
+                className={`absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-xs font-semibold text-white
+                  ${
+                    tier.badge === "Best Value"
+                      ? "bg-[#4a9fd8]"
+                      : tier.badge === "Most Popular"
+                      ? "bg-[#8cc63c]"
+                      : "bg-[#8cc63c]"
+                  }
+                `}
               >
                 {tier.badge}
               </div>
             )}
 
+            {/* Title + Subtitle Logic */}
+            <h2 className="text-xl font-bold text-center mt-4">
+              {tier.topLabel ? tier.topLabel : tier.title}
+            </h2>
+
             {tier.topLabel && (
-              <h2 className="text-xl font-bold text-center">{tier.topLabel}</h2>
+              <p className="text-center text-gray-600">{tier.title}</p>
             )}
 
-            <p className="text-center text-gray-600">{tier.title}</p>
-
-            <div className="text-center">
+            {/* Price Section */}
+            <div className="text-center mt-4">
               <div className="flex justify-center items-center gap-2">
                 {tier.oldPrice && (
                   <p className="text-gray-400 line-through">{tier.oldPrice}</p>
@@ -132,15 +144,17 @@ export default function PricingSection() {
                   </span>
                 )}
               </div>
-              <p className="text-4xl font-bold">
-                {tier.price}{" "}
-                <span className="text-gray-600 -mt-1 text-sm">
+
+              <p className="text-4xl font-bold mt-1">
+                {tier.price}
+                <span className="text-gray-600 text-sm ml-1">
                   {tier.priceNote}
                 </span>
               </p>
             </div>
 
-            <div className="border-t pt-4">
+            {/* Features */}
+            <div className="border-t pt-4 mt-4 flex-1">
               {tier.features.map((f, idx) => (
                 <div key={idx} className="flex items-start gap-2 py-1">
                   {f.header ? (
@@ -168,9 +182,15 @@ export default function PricingSection() {
               ))}
             </div>
 
+            {/* Button (bottom aligned) */}
             <button
-              className={`mt-4 w-full py-3 rounded-xl font-semibold text-white ${tier.topLabel == "Family" ? "bg-[#4a9fd8]" :
-                 tier.highlight ? "bg-red-500" : "bg-[#8cc63c]"}`}
+              className={`mt-6 w-full py-3 rounded-xl font-semibold
+               ${
+                 tier.highlight
+                   ? "bg-[#8cc63c]  text-white " // PREMIUM = green
+                   : "border border-gray-400 text-gray-600" // FREE + FAMILY = blue
+               }
+              `}
             >
               {tier.button}
             </button>
