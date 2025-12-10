@@ -1,9 +1,92 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
+import { useState, useEffect, useRef } from "react";
 import { FiArrowRight, FiMic } from "react-icons/fi";
 
 export default function HomeBanner() {
+  const [isListening, setIsListening] = useState(false);
+  const [transcript, setTranscript] = useState("");
+  const [inputText, setInputText] = useState("");
+  const recognitionRef = useRef(null);
+
+  // speech recognition
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const SpeechRecognition =
+        window.SpeechRecognition || window.webkitSpeechRecognition;
+
+      if (SpeechRecognition) {
+        const recognitionInstance = new SpeechRecognition();
+        recognitionInstance.continuous = false;
+        recognitionInstance.interimResults = false;
+        recognitionInstance.lang = "en-US";
+
+        recognitionInstance.onresult = (event) => {
+          const currentTranscript = event.results[0][0].transcript;
+          setTranscript(currentTranscript);
+          setInputText(currentTranscript);
+          console.log("Voice input:", currentTranscript);
+        };
+
+        recognitionInstance.onerror = (event) => {
+          console.error("Speech recognition error:", event.error);
+          setIsListening(false);
+        };
+
+        recognitionInstance.onend = () => {
+          setIsListening(false);
+        };
+
+        // Store in ref
+        recognitionRef.current = recognitionInstance;
+      } else {
+        console.warn("Speech recognition not supported in this browser.");
+      }
+    }
+
+    // Cleanup function
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+    };
+  }, []);
+
+  const handleVoiceClick = () => {
+    if (!recognitionRef.current) {
+      alert(
+        "Speech recognition is not supported in your browser. Please use Chrome, Edge, or Safari."
+      );
+      return;
+    }
+
+    if (!isListening) {
+      try {
+        recognitionRef.current.start();
+        setIsListening(true);
+        console.log("Starting voice input...");
+      } catch (error) {
+        console.error("Failed to start speech recognition:", error);
+        setIsListening(false);
+      }
+    } else {
+      recognitionRef.current.stop();
+      setIsListening(false);
+      console.log("Stopping voice input...");
+    }
+  };
+
+  const handleInputChange = (e) => {
+    setInputText(e.target.value);
+  };
+
+  // to clear the input
+  const handleClearInput = () => {
+    setInputText("");
+    setTranscript("");
+  };
+
   return (
     <section
       className="
@@ -56,45 +139,82 @@ export default function HomeBanner() {
 
           {/* Voice/Text Input Section */}
           <div className="mb-8">
-            <div className="relative max-w-[650px]">
-              <div className="flex items-center gap-2 mb-3">
-                {/* Input Field */}
-                <input
-                  type="text"
-                  placeholder="Speak or type your preferences..."
-                  className="
-          flex-1 
-          h-8 md:h-12 
-          px-4 md:px-6 
-          rounded-lg 
-          border border-gray-300 
-          focus:border-primary-500 
-          focus:ring-2 focus:ring-primary-200 
-          focus:outline-none
-          text-gray-700
-          placeholder:text-gray-400
-          shadow-md hover:shadow-lg 
-          transition-shadow duration-200
-        "
-                />
-                {/* Mic Button */}
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Your preferences"
+                value={inputText}
+                onChange={handleInputChange}
+                className="
+                  w-full p-4 pl-4 pr-32 
+                  border border-gray-300 
+                  rounded-xl 
+                  focus:border-[#4a9fd8] 
+                  focus:ring-2 focus:ring-[#4a9fd8]/20 
+                  focus:outline-none 
+                  text-gray-700 bg-white 
+                  shadow-sm
+                  text-[15px]
+                "
+              />
+
+              {/* Voice Button */}
+              <button
+                type="button"
+                onClick={handleVoiceClick}
+                className={`
+                  absolute right-3 top-1/2 
+                  transform -translate-y-1/2 
+                  px-3 py-2 rounded-lg 
+                  flex items-center gap-2
+                  ${
+                    isListening
+                      ? "bg-red-50 text-red-600 border border-red-200"
+                      : "bg-[#4a9fd8]/10 text-[#4a9fd8] hover:bg-[#4a9fd8]/20"
+                  } 
+                  transition-colors
+                  text-sm font-medium
+                `}
+              >
+                {isListening ? (
+                  <>
+                    <div className="h-2 w-2 bg-red-500 rounded-full animate-pulse"></div>
+                    <span>Listening...</span>
+                  </>
+                ) : (
+                  <>
+                    <FiMic className="text-base" />
+                    <span>Voice</span>
+                  </>
+                )}
+              </button>
+
+              {/* Clear button when there's text */}
+              {inputText && (
                 <button
                   type="button"
+                  onClick={handleClearInput}
                   className="
-          h-8 md:h-12 
-          w-12 md:w-14 
-          rounded-lg 
-          border border-[#5a9e3a]
-          flex items-center justify-center
-          transition-all duration-200
-          shadow-md hover:shadow-lg
-          disabled:opacity-50 disabled:cursor-not-allowed
-        "
+                    absolute right-28 top-1/2 
+                    transform -translate-y-1/2 
+                    text-gray-400 hover:text-gray-600
+                    text-sm
+                  "
+                  title="Clear input"
                 >
-                  <FiMic className="text-[#5a9e3a]" />
+                  ×
                 </button>
-              </div>
+              )}
             </div>
+
+            {/* Voice input tips */}
+            {transcript && (
+              <div className="mt-3">
+                <p className="text-sm text-gray-600">
+                  <span className="font-medium">Voice input:</span> {transcript}
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Buttons */}
