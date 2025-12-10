@@ -16,7 +16,7 @@ const steps = [
     title: "AI Generates Your Meal Plan",
     description:
       "7 days of breakfast, lunch, dinner, snacks with recipes + cooking tips",
-    bgColor: "bg-[#5a9e3a]",
+    bgColor: "bg-[#8cc63c]",
     strokeWidth: 1,
   },
   {

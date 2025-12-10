@@ -10,7 +10,7 @@ import Subscribe from "@/components/Home/Subscribe";
 
 export default function HomePage() {
   return (
-    <div>
+    <div className="bg-gray-50">
       <HomeBanner />
       <HowItWorks />
       <QuickPlans />

@@ -91,7 +91,6 @@ export default function HomeBanner() {
     <section
       className="
       w-full 
-      bg-white
       px-4 sm:px-10 md:px-12 lg:px-20 
       py-8 md:py-12 lg:py-16
     "
@@ -170,7 +169,7 @@ export default function HomeBanner() {
                   ${
                     isListening
                       ? "bg-red-50 text-red-600 border border-red-200"
-                      : "bg-[#4a9fd8]/10 text-[#4a9fd8] hover:bg-[#4a9fd8]/20"
+                      : "bg-[#4a9fd8]/10 text-gray-600 hover:bg-[#4a9fd8]/20"
                   } 
                   transition-colors
                   text-sm font-medium
@@ -184,7 +183,7 @@ export default function HomeBanner() {
                 ) : (
                   <>
                     <FiMic className="text-base" />
-                    <span>Voice</span>
+                  
                   </>
                 )}
               </button>

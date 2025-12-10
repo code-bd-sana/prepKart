@@ -23,7 +23,7 @@ export default function Navbar() {
   return (
     <nav className="w-full bg-white border-b border-gray-100 sticky top-0 z-50">
       {/* ---------------- DESKTOP NAV ---------------- */}
-      <div className="hidden lg:flex w-full items-center justify-between px-6 lg:px-12 xl:px-16 py-2">
+      <div className="hidden lg:flex w-full items-center justify-between max-w-[1500px] mx-auto  py-2">
         {/* LEFT */}
         <div className="flex items-center gap-x-8 lg:gap-x-16 xl:gap-x-72">
           {/* LOGO */}
@@ -62,15 +62,16 @@ export default function Navbar() {
         {/* RIGHT */}
         <div className="flex items-center gap-3 lg:gap-4 xl:gap-6">
           {/* BUTTON */}
-          <Link href="/">
-            <button className="px-3 lg:px-4 xl:px-5 py-2 lg:py-2.5 text-[#4a9fd8] font-medium rounded-md border-2 border-[#4a9fd8] cursor-pointer text-sm lg:text-base whitespace-nowrap">
-              Dashboard
-            </button>
-          </Link>
+         <Link href="/">
+  <button className="px-3 lg:px-4 xl:px-5 py-2 lg:py-2.5 text-white font-medium rounded-md bg-[#4a9fd8] hover:bg-[#3b8ec4] transition-colors duration-200 cursor-pointer text-sm lg:text-base whitespace-nowrap">
+    Dashboard
+  </button>
+</Link>
 
-          <button className="px-3 lg:px-4 xl:px-5 py-2 lg:py-2.5 text-white font-medium rounded-md bg-[#8cc63c] cursor-pointer text-sm lg:text-base whitespace-nowrap">
-            Generate Plan
-          </button>
+<button className="px-3 lg:px-4 xl:px-5 py-2 lg:py-2.5 text-white font-medium rounded-md bg-[#8cc63c] hover:bg-[#7ab32f] transition-colors duration-200 cursor-pointer text-sm lg:text-base whitespace-nowrap">
+  Generate Plan
+</button>
+
         </div>
       </div>
 
