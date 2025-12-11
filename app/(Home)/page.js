@@ -4,21 +4,25 @@ import QuickPlans from "@/components/Home/QuickPlans";
 import MealPlanning from "@/components/Home/MealPlanning";
 import GroceryListDemo from "@/components/Home/GroceryListDemo";
 import PricingSection from "@/components/Home/PricingSection";
-import Reasons from "@/components/Home/Reasons";
 import Testimonials from "@/components/Home/Testimonials";
 import Subscribe from "@/components/Home/Subscribe";
+import WhyPeopleLove from "@/components/Home/WhyPeopleLove";
+import FAQSection from "@/components/Home/FAQ";
+import ProblemStatement from "@/components/Home/ProblemStatement";
 
 export default function HomePage() {
   return (
     <div className="bg-gray-50">
       <HomeBanner />
+      <ProblemStatement />
       <HowItWorks />
+      <WhyPeopleLove />
       <QuickPlans />
       <MealPlanning />
       <PricingSection />
       <GroceryListDemo />
-      <Reasons />
       <Testimonials />
+      <FAQSection />
       <Subscribe />
     </div>
   );

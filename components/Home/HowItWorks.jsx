@@ -5,25 +5,25 @@ import { RiAiGenerate } from "react-icons/ri";
 const steps = [
   {
     icon: HiAdjustmentsVertical,
-    title: "Select Your Preferences",
+    title: "Tell us your preferences",
     description:
-      "Postal code, diet, allergies, number of meals, portion size, budget, skill level",
+      "Your tastes, dietary needs, allergies, budget, cooking skill — we tailor everything to YOU.",
     bgColor: "bg-[#8cc63c]",
     strokeWidth: 1,
   },
   {
     icon: RiAiGenerate,
-    title: "AI Generates Your Meal Plan",
+    title: "Get your custom weekly meal plan",
     description:
-      "7 days of breakfast, lunch, dinner, snacks with recipes + cooking tips",
+      "We build a balanced, realistic meal plan you can actually stick to — with easy recipes.",
     bgColor: "bg-[#8cc63c]",
     strokeWidth: 1,
   },
   {
     icon: LuShoppingCart,
-    title: "Get Your Grocery List",
+    title: "Shop your groceries instantly",
     description:
-      "Instacart-ready grocery list. One click to order everything you need.",
+      "Your plan comes with a smart, optimized grocery list - One click to order everything you need.",
     bgColor: "bg-[#8cc63c]",
     strokeWidth: 2,
   },
