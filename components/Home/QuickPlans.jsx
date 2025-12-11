@@ -74,7 +74,7 @@ export default function QuickPlans() {
               key={index}
               className="relative rounded-2xl bg-white p-8 border-2 border-[#E5E5E5] shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-300"
             >
-              {/* PREMIUM BADGE (Exact as Screenshot) */}
+              {/* PREMIUM BADGE  */}
               {plan.premium && (
                 <div className="absolute -top-4 -right-3 bg-[#FFB800] w-10 h-10 rounded-full flex flex-col items-center justify-center shadow-md">
                   <span className="text-white text-lg font-bold leading-none">
@@ -115,7 +115,7 @@ export default function QuickPlans() {
         </div>
 
         {/* Bottom CTA */}
-        <div className="mt-16 bg-linear-to-r from-[#5a9e3a] to-[#4a9fd8] rounded-2xl px-10 md:px-12 py-16 text-center text-white max-w-[1500px] mx-auto">
+        <div className="mt-16 bg-linear-to-r from-[#8cd46b] to-[#71b5e2] rounded-2xl px-10 md:px-12 py-16 text-center text-white max-w-[1500px] mx-auto">
           <h3 className="text-xl md:text-3xl font-semibold mb-2">
             Unlock Premium Recipe Collections
           </h3>
