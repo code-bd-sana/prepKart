@@ -60,11 +60,10 @@ export default function QuickPlans() {
         {/* Header */}
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-semibold text-[#1E1E1E]">
-            Quick Plans with Brand New Recipes
+            Quick, Curated Meals You’ll Love
           </h2>
           <p className="text-base text-[#666666] mt-2">
-            Choose from our curated meal plans. Each includes a complete 5- or
-            7-day schedule.
+            Short on time? Get healthy, curated meals designed for your lifestyle and budget — effortless cooking, every day.
           </p>
         </div>
 

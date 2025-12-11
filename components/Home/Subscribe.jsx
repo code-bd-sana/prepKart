@@ -59,7 +59,7 @@ export default function Subscribe() {
             className="
               mt-5
               p-3 text-[16px] font-bold
-              text-[#8cc63c]
+              
               rounded-[10px] 
               bg-white
               transition-colors

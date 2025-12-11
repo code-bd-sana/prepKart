@@ -4,22 +4,22 @@ import { MdOutlineHandshake } from "react-icons/md";
 
 const testimonials = [
   {
-    name: "Sarah M.",
-    location: "Toronto, ON",
+    name: "Talia Renwick",
+    location: "Montreal",
     rating: 5,
-    quote: "Prepkart saved me hours every week!",
+    quote: "PrepCart helped me stop overspending and wasting food. I save money and I'm finally cooking meals my family actually enjoys.",
   },
   {
-    name: "Jean-Pierre L.",
-    location: "Montreal, QC",
+    name: "Reese Calder",
+    location: "Toronto",
     rating: 5,
-    quote: "Perfect for our Montreal family on a budget.",
+    quote: "As a working professional, I don't have time to plan meals. The quick recipes and ready-made lists make my week so much easier.",
   },
   {
-    name: "Priya K.",
-    location: "Vancouver, BC",
-    rating: 4,
-    quote: "The AI meal plans are so personalized and delicious!",
+    name: "Keiran Sloane",
+    location: "Ottawa",
+    rating: 5,
+    quote: "We're a household of five, and meal planning used to be chaos. PrepCart keeps everything organized — the budget tools and grocery lists are game changers.",
   },
 ];
 
@@ -27,13 +27,13 @@ export default function Testimonials() {
   return (
     <section className="py-6 md:py-16 bg-[linear-gradient(to_bottom,rgba(140,198,60,0.1),rgba(74,159,216,0.1))]">
       <div className="container mx-auto px-4 max-w-[1300px]">
-        {/* Header */}
+        {/* Header - Updated to match requirement */}
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-semibold text-[#1E1E1E] mb-3">
-            What Canadians are Saying
+            Prepcart — Smart Meal Planning for Canadians
           </h2>
           <p className="text-base text-[#666666]">
-            Join Thosands of Happy Meal Planners!
+            Personalized weekly meals, smart grocery lists, and budget tools designed to help Canadians cook better, waste less, and save more.
           </p>
         </div>
 
@@ -54,16 +54,26 @@ export default function Testimonials() {
               </div>
 
               {/* Quote */}
-              <p className="text-gray-800 italic mb-6">“{item.quote}”</p>
+              <p className="text-gray-800 italic mb-6">&quot;{item.quote}&quot;</p>
 
               {/* Name + Location */}
-              <p className="font-semibold">{item.name}</p>
+              <p className="font-semibold">— {item.name}</p>
               <p className="text-gray-500 text-sm">{item.location}</p>
             </div>
           ))}
         </div>
 
-        {/* Bottom Section */}
+        {/* CTA Section - Updated with exact text */}
+        <div className="mt-20 text-center">
+          <a
+            href="#"
+            className="inline-flex items-center justify-center bg-[#4a9fd8] text-white px-8 py-3 rounded-full font-semibold text-lg hover:bg-[#3a8fc8] transition-colors"
+          >
+            Join Canadians simplifying their week →
+          </a>
+        </div>
+
+        {/* Partners Section */}
         <div
           className="mt-20 bg-white rounded-2xl px-8 md:px-12 py-5 text-center max-w-[700px] mx-auto shadow-xl"
           id="partners"
@@ -74,12 +84,11 @@ export default function Testimonials() {
               Become a Partner
             </h3>
             <p className="text-base md:text-sm mb-6 opacity-95">
-              Are you local farmer or Grocery Store interested in Partnering
-              with PrepKART?
+              Are you a local farmer or grocery store interested in partnering with Prepcart?
             </p>
             <div className="flex justify-center items-center gap-2 underline">
               <Mail className="h-5 w-5" />
-              <p>info@prepkart.ca</p>
+              <p>info@prepcart.ca</p>
             </div>
           </div>
         </div>
