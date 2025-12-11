@@ -279,22 +279,23 @@ export default function GroceryListDemo() {
       <div className="container mx-auto px-4 max-w-[1200px]">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-semibold text-[#1E1E1E] mb-3">
-            Your Weekly Grocery List (Canada-ready)
+            Generate My Grocery List →
           </h2>
-          <p className="text-base text-[#666666] max-w-[570px] mx-auto">
-            Auto-categorized, editable, and ready to order. Save time with our
-            smart pantry toggle.
+          <p className="text-base text-[#666666] max-w-[770px] mx-auto">
+            🍁 Canada-ready, 🧺 auto-grouped, ✏️ fully editable, 🧂
+            pantry-aware, and 🛒 order-ready — everything you need for a
+            smarter, stress-free grocery list in one place.
           </p>
         </div>
 
         <div className="rounded-xl mx-auto max-w-[1200px]">
           {/* Card Header */}
-          <div className="p-6 ">
+          <div className="p-6 px-4">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <h3 className="text-2xl font-semibold text-gray-900">
+              <h3 className="text-2xl font-semibold text-gray-900 md:-mx-3">
                 Weekly Grocery List
               </h3>
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 ">
                 <button
                   onClick={() => setIsEditing(!isEditing)}
                   className="
@@ -340,7 +341,7 @@ export default function GroceryListDemo() {
           </div>
 
           {/* Card Content */}
-          <div className="p-2 text-sm">
+          <div className="p-2 text-sm ">
             {/* Progress */}
             <div className="mb-6">
               <div className="flex justify-between items-center mb-2">
@@ -351,32 +352,50 @@ export default function GroceryListDemo() {
             </div>
 
             {/* Weekly Grocery List */}
-            <div className="space-y-6 grid grid-cols-1 md:grid-cols-2 gap-3">
-              {Object.entries(groupedItems).map(([aisle, aisleItems]) => (
-                <div
-                  key={aisle}
-                  className="border border-gray-200 rounded-lg overflow-hidden"
-                >
-                  <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
-                    <div className="flex justify-between items-center">
-                      <h3 className="font-semibold text-[#568515]">{aisle}</h3>
-                      <span className="text-sm text-gray-600">
-                        ({aisleItems.length} items)
-                      </span>
+            <div className="space-y-6">
+              <div
+                className={`
+    grid gap-3 
+    ${
+      Object.keys(groupedItems).length === 1
+        ? "grid-cols-1"
+        : Object.keys(groupedItems).length === 2
+        ? "grid-cols-1 md:grid-cols-2"
+        : Object.keys(groupedItems).length === 3
+        ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-2"
+        : Object.keys(groupedItems).length >= 4
+        ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-2"
+        : "grid-cols-1"
+    }
+  `}
+              >
+                {Object.entries(groupedItems).map(([aisle, aisleItems]) => (
+                  <div
+                    key={aisle}
+                    className="border border-gray-200 rounded-lg overflow-hidden"
+                  >
+                    <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
+                      <div className="flex justify-between items-center">
+                        <h3 className="font-semibold text-[#568515]">
+                          {aisle}
+                        </h3>
+                        <span className="text-sm text-gray-600">
+                          ({aisleItems.length} items)
+                        </span>
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="divide-y divide-gray-100">
-                    {aisleItems.map((item) => (
-                      <div
-                        key={item.id}
-                        className={`px-4 py-3 flex items-center gap-4 ${
-                          item.checked ? "bg-green-50" : ""
-                        }`}
-                      >
-                        <button
-                          onClick={() => toggleItemChecked(item.id)}
-                          className={`
+                    <div className="divide-y divide-gray-100">
+                      {aisleItems.map((item) => (
+                        <div
+                          key={item.id}
+                          className={`px-4 py-3 flex items-center gap-4 ${
+                            item.checked ? "bg-green-50" : ""
+                          }`}
+                        >
+                          <button
+                            onClick={() => toggleItemChecked(item.id)}
+                            className={`
                             h-5 w-5 rounded border flex items-center justify-center shrink-0
                             transition-colors
                             ${
@@ -385,76 +404,77 @@ export default function GroceryListDemo() {
                                 : "border-gray-300 hover:border-gray-400"
                             }
                           `}
-                        >
-                          {item.checked && (
-                            <Check className="h-3 w-3 text-white" />
-                          )}
-                        </button>
-
-                        <div className="flex-1 flex items-center">
-                          <span
-                            className={`font-medium ${
-                              item.checked
-                                ? "text-green-700 line-through"
-                                : "text-gray-900"
-                            }`}
                           >
-                            {item.name}
-                          </span>
-                          {item.inPantry && (
-                            <span className="ml-2 inline-flex items-center rounded-full border border-[#4a9fd8] px-2 py-0.5 text-xs font-medium text-[#4a9fd8]">
-                              In Pantry
-                            </span>
-                          )}
-                        </div>
+                            {item.checked && (
+                              <Check className="h-3 w-3 text-white" />
+                            )}
+                          </button>
 
-                        {isEditing ? (
-                          <div className="flex items-center gap-2">
-                            <button
-                              onClick={() =>
-                                updateQuantity(item.id, item.quantity - 1)
-                              }
-                              className="
-                                h-6 w-6 rounded border border-gray-300 
-                                flex items-center justify-center
-                                hover:bg-gray-50 transition-colors
-                                text-gray-600
-                              "
+                          <div className="flex-1 flex items-center">
+                            <span
+                              className={`font-medium ${
+                                item.checked
+                                  ? "text-green-700 line-through"
+                                  : "text-gray-900"
+                              }`}
                             >
-                              -
-                            </button>
-                            <span className="w-8 text-center font-medium text-gray-900">
-                              {item.quantity}
+                              {item.name}
                             </span>
-                            <button
-                              onClick={() =>
-                                updateQuantity(item.id, item.quantity + 1)
-                              }
-                              className="
-                                h-6 w-6 rounded border border-gray-300 
-                                flex items-center justify-center
-                                hover:bg-gray-50 transition-colors
-                                text-gray-600
-                              "
-                            >
-                              +
-                            </button>
-                            {item.unit && (
-                              <span className="text-gray-600 text-sm w-12">
-                                {item.unit}
+                            {item.inPantry && (
+                              <span className="ml-2 inline-flex items-center rounded-full border border-[#4a9fd8] px-2 py-0.5 text-xs font-medium text-[#4a9fd8]">
+                                In Pantry
                               </span>
                             )}
                           </div>
-                        ) : (
-                          <span className="text-gray-600 text-sm">
-                            {item.quantity} {item.unit}
-                          </span>
-                        )}
-                      </div>
-                    ))}
+
+                          {isEditing ? (
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() =>
+                                  updateQuantity(item.id, item.quantity - 1)
+                                }
+                                className="
+                                h-6 w-6 rounded border border-gray-300 
+                                flex items-center justify-center
+                                hover:bg-gray-50 transition-colors
+                                text-gray-600
+                              "
+                              >
+                                -
+                              </button>
+                              <span className="w-8 text-center font-medium text-gray-900">
+                                {item.quantity}
+                              </span>
+                              <button
+                                onClick={() =>
+                                  updateQuantity(item.id, item.quantity + 1)
+                                }
+                                className="
+                                h-6 w-6 rounded border border-gray-300 
+                                flex items-center justify-center
+                                hover:bg-gray-50 transition-colors
+                                text-gray-600
+                              "
+                              >
+                                +
+                              </button>
+                              {item.unit && (
+                                <span className="text-gray-600 text-sm w-12">
+                                  {item.unit}
+                                </span>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-gray-600 text-sm">
+                              {item.quantity} {item.unit}
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
 
             {/* Bottom Section */}
@@ -464,19 +484,22 @@ export default function GroceryListDemo() {
                   Ready to Shop?
                 </h3>
                 <p className="text-base md:text-sm mb-6 opacity-95">
-                  Your grocery list is organized and ready. Order with one click
-                  and get it delivered to your door.
+                  Your grocery list is organized and ready — tap to get
+                  everything delivered.
                 </p>
                 <button
                   className="
-                    bg-white text-[#5a9e3a] py-3 px-8 rounded-lg font-semibold flex items-center gap-2 mx-auto hover:bg-gray-50 transition-colors
-                  "
+    bg-white text-[#5a9e3a] py-3 px-8 rounded-lg font-semibold flex items-center gap-2 mx-auto 
+    hover:bg-[#317512] hover:text-white transition-colors
+    flash-dark
+  "
                 >
                   <ShoppingCart className="h-5 w-5" />
-                  Order Ingredients on Instacart
+                  Order Ingredients on Instacart →
                 </button>
-                <p className="text-base md:text-xs my-3 opacity-95">
-                  Cart loads automatically with affiliate tracking
+
+                <p className="text-base md:text-sm my-3 opacity-95 flash-dark">
+                  Cart loads instantly
                 </p>
               </div>
             </div>

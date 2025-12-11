@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { FiArrowRight, FiMic } from "react-icons/fi";
+import { FaCanadianMapleLeaf, FaWallet, FaCalendarTimes } from "react-icons/fa";
 
 export default function HomeBanner() {
   const [isListening, setIsListening] = useState(false);
@@ -92,7 +93,7 @@ export default function HomeBanner() {
       className="
       w-full 
       px-4 sm:px-10 md:px-12 lg:px-20 
-      py-8 md:py-12 lg:py-16
+      py-8 md:py-12 lg:py-16 bg-[linear-gradient(to_bottom,#8CC63C1A,#F9FAFB)]
     "
     >
       <div
@@ -127,13 +128,13 @@ export default function HomeBanner() {
             text-[15px] md:text-[16px]
             leading-6 md:leading-[26px]
             text-[#666666]
-            w-full md:w-[650px]
+            w-full md:w-[680px]
             mb-10
           "
           >
-            Stop wasting money and food. Let Al create personalized meal plans,
-            smart grocery lists, and send them straight to Instacart. Save time,
-            eat better, spend less
+            Prepcart creates custom weekly meal plans, easy grocery lists, and
+            budget-friendly recipe suggestions tailored to your taste, diet, and
+            lifestyle — so you save time, money, and mental energy.
           </p>
 
           {/* Voice/Text Input Section */}
@@ -183,7 +184,6 @@ export default function HomeBanner() {
                 ) : (
                   <>
                     <FiMic className="text-base" />
-                  
                   </>
                 )}
               </button>
@@ -216,18 +216,19 @@ export default function HomeBanner() {
             )}
           </div>
 
-          {/* Buttons */}
-          <div
-            className="
+          <div>
+            {/* Buttons */}
+            <div
+              className="
             flex flex-col sm:flex-row 
             items-start sm:items-center 
             gap-3 
             mt-6
           "
-          >
-            <Link href="/marketplace">
-              <button
-                className="
+            >
+              <Link href="/marketplace">
+                <button
+                  className="
               p-3 text-[14px] font-medium 
               text-white 
               rounded-[10px] 
@@ -238,47 +239,71 @@ export default function HomeBanner() {
               w-full sm:w-auto
               flex items-center justify-center gap-2
             "
-              >
-                Generate My Meal Plan <FiArrowRight />
-              </button>
-            </Link>
+                >
+                  Generate My Weekly Plan <FiArrowRight />
+                </button>
+              </Link>
 
-            <Link href="/services">
-              <button
-                className="
+              <Link href="/services">
+                <button
+                  className="
               p-3 text-[14px] font-medium 
               text-[#4a9fd8] hover:text-white
-              rounded-[10px] border-2 border-[#4a9fd8]
+              rounded-[10px] border-2 border-[#E5E5E5]
               bg-white hover:bg-[#4a9fd8]
               transition-colors
               shadow-[0px_3px_10px_rgba(0,0,0,0.08)]
               w-full sm:w-auto
               flex items-center justify-center gap-2
             "
-              >
-                Start With a Quick-Start Plan <FiArrowRight />
-              </button>
-            </Link>
+                >
+                  Start With a Quick-Start Plan <FiArrowRight />
+                </button>
+              </Link>
+            </div>
+            {/* Badges */}
+
+            <div className="flex flex-wrap items-center gap-2 mt-4">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-[#4a9fd8] rounded-full border border-blue-100">
+                <FaCanadianMapleLeaf className="w-3.5 h-3.5" />
+                <span className="text-xs font-medium">
+                  Trusted by Canadians
+                </span>
+              </div>
+
+              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-[#4a9fd8] rounded-full border border-green-100">
+                <FaWallet className="w-3.5 h-3.5" />
+                <span className="text-xs font-medium">
+                  Budget-friendly options
+                </span>
+              </div>
+
+              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-[#4a9fd8] rounded-full border border-purple-100">
+                <FaCalendarTimes className="w-3.5 h-3.5" />
+                <span className="text-xs font-medium">No commitment</span>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* RIGHT SIDE IMAGE */}
         <div className="w-full lg:w-[55%] flex justify-end">
           <Image
-            src="/HeroImage.png"
+            src="/HeroImage2.png"
             width={749}
             height={549}
             alt="Marketplace"
             className="
       rounded-[22px] 
       w-full 
-      max-w-[500px] sm:max-w-[600px] lg:max-w-[580px]
+      max-w-[500px] sm:max-w-[600px] lg:max-w-[600px]
       object-contain
-      max-h-[400px] sm:max-h-[450px] lg:max-h-[500px]
+      max-h-[400px] sm:max-h-[450px] lg:max-h-[600px]
     "
           />
         </div>
       </div>
+    
     </section>
   );
 }
