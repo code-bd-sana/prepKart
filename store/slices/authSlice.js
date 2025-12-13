@@ -33,12 +33,12 @@ const clearAuthData = () => {
   }
 };
 
-// Initial state - always null on server
+// Initial state 
 const initialState = {
   user: null,
   loading: false,
   error: null,
-  _hasHydrated: false, // Add hydration flag
+  _hasHydrated: false, 
 };
 
 // Async actions
@@ -66,6 +66,27 @@ export const getCurrentUser = createAsyncThunk("auth/me", async () => {
   saveAuthData(response.data.user, localStorage.getItem("token"));
   return response.data.user;
 });
+export const fetchUserData = createAsyncThunk(
+  "auth/fetchUserData",
+  async (_, { rejectWithValue }) => {
+    try {
+      const token =
+        localStorage.getItem("token") || localStorage.getItem("accessToken");
+      if (!token) throw new Error("No token");
+
+      const response = await fetch("/api/auth/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!response.ok) throw new Error("Failed to fetch");
+
+      const data = await response.json();
+      return data.user; 
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
 
 // Create slice
 const authSlice = createSlice({
@@ -90,9 +111,17 @@ const authSlice = createSlice({
           clearAuthData();
         }
       }
-      state._hasHydrated = true; // Mark as hydrated
+      state._hasHydrated = true;
     },
   },
+  // For update User
+  updateUserTier: (state, action) => {
+    if (state.user) {
+      state.user.tier = action.payload.tier;
+      state.user.swapsAllowed = action.payload.swapsAllowed;
+    }
+  },
+
   extraReducers: (builder) => {
     // Login
     builder
@@ -163,6 +192,19 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.error.message;
         state.user = null;
+      });
+      // Fetch user in payment and cancel part
+    builder
+      .addCase(fetchUserData.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchUserData.fulfilled, (state, action) => {
+        state.user = action.payload;
+        state.loading = false;
+      })
+      .addCase(fetchUserData.rejected, (state, action) => {
+        state.error = action.payload;
+        state.loading = false;
       });
   },
 });
