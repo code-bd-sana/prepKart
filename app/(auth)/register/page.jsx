@@ -60,7 +60,7 @@ export default function RegisterPage() {
     dislikes: [],
     cookingMethod: [],
     skillLevel: "beginner",
-    maxCookingTime: 60,
+    // maxCookingTime: 60,
     goal: "general_health",
     budgetLevel: "medium",
   });

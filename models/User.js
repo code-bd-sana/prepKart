@@ -67,7 +67,7 @@ const userSchema = new mongoose.Schema(
         dislikes: [],
         cookingMethod: [],
         skillLevel: "beginner",
-        maxCookingTime: 60,
+        // maxCookingTime: 60,
         ageVerified: false,
       },
     },

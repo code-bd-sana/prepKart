@@ -256,24 +256,54 @@ export default function PricingSection() {
 
     let buttonText = plan.buttonText;
     let buttonClass = plan.buttonColor;
+    let disabled = false;
 
-    if (isCurrentPlan) {
-      // Show "Current Plan" for the active plan
-      buttonText = "Current Plan";
-      buttonClass =
-        "bg-gray-100 text-gray-700 border border-gray-300 cursor-default";
-    } else if (userTier === "tier2" && plan.name === "PREMIUM PLAN") {
-      buttonText = "Upgrade to Premium";
-    } else if (userTier === "tier3" && plan.name === "PLUS PLAN") {
-      buttonText = "Downgrade to Plus";
-    } else if (userTier !== "free" && plan.name === "FREE PLAN") {
-      buttonText = "Cancel & Switch to Free";
-      buttonClass = "bg-gray-200 text-gray-700 hover:bg-gray-300";
+    // Handle different user tiers
+    if (userTier === "free") {
+      // Free user
+      if (plan.name === "FREE PLAN") {
+        buttonText = "Current Plan";
+        buttonClass =
+          "bg-gray-100 text-gray-700 border border-gray-300 cursor-default";
+        disabled = true;
+      }
+      // PLUS and PREMIUM plans are enabled for free users
+    } else if (userTier === "tier2") {
+      // Plus user logic
+      if (plan.name === "FREE PLAN") {
+        buttonText = "Free Plan";
+        buttonClass =
+          "bg-gray-100 text-gray-700 border border-gray-300 cursor-not-allowed";
+        disabled = true; 
+      } else if (plan.name === "PLUS PLAN") {
+        buttonText = "Current Plan";
+        buttonClass =
+          "bg-gray-100 text-gray-700 border border-gray-300 cursor-default";
+        disabled = true;
+      } else if (plan.name === "PREMIUM PLAN") {
+        buttonText = "Upgrade to Premium";
+    
+      }
+    } else if (userTier === "tier3") {
+      // Premium user logic for only that user
+      if (plan.name === "FREE PLAN" || plan.name === "PLUS PLAN") {
+        buttonText = plan.name === "FREE PLAN" ? "Free Plan" : "Plus Plan";
+        buttonClass =
+          "bg-gray-100 text-gray-700 border border-gray-300 cursor-not-allowed";
+        disabled = true; 
+      } else if (plan.name === "PREMIUM PLAN") {
+        buttonText = "Current Plan";
+        buttonClass =
+          "bg-gray-100 text-gray-700 border border-gray-300 cursor-default";
+        disabled = true;
+      }
     }
+
+    disabled = disabled || processing;
 
     return {
       text: buttonText,
-      disabled: isCurrentPlan || processing, 
+      disabled: disabled,
       isCurrentPlan: isCurrentPlan,
       className: buttonClass,
     };
@@ -406,7 +436,7 @@ export default function PricingSection() {
                     </button>
 
                     {/* Cancel Button - Only show for PLUS and PREMIUM plans */}
-                    {isLoggedIn &&
+                    {/* {isLoggedIn &&
                       userTier !== "free" &&
                       ["PLUS PLAN", "PREMIUM PLAN"].includes(plan.name) &&
                       buttonState.isCurrentPlan && (
@@ -417,7 +447,7 @@ export default function PricingSection() {
                         >
                           {cancelling ? "Cancelling..." : "Cancel Plan"}
                         </button>
-                      )}
+                      )} */}
                   </div>
                 </div>
               </div>

@@ -23,7 +23,7 @@ export async function POST(request) {
       dislikes = [],
       cookingMethod = [],
       skillLevel = 'beginner',
-      maxCookingTime = 60,
+      // maxCookingTime = 60,
       goal = 'general_health',
       budgetLevel = 'medium'
     } = body;
@@ -73,7 +73,7 @@ export async function POST(request) {
         dislikes: Array.isArray(dislikes) ? dislikes : [],
         cookingMethod: Array.isArray(cookingMethod) ? cookingMethod : [],
         skillLevel: skillLevel || 'beginner',
-        maxCookingTime: parseInt(maxCookingTime) || 60,
+        // maxCookingTime: parseInt(maxCookingTime) || 60,
         goal: goal || 'general_health',
         budgetLevel: budgetLevel || 'medium',
         ageVerified: ageVerified || false,

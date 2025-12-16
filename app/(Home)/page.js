@@ -9,6 +9,7 @@ import Subscribe from "@/components/Home/Subscribe";
 import WhyPeopleLove from "@/components/Home/WhyPeopleLove";
 import FAQSection from "@/components/Home/FAQ";
 import ProblemStatement from "@/components/Home/ProblemStatement";
+// import GenerateWeeklyPlan from "@/components/Home/GenerateWeeklyPlan";
 
 export default function HomePage() {
   return (
@@ -17,6 +18,7 @@ export default function HomePage() {
       <ProblemStatement />
       <HowItWorks />
       <WhyPeopleLove />
+      {/* <GenerateWeeklyPlan /> */}
       <QuickPlans />
       <MealPlanning />
       <PricingSection />
