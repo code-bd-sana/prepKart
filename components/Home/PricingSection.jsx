@@ -260,7 +260,7 @@ export default function PricingSection() {
 
     // Handle different user tiers
     if (userTier === "free") {
-      // Free user: can upgrade to any plan
+      // Free user
       if (plan.name === "FREE PLAN") {
         buttonText = "Current Plan";
         buttonClass =
@@ -282,10 +282,10 @@ export default function PricingSection() {
         disabled = true;
       } else if (plan.name === "PREMIUM PLAN") {
         buttonText = "Upgrade to Premium";
-        // Keep enabled for upgrade
+    
       }
     } else if (userTier === "tier3") {
-      // Premium user logic
+      // Premium user logic for only that user
       if (plan.name === "FREE PLAN" || plan.name === "PLUS PLAN") {
         buttonText = plan.name === "FREE PLAN" ? "Free Plan" : "Plus Plan";
         buttonClass =
@@ -299,7 +299,6 @@ export default function PricingSection() {
       }
     }
 
-    // Add processing state
     disabled = disabled || processing;
 
     return {
