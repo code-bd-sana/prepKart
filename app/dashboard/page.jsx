@@ -6,7 +6,7 @@ import { ArrowLeft } from 'lucide-react';
 
 export default function DashboardPage() {
   const { user, loading } = useSelector((state) => state.auth);
-
+  // console.log(user.email)
 
   // Tier configuration
   const tierConfig = {
@@ -149,14 +149,14 @@ export default function DashboardPage() {
                   {currentTier === 'free' ? 'Upgrade Plan' : 'Manage Subscription'}
                 </Link>
                 
-                {currentTier !== 'free' && (
+                {/* {currentTier !== 'free' && (
                   <Link
                     href="/#pricing"
                     className="block w-full text-center border border-red-300 text-red-600 py-3 rounded-lg hover:bg-red-50 font-medium"
                   >
                     Cancel Subscription
                   </Link>
-                )}
+                )} */}
                 
               </div>
             </div>
