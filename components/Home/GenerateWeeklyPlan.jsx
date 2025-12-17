@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   PROVINCES,
   GOALS,
@@ -10,12 +10,14 @@ import {
   ALLERGIES,
 } from "@/lib/types";
 import { useSelector } from "react-redux";
+import { toast } from "react-toastify";
 
-export default function GenerateWeeklyPlan() {
+export default function GenerateWeeklyPlan({ voiceText }) {
   const [loading, setLoading] = useState(false);
   const [plan, setPlan] = useState(null);
   const [error, setError] = useState("");
   const { user } = useSelector((state) => state.auth);
+  const [isSwapping, setIsSwapping] = useState(false);
 
   // Form state
   const [form, setForm] = useState({
@@ -33,6 +35,114 @@ export default function GenerateWeeklyPlan() {
     dietaryPreferences: [],
     allergies: [],
   });
+  useEffect(() => {
+    if (!voiceText) return;
+
+    const text = voiceText.toLowerCase();
+
+    setForm((prev) => ({
+      ...prev,
+
+      // province
+      province: text.includes("alberta")
+        ? "Alberta"
+        : text.includes("british")
+        ? "British Columbia"
+        : text.includes("columbia")
+        ? "British Columbia"
+        : text.includes("manitoba")
+        ? "Manitoba"
+        : text.includes("New")
+        ? "New Brunswick"
+        : text.includes("Brunswick")
+        ? "New Brunswick"
+        : text.includes("yukon")
+        ? "Yukon"
+        : text.includes("nunavut")
+        ? "Nunavut"
+        : text.includes("quebec")
+        ? "Quebec"
+        : text.includes("columbia")
+        ? "British Columbia"
+        : prev.province,
+
+      // Goal
+      goal: text.includes("lose")
+        ? "Weigth Loss"
+        : text.includes("weigth")
+        ? "Weigth Loss"
+        : text.includes("muscle")
+        ? "Muscle Gain"
+        : text.includes("healthy")
+        ? "Healthy Eating"
+        : text.includes("quick")
+        ? "Quick Meals"
+        : text.includes("family")
+        ? "Family Friendly"
+        : prev.goal,
+
+      // level
+      skillLevel: text.includes("beginner")
+        ? "Beginner"
+        : text.includes("intermediate")
+        ? "Intermediate"
+        : text.includes("expert")
+        ? "Advanced"
+        : text.includes("advanced")
+        ? "Advanced"
+        : prev.skillLevel,
+
+      // Cuisine
+      cuisine: text.includes("asian")
+        ? "Asian"
+        : text.includes("italian")
+        ? "Italian"
+        : text.includes("mexican")
+        ? "Mexican"
+        : text.includes("chinese")
+        ? "Chinese"
+        : text.includes("indian")
+        ? "Indian"
+        : prev.cuisine,
+
+      // Budget
+      budgetLevel:
+        text.includes("cheap") || text.includes("low budget")
+          ? "Low"
+          : text.includes("medium") || text.includes("medium budget")
+          ? "Medium"
+          : text.includes("high") || text.includes("high budget")
+          ? "High"
+          : prev.budgetLevel,
+
+      // allergies
+      allergies: [
+        ...new Set([
+          ...prev.allergies,
+          ...(text.includes("peanuts") ? ["Peanuts"] : []),
+          ...(text.includes("fish") ? ["Fish"] : []),
+          ...(text.includes("dairy") ? ["Dairy"] : []),
+          ...(text.includes("soy") ? ["Soy"] : []),
+          ...(text.includes("wheat") ? ["wheat"] : []),
+          ...(text.includes("shellfish") ? ["Shellfish"] : []),
+          ...(text.includes("eggs") ? ["Eggs"] : []),
+        ]),
+      ],
+      // Dietary Preferences
+      dietaryPreferences: [
+        ...new Set([
+          ...prev.dietaryPreferences,
+          ...(text.includes("vegetarian") ? ["Vegetarian"] : []),
+          ...(text.includes("vegan") ? ["Vegan"] : []),
+          ...(text.includes("keto") ? ["Keto"] : []),
+          ...(text.includes("paleo") ? ["Paleo"] : []),
+          ...(text.includes("mediterranean") ? ["Mediterranean"] : []),
+          ...(text.includes("gluten-free") ? ["Gluten-Free"] : []),
+          ...(text.includes("dairy-free") ? ["Dairy-Free"] : []),
+        ]),
+      ],
+    }));
+  }, [voiceText]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -40,22 +150,44 @@ export default function GenerateWeeklyPlan() {
     setError("");
 
     try {
+      const token =
+        localStorage.getItem("token") ||
+        localStorage.getItem("accessToken") ||
+        (user?.token ? user.token : null);
+
+      // console.log("Frontend token check:", {
+      //   hasToken: !!token,
+      //   tokenLength: token?.length || 0,
+      //   user: user ? { id: user.id, tier: user.tier } : "No user",
+      // });
+
       const response = await fetch("/api/plans/generate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          ...(token && { Authorization: `Bearer ${token}` }),
         },
         body: JSON.stringify(form),
       });
 
+      // console.log("Response status:", response.status);
+
       const data = await response.json();
 
       if (!response.ok) {
+        console.error("API Error:", data);
         throw new Error(data.error || "Failed to generate plan");
       }
 
+      // console.log("Plan received:", {
+      //   tier: data.plan?.tier,
+      //   swapsAllowed: data.plan?.swaps?.allowed,
+      //   userId: data.plan?.userId,
+      // });
+
       setPlan(data.plan);
     } catch (err) {
+      console.error("Generate error:", err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -87,7 +219,7 @@ export default function GenerateWeeklyPlan() {
   const savePlan = async () => {
     try {
       if (!plan) {
-        alert("No plan to save");
+        toast.warning("No plan to save!");
         return;
       }
 
@@ -95,55 +227,98 @@ export default function GenerateWeeklyPlan() {
       const userId = user?.id || user?._id;
 
       if (!user || !userId) {
-        alert("Please login to save plans");
+        toast.warning("Please login to save plans!");
         return;
       }
 
-      // Log what we're sending
+      // console.log("💾 Saving plan:", {
+      //   planId: plan.id,
+      //   isSaved: plan.isSaved,
+      //   needsUpdate: plan.needsUpdate,
+      //   userId: userId,
+      //   swaps: plan.swaps,
+      // });
+
+      // Prepare request body
       const requestBody = {
-        planData: plan,
+        planData: {
+          ...plan,
+          title: plan.title || `${plan.inputs?.goal || "Weekly"} Meal Plan`,
+          days: plan.days || [],
+          inputs: plan.inputs || {},
+          swaps: plan.swaps || { allowed: 1, used: 0, remaining: 1 },
+          tier: plan.tier || "free",
+          source: plan.source || "openai",
+          userId: plan.userId || userId,
+          userEmail: plan.userEmail || user.email,
+        },
         userId: userId,
         userEmail: user.email,
         userTier: user.tier || "free",
       };
+
+      // console.log("Sending save request for plan ID:", plan.id);
 
       const response = await fetch(`/api/plans/${plan.id}/save`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include",
         body: JSON.stringify(requestBody),
       });
 
       const result = await response.json();
 
       if (response.ok) {
-        //   console.log('Plan saved response:', result);
-        alert("Plan saved for 7 days!");
-
-        if (result.plan?.id) {
-          setPlan({
-            ...plan,
-            id: result.plan.id,
-            isSaved: true,
-            expiresAt: result.plan.expiresAt,
-          });
-        }
+        // alert(result.message);
+        toast.success(result.message);
+        // Update plan state
+        setPlan({
+          ...plan,
+          id: result.plan.id,
+          title: result.plan.title,
+          isSaved: true,
+          needsUpdate: false,
+          expiresAt: result.plan.expiresAt,
+          swaps: {
+            allowed: result.plan.swapsAllowed,
+            used: result.plan.swapsUsed,
+            remaining: result.plan.swapsAllowed - result.plan.swapsUsed,
+          },
+          days: plan.days,
+        });
 
         return result;
       } else {
-        console.error("Failed to save:", result);
-        alert(result.message || "Failed to save plan");
+        console.error("Save failed:", result);
+        toast.error(result.error || "Failed to save plan");
+        // alert(result.error || "Failed to save plan");
       }
     } catch (error) {
       console.error("Save error:", error);
-      alert("Error: " + error.message);
+      toast.error("Error: " + error.message);
     }
   };
-  // Generate Another Plan Button
+
   const generateAnother = () => {
-    setPlan(null); // Clear current plan to show form again
+    setPlan(null);
+    setError("");
+    // Optionally reset form to default values
+    setForm({
+      province: "Ontario",
+      cuisine: "",
+      goal: "",
+      budgetLevel: "Medium",
+      portions: 2,
+      mealsPerDay: 3,
+      likes: "",
+      dislikes: "",
+      cookingMethod: "",
+      maxCookingTime: 30,
+      skillLevel: "Beginner",
+      dietaryPreferences: [],
+      allergies: [],
+    });
   };
 
   const generateGroceryList = async (planId) => {
@@ -159,14 +334,14 @@ export default function GenerateWeeklyPlan() {
       const data = await response.json();
 
       if (response.ok) {
-        alert("Grocery list generated!");
+        toast.success("Grocery list generated!");
         // You can redirect to grocery list page
         // window.location.href = `/grocery-list/${data.listId}`;
       } else {
-        alert(data.error || "Failed to generate grocery list");
+        toast.error(data.error || "Failed to generate grocery list");
       }
     } catch (error) {
-      alert("Error generating grocery list");
+      toast.error("Error generating grocery list");
     }
   };
 
@@ -185,10 +360,10 @@ export default function GenerateWeeklyPlan() {
         // Open Instacart link in new tab
         window.open(data.instacartLink, "_blank");
       } else {
-        alert(data.error || "Failed to generate Instacart link");
+        toast.error(data.error || "Failed to generate Instacart link");
       }
     } catch (error) {
-      alert("Error connecting to Instacart");
+      toast.error("Error connecting to Instacart");
     }
   };
 
@@ -199,12 +374,11 @@ export default function GenerateWeeklyPlan() {
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include",
         body: JSON.stringify({
           dayIndex,
           mealIndex,
           planData: plan,
-          userId: user?.id,
+          userId: user?.id || user?._id,
           userEmail: user?.email,
           userTier: user?.tier || "free",
         }),
@@ -213,28 +387,36 @@ export default function GenerateWeeklyPlan() {
       const data = await response.json();
 
       if (response.ok) {
-        alert(data.message);
+        toast.success(data.message);
 
+        // Update plan with swapped meal
         setPlan((prev) => {
           const updatedDays = [...prev.days];
           updatedDays[dayIndex].meals[mealIndex] = data.newMeal;
 
-          return {
+          const updatedPlan = {
             ...prev,
             days: updatedDays,
             swaps: data.swaps,
             tier: data.userTier || prev.tier,
+            isSaved: prev.isSaved ? false : prev.isSaved,
+            needsUpdate: prev.isSaved ? true : false,
           };
+
+          return updatedPlan;
         });
 
         return data;
       } else {
-        alert(data.error || "Failed to swap meal");
+        toast.error(data.error || "Failed to swap meal");
         return null;
       }
     } catch (error) {
-      alert("Error swapping meal");
+      console.error("Swap error:", error);
+      toast.error("Error swapping meal: " + error.message);
       return null;
+    } finally {
+      setIsSwapping(false);
     }
   };
 
@@ -531,28 +713,24 @@ export default function GenerateWeeklyPlan() {
                     {plan.title}
                   </h2>
                   <p className="text-gray-600 mt-2">
-                    Generated just for you • {plan.swaps.remaining} swaps
-                    available
+                    Generated just for you •{" "}
+                    <span className="font-semibold text-[#8cc63c]">
+                      {plan.swaps.remaining} of {plan.swaps.allowed} swaps
+                      available
+                    </span>{" "}
+                    •{" "}
+                    {plan.tier === "free"
+                      ? "Free Plan"
+                      : `${
+                          plan.tier.charAt(0).toUpperCase() + plan.tier.slice(1)
+                        } Tier`}
                   </p>
                 </div>
-                <div className="mt-4 md:mt-0">
-                  {plan.requiresAccount && (
-                      <div className="mt-2">
-                        <button
-                          onClick={() => (window.location.href = "/signup")}
-                          className="text-[#4a9fd8] font-medium hover:text-[#1f88ce] cursor-pointer"
-                        >
-                          Sign Up for Free
-                        </button>
-                        <span className="mx-2">|</span>
-                        <button
-                          onClick={generateAnother}
-                          className="text-gray-600 hover:text-gray-800 cursor-pointer"
-                        >
-                          Generate Another Plan
-                        </button>
-                    </div>
-                  )}
+                <div
+                  className="btn cursor-pointer text-[#8cc63c] hover:text-green-700 "
+                  onClick={generateAnother}
+                >
+                  Generate Another Plan
                 </div>
               </div>
 
@@ -572,16 +750,17 @@ export default function GenerateWeeklyPlan() {
                       </h3>
                     </div>
 
-                    <div className="space-y-6 grid grid-cols-1 md:grid-cols-3 gap-x-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3  gap-4">
                       {day.meals?.map((meal, mealIndex) => (
                         <div
                           key={mealIndex}
-                          className="bg-gray-50 rounded-xl p-2 hover:bg-white hover:shadow-md transition"
+                          className="bg-gray-50 rounded-xl md:p-3 p-2 hover:bg-white hover:shadow-md transition flex flex-col md:h-[400px] h-[280px]"
                         >
-                          <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
-                            <div className="flex items-center mb-3 md:mb-0">
+                          {/* Compact Header - Mobile optimized */}
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center min-w-0 flex-1">
                               <span
-                                className={`inline-block px-3 py-1 rounded-full text-sm font-semibold mr-3 ${
+                                className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-sm font-semibold mr-2 shrink-0 ${
                                   meal.mealType === "breakfast"
                                     ? "bg-green-100 text-green-800"
                                     : meal.mealType === "lunch"
@@ -591,66 +770,88 @@ export default function GenerateWeeklyPlan() {
                                     : "bg-purple-100 text-purple-800"
                                 }`}
                               >
-                                {meal.mealType}
+                                {meal.mealType.charAt(0).toUpperCase()}
                               </span>
-                              <h4 className="text-lg font-semibold text-gray-900">
+                              <h4 className="text-sm font-semibold text-gray-900 truncate flex-1">
                                 {meal.recipeName}
                               </h4>
                             </div>
-                            <div className="flex items-center text-gray-600">
-                              <span>{meal.cookingTime} minutes</span>
+                            <div className="text-sm  text-gray-500 shrink-0 ml-2">
+                              {meal.cookingTime} min
                             </div>
                           </div>
 
-                          {/* Ingredients */}
-                          <div className="mb-4">
-                            <p className="text-sm font-medium text-gray-700 mb-2 flex items-center">
-                              Ingredients:
-                            </p>
-                            <div className="flex flex-wrap gap-2">
-                              {meal.ingredients?.map((ing, idx) => (
-                                <span
-                                  key={idx}
-                                  className="bg-white border border-gray-200 px-3 py-1 rounded-lg text-sm"
-                                >
-                                  {ing.quantity} {ing.unit} {ing.name}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-
-                          {/* Instructions */}
-                          {meal.instructions && (
-                            <div className="mb-4">
-                              <p className="text-sm font-medium text-gray-700 mb-2 flex items-center">
-                                Instructions:
+                          {/* Scrollable Content Area - Mobile optimized */}
+                          <div className="flex-1 overflow-y-auto pr-1 meal-scroll">
+                            {/* Ingredients - Mobile friendly */}
+                            <div className="mb-3">
+                              <p className="text-sm font-medium text-gray-700 mb-1">
+                                Ingredients ({meal.ingredients?.length || 0}):
                               </p>
-                              <ol className="space-y-2 pl-5">
-                                {meal.instructions.map((step, idx) => (
-                                  <li key={idx} className="text-gray-600 flex">
-                                    <span className="font-semibold text-[#4a9fd8] mr-2">
-                                      {idx + 1}.
-                                    </span>
-                                    {step}
-                                  </li>
+                              <div className="flex flex-wrap gap-1">
+                                {meal.ingredients?.map((ing, idx) => (
+                                  <span
+                                    key={idx}
+                                    className="bg-white border border-gray-200 px-2 py-1 rounded text-sm whitespace-normal wrap-break-words"
+                                    title={`${ing.quantity} ${ing.unit} ${ing.name}`}
+                                  >
+                                    {ing.quantity} {ing.unit} {ing.name}
+                                  </span>
                                 ))}
-                              </ol>
+                              </div>
                             </div>
-                          )}
+
+                            {/* Instructions - Mobile optimized */}
+                            {meal.instructions &&
+                              meal.instructions.length > 0 && (
+                                <div className="mb-2">
+                                  <p className="text-sm font-medium text-gray-700 mb-1">
+                                    Instructions:
+                                  </p>
+                                  <ol className="space-y-1">
+                                    {meal.instructions.map((step, idx) => (
+                                      <li
+                                        key={idx}
+                                        className="text-sm text-gray-600 flex"
+                                      >
+                                        <span className="font-semibold text-[#4a9fd8] mr-1 shrink-0">
+                                          {idx + 1}.
+                                        </span>
+                                        <span className="flex-1">{step}</span>
+                                      </li>
+                                    ))}
+                                  </ol>
+                                </div>
+                              )}
+                          </div>
 
                           {/* Swap Button */}
-                          <div className="flex justify-end">
+                          <div className="pt-2 border-t border-gray-100">
                             <button
-                              onClick={() => {
+                              onClick={async () => {
                                 if (plan.swaps.remaining <= 0) {
-                                  alert("No swaps remaining for this plan!");
-                                } else {
-                                  swapMeal(plan.id, mealIndex, dayIndex);
+                                  toast.error(`No swaps remaining!`);
+                                  return;
                                 }
+                                setIsSwapping(true);
+                                await swapMeal(plan.id, mealIndex, dayIndex);
                               }}
-                              className="text-[#4a9fd8] hover:text-[#20a1f7] font-medium flex items-center"
+                              disabled={plan.swaps.remaining <= 0 || isSwapping}
+                              className={`w-full text-sm font-medium py-1.5 sm:py-1 rounded transition-colors duration-200 ${
+                                plan.swaps.remaining <= 0 || isSwapping
+                                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                                  : "bg-[#4a9fd8] hover:bg-[#20a1f7] text-white"
+                              }`}
                             >
-                              Swap This Meal
+                              {isSwapping ? (
+                                <span className="flex items-center justify-center">
+                                  Swapping...
+                                </span>
+                              ) : plan.swaps.remaining <= 0 ? (
+                                "No Swaps Left"
+                              ) : (
+                                "Swap This Meal"
+                              )}
                             </button>
                           </div>
                         </div>
@@ -673,19 +874,25 @@ export default function GenerateWeeklyPlan() {
                 <div className="flex flex-col md:flex-row gap-4">
                   <button
                     onClick={savePlan}
-                    disabled={!plan || plan.isSaved}
+                    disabled={!plan || (plan.isSaved && !plan.needsUpdate)}
                     className={`px-6 py-3 rounded-lg font-semibold transition-all flex-1 ${
-                      !plan || plan.isSaved
+                      !plan || (plan.isSaved && !plan.needsUpdate)
                         ? "bg-gray-300 cursor-not-allowed"
-                        : "bg-primary hover:bg-primary-dark text-black hover:text-white bg-green-600 hover:bg-green-800"
+                        : "bg-green-600 hover:bg-green-700 text-white"
                     }`}
                   >
-                    {plan?.isSaved ? "Plan Saved" : "Save Plan"}
+                    {!plan
+                      ? "Save Plan"
+                      : plan.needsUpdate
+                      ? "Update Plan"
+                      : plan.isSaved
+                      ? "Plan Saved"
+                      : "Save Plan"}
                   </button>
                   <button
                     onClick={() => {
                       if (plan.requiresAccount) {
-                        alert(
+                        toast.warning(
                           "Please create an account to generate grocery list!"
                         );
                       } else {
@@ -699,9 +906,11 @@ export default function GenerateWeeklyPlan() {
                   <button
                     onClick={() => {
                       if (plan.requiresAccount) {
-                        alert("Please create an account to use Instacart!");
+                        toast.warning(
+                          "Please create an account to use Instacart!"
+                        );
                       } else if (plan.tier === "free") {
-                        alert(
+                        toast.warning(
                           "Upgrade to Tier 2 or Tier 3 to unlock Instacart integration!"
                         );
                       } else {

@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from "react";
 import { FiArrowRight, FiMic } from "react-icons/fi";
 import { FaCanadianMapleLeaf, FaWallet, FaCalendarTimes } from "react-icons/fa";
 import PlanModal from "./PlanModal";
+import useSpeechToText from "@/hooks/useSpeechToText";
 
 export default function HomeBanner() {
   const [isListening, setIsListening] = useState(false);
@@ -230,9 +231,9 @@ export default function HomeBanner() {
             mt-6
           "
               >
-                  <button
-                    onClick={() => setShowModal(true)}
-                    className="
+                <button
+                  onClick={() => setShowModal(true)}
+                  className="
               p-3 text-[14px] font-medium 
               text-white 
               rounded-[10px] 
@@ -243,9 +244,9 @@ export default function HomeBanner() {
               w-full sm:w-auto
               flex items-center justify-center gap-2
             "
-                  >
-                    Generate My Weekly Plan <FiArrowRight />
-                  </button>
+                >
+                  Generate My Weekly Plan <FiArrowRight />
+                </button>
 
                 <Link href="/services">
                   <button
@@ -308,7 +309,11 @@ export default function HomeBanner() {
         </div>
       </section>
       {/* Add Modal */}
-      <PlanModal isOpen={showModal} onClose={() => setShowModal(false)} />
+      <PlanModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        voiceText={inputText}
+      />
     </>
   );
 }
