@@ -6,6 +6,7 @@ import { register, clearError } from "@/store/slices/authSlice";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { toast } from "react-toastify";
 
 // Canadian provinces array
 const PROVINCES = [
@@ -60,7 +61,7 @@ export default function RegisterPage() {
     dislikes: [],
     cookingMethod: [],
     skillLevel: "beginner",
-    // maxCookingTime: 60,
+    maxCookingTime: 60,
     goal: "general_health",
     budgetLevel: "medium",
   });
@@ -194,7 +195,7 @@ export default function RegisterPage() {
     e.preventDefault();
 
     if (!formData.ageVerified) {
-      alert("You must be 18+ to use PrepCart");
+      toast.warning("You must be 18+ to use PrepCart");
       return;
     }
 
@@ -202,8 +203,10 @@ export default function RegisterPage() {
 
     try {
       await dispatch(register(formData)).unwrap();
+      toast.success("Registered Successfully!")
       router.push("/");
     } catch (error) {
+      toast.error("Registartion Failed")
       console.log("Registration failed");
     }
   };

@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { FiMenu, FiX } from "react-icons/fi";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "@/store/slices/authSlice";
+import { toast } from "react-toastify";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -48,6 +49,7 @@ export default function Navbar() {
   const handleLogout = () => {
     dispatch(logout());
     setOpen(false);
+    toast.success("Logged Out Successfully!")
     router.push("/");
   };
 

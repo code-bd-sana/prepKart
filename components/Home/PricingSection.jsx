@@ -4,6 +4,7 @@ import { fetchUserData } from "@/store/slices/authSlice";
 import { Check, X } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import { useState, useEffect } from "react";
+import { toast } from "react-toastify";
 
 const plans = [
   {
@@ -137,16 +138,16 @@ export default function PricingSection() {
       const data = await response.json();
 
       if (data.success) {
-        alert(`✅ ${plan.name} cancelled! You're now on Free plan.`);
+        toast.success(`${plan.name} cancelled! You're now on Free plan.`);
 
         // Refresh user data
         dispatch(fetchUserData());
       } else {
-        alert("Cancellation failed: " + data.error);
+        toast.error("Cancellation failed: " + data.error);
       }
     } catch (error) {
       console.error("Cancel error:", error);
-      alert("Something went wrong");
+      toast.error("Something went wrong");
     } finally {
       setCancelling(false);
     }
@@ -163,11 +164,13 @@ export default function PricingSection() {
         // Show error alert
         if (paramsObj.error) {
           alert("Payment error: " + decodeURIComponent(paramsObj.error));
+          toast.error("Payment error: " + decodeURIComponent(paramsObj.error))
           window.history.replaceState({}, "", "/#pricing");
         }
 
         // Handle success
         if (paramsObj.payment === "success") {
+          toast.success("Successful!")
           window.history.replaceState({}, "", "/#pricing");
         }
       }
@@ -224,13 +227,14 @@ export default function PricingSection() {
 
       if (data.success && data.url) {
         // Redirect to Stripe checkout
+        toast.success("Payment Successsful!")
         window.location.href = data.url;
       } else {
-        alert(data.error || "Payment failed. Please try again.");
+        toast.error(data.error || "Payment failed. Please try again.");
       }
     } catch (error) {
       console.error("Payment error:", error);
-      alert("Something went wrong. Please try again.");
+      toast.error("Something went wrong. Please try again.");
     } finally {
       setProcessing(false);
     }
