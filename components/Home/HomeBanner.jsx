@@ -5,16 +5,17 @@ import { useState, useEffect, useRef } from "react";
 import { FiArrowRight, FiMic } from "react-icons/fi";
 import { FaCanadianMapleLeaf, FaWallet, FaCalendarTimes } from "react-icons/fa";
 import PlanModal from "./PlanModal";
-import useSpeechToText from "@/hooks/useSpeechToText";
+import { useTranslations } from "next-intl";
 
-export default function HomeBanner() {
+export default function HomeBanner({ locale }) {
+  const t = useTranslations("homeBanner");
+
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [inputText, setInputText] = useState("");
   const recognitionRef = useRef(null);
   const [showModal, setShowModal] = useState(false);
 
-  // speech recognition
   useEffect(() => {
     if (typeof window !== "undefined") {
       const SpeechRecognition =
@@ -24,8 +25,11 @@ export default function HomeBanner() {
         const recognitionInstance = new SpeechRecognition();
         recognitionInstance.continuous = false;
         recognitionInstance.interimResults = false;
-        recognitionInstance.lang = "en-US";
 
+        // Set language based on locale
+        recognitionInstance.lang = locale === "fr" ? "fr-CA" : "en-CA";
+
+        // ... rest of your speech recognition code
         recognitionInstance.onresult = (event) => {
           const currentTranscript = event.results[0][0].transcript;
           setTranscript(currentTranscript);
@@ -42,20 +46,18 @@ export default function HomeBanner() {
           setIsListening(false);
         };
 
-        // Store in ref
         recognitionRef.current = recognitionInstance;
       } else {
         console.warn("Speech recognition not supported in this browser.");
       }
     }
 
-    // Cleanup function
     return () => {
       if (recognitionRef.current) {
         recognitionRef.current.stop();
       }
     };
-  }, []);
+  }, [locale]);
 
   const handleVoiceClick = () => {
     if (!recognitionRef.current) {
@@ -104,9 +106,9 @@ export default function HomeBanner() {
           className="
         max-w-[1500px] mx-auto 
         flex flex-col lg:flex-row 
-        items-center lg:items-start 
+        items-center 
         justify-between 
-        gap-10 lg:gap-0
+        gap-10 lg:gap-0 
       "
         >
           {/* LEFT SIDE */}
@@ -114,16 +116,14 @@ export default function HomeBanner() {
             {/* Heading */}
             <h1
               className="
-            text-[32px] sm:text-[38px] md:text-[50px] lg:text-[65px]
-            
+            text-[32px] md:text-[60px] 
             leading-10 sm:leading-12 md:leading-[55px] lg:leading-[62px]
             tracking-[-0.5px]
             text-[#1E1E1E]
             mb-5
           "
             >
-              From Kitchen Stress to <br className="hidden lg:block" />
-              Grocery Success
+              {t("title")}
             </h1>
 
             {/* Subtext */}
@@ -132,13 +132,15 @@ export default function HomeBanner() {
             text-[15px] md:text-[16px]
             leading-6 md:leading-[26px]
             text-[#666666]
-            w-full md:w-[680px]
+            w-full md:max-w-[500px]
             mb-10
           "
             >
-              Prepcart creates custom weekly meal plans, easy grocery lists, and
-              budget-friendly recipe suggestions tailored to your taste, diet,
-              and lifestyle — so you save time, money, and mental energy.
+              {t.rich("subtitle", {
+                highlight: (chunks) => (
+                  <strong className="font-bold text-primary">{chunks}</strong>
+                ),
+              })}
             </p>
 
             {/* Voice/Text Input Section */}
@@ -146,7 +148,7 @@ export default function HomeBanner() {
               <div className="relative">
                 <input
                   type="text"
-                  placeholder="Your preferences"
+                  placeholder={t("inputPlaceholder")}
                   value={inputText}
                   onChange={handleInputChange}
                   className="
@@ -183,11 +185,12 @@ export default function HomeBanner() {
                   {isListening ? (
                     <>
                       <div className="h-2 w-2 bg-red-500 rounded-full animate-pulse"></div>
-                      <span>Listening...</span>
+                      <span>{t("voiceButtonListening")}</span>
                     </>
                   ) : (
                     <>
                       <FiMic className="text-base" />
+                      <span>{t("voiceButtonDefault")}</span>
                     </>
                   )}
                 </button>
@@ -203,7 +206,7 @@ export default function HomeBanner() {
                     text-gray-400 hover:text-gray-600
                     text-sm
                   "
-                    title="Clear input"
+                    title={t("clearButton")}
                   >
                     ×
                   </button>
@@ -214,7 +217,7 @@ export default function HomeBanner() {
               {transcript && (
                 <div className="mt-3">
                   <p className="text-sm text-gray-600">
-                    <span className="font-medium">Voice input:</span>{" "}
+                    <span className="font-medium">{t("voiceInput")}</span>{" "}
                     {transcript}
                   </p>
                 </div>
@@ -245,10 +248,12 @@ export default function HomeBanner() {
               flex items-center justify-center gap-2
             "
                 >
-                  Generate My Weekly Plan <FiArrowRight />
+                  {t("generateButton")} <FiArrowRight />
                 </button>
 
-                <Link href="/services">
+                <Link href={`/${locale}/services`}>
+                  {" "}
+                  {/* ← ADD LOCALE TO LINK */}
                   <button
                     className="
               p-3 text-[14px] font-medium 
@@ -261,30 +266,32 @@ export default function HomeBanner() {
               flex items-center justify-center gap-2
             "
                   >
-                    Start With a Quick-Start Plan <FiArrowRight />
+                    {t("quickStartButton")} <FiArrowRight />{" "}
                   </button>
                 </Link>
               </div>
-              {/* Badges */}
 
+              {/* Badges */}
               <div className="flex flex-wrap items-center gap-2 mt-4">
                 <div className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-[#4a9fd8] rounded-full border border-blue-100">
                   <FaCanadianMapleLeaf className="w-3.5 h-3.5" />
                   <span className="text-xs font-medium">
-                    Trusted by Canadians
+                    {t("badges.trusted")}
                   </span>
                 </div>
 
                 <div className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-[#4a9fd8] rounded-full border border-green-100">
                   <FaWallet className="w-3.5 h-3.5" />
                   <span className="text-xs font-medium">
-                    Budget-friendly options
+                    {t("badges.budget")}
                   </span>
                 </div>
 
                 <div className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-[#4a9fd8] rounded-full border border-purple-100">
                   <FaCalendarTimes className="w-3.5 h-3.5" />
-                  <span className="text-xs font-medium">No commitment</span>
+                  <span className="text-xs font-medium">
+                    {t("badges.noCommitment")}
+                  </span>
                 </div>
               </div>
             </div>
@@ -296,11 +303,11 @@ export default function HomeBanner() {
               src="/HeroImage2.png"
               width={749}
               height={549}
-              alt="Marketplace"
+              alt={locale === "fr" ? "Marché" : "Marketplace"}
               className="
       rounded-[22px] 
       w-full 
-      max-w-[500px] sm:max-w-[600px] lg:max-w-[600px]
+      max-w-[500px] md:max-w-[600px]
       object-contain
       max-h-[400px] sm:max-h-[450px] lg:max-h-[600px]
     "
@@ -308,11 +315,12 @@ export default function HomeBanner() {
           </div>
         </div>
       </section>
-      {/* Add Modal */}
+
       <PlanModal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
         voiceText={inputText}
+        locale={locale}
       />
     </>
   );

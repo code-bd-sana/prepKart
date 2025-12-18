@@ -1,3 +1,6 @@
+'use client';
+
+import React from 'react';
 import HomeBanner from "@/components/Home/HomeBanner";
 import HowItWorks from "@/components/Home/HowItWorks";
 import QuickPlans from "@/components/Home/QuickPlans";
@@ -9,23 +12,24 @@ import Subscribe from "@/components/Home/Subscribe";
 import WhyPeopleLove from "@/components/Home/WhyPeopleLove";
 import FAQSection from "@/components/Home/FAQ";
 import ProblemStatement from "@/components/Home/ProblemStatement";
-// import GenerateWeeklyPlan from "@/components/Home/GenerateWeeklyPlan";
 
-export default function HomePage() {
+export default function HomePage({ params }) {
+  // Get locale from params
+  const { locale } = React.use(params);
   return (
     <div className="bg-gray-50">
-      <HomeBanner />
-      <ProblemStatement />
-      <HowItWorks />
-      <WhyPeopleLove />
-      {/* <GenerateWeeklyPlan /> */}
-      <QuickPlans />
-      <MealPlanning />
-      <PricingSection />
-      <GroceryListDemo />
-      <Testimonials />
-      <FAQSection />
-      <Subscribe />
+      <HomeBanner locale={locale} />
+      <ProblemStatement locale={locale} />
+      <HowItWorks locale={locale} />
+      <WhyPeopleLove locale={locale} />
+      <QuickPlans locale={locale} />
+      <MealPlanning locale={locale} />
+      <PricingSection locale={locale} />
+      <GroceryListDemo locale={locale} />
+      <Testimonials locale={locale} />
+      <FAQSection locale={locale} />
+      <Subscribe locale={locale} />
     </div>
   );
 }
+

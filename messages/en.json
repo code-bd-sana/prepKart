@@ -1,0 +1,464 @@
+{
+  "homeBanner": {
+    "title": "From Kitchen Stress to Grocery Success",
+     "subtitle": "Prepcart creates <highlight>custom weekly meal plans, easy grocery lists, and budget-friendly recipe suggestions</highlight> tailored to your taste, diet, and lifestyle — so you save time, money, and mental energy.",
+    "inputPlaceholder": "Your preferences",
+    "voiceButtonListening": "Listening...",
+    "voiceButtonDefault": "Voice",
+    "voiceInput": "Voice input:",
+    "clearButton": "Clear",
+    "generateButton": "Generate my weekly plan",
+    "quickStartButton": "Start with a quick plan",
+    "badges": {
+      "trusted": "Trusted by Canadians",
+      "budget": "Budget-friendly options",
+      "noCommitment": "No commitment"
+    }
+  },
+  "register": {
+    "title": "Create Account",
+    "backToHome": "Back to Home",
+    "basicInfo": "Basic Information",
+    "fullName": "Full Name",
+    "email": "Email",
+    "password": "Password",
+    "province": "Province",
+    "dietaryPreferences": "Dietary Preferences",
+    "selectDietary": "Select dietary preference...",
+    "customDietaryPlaceholder": "Or add custom preference",
+    "add": "Add",
+    "allergies": "Allergies",
+    "selectAllergy": "Select allergy...",
+    "customAllergyPlaceholder": "Or add custom allergy",
+    "ageVerification": "I confirm that I am 18 years of age or older",
+    "createAccount": "Create Account",
+    "creatingAccount": "Creating Account...",
+    "alreadyHaveAccount": "Already have an account?",
+    "loginHere": "Login here",
+    "terms": "By creating an account, you agree to our Terms and Privacy Policy",
+    "required": "required",
+    "emailExists": "Email already exists. Please login or use a different email.",
+    "registrationFailed": "Registration Failed",
+    "mustBe18": "You must be 18+ to use PrepCart"
+  },
+  "login": {
+    "title": "Welcome Back!",
+    "subtitle": "Login to continue with PrepCart",
+    "email": "Email Address",
+    "password": "Password",
+    "loginButton": "Login to PrepCart",
+    "loggingIn": "Logging in...",
+    "noAccount": "Do not have an account?",
+    "createAccount": "Create an Account",
+    "backToHome": "Back to Home",
+    "invalidCredentials": "Invalid email or password",
+    "loginFailed": "Login Failed",
+    "loginSuccess": "Successfully Logged In!"
+  },
+  "navbar": {
+    "home": "Home",
+    "howItWorks": "How It Works",
+    "pricing": "Pricing",
+    "recipes": "Recipes",
+    "partners": "Partners",
+    "faq": "FAQ",
+    "dashboard": "Dashboard",
+    "login": "Login",
+    "getStarted": "Get Started",
+    "logout": "Logout",
+    "loggedOut": "Logged Out Successfully!"
+  },
+  "dashboard": {
+    "welcome": "Welcome",
+    "backToHome": "Back to Home",
+    "accountOverview": "Account Overview",
+    "emailAddress": "Email Address",
+    "location": "Location",
+    "accountCreated": "Account Created",
+    "subscriptionStatus": "Subscription Status",
+    "swapsAvailable": "Swaps Available",
+    "yourPlan": "Your Plan",
+    "upgradePlan": "Upgrade Plan",
+    "manageSubscription": "Manage Subscription",
+    "cancelSubscription": "Cancel Subscription",
+    "freePlan": "Free",
+    "plusPlan": "Plus",
+    "premiumPlan": "Premium",
+    "freePrice": "$0/month",
+    "plusPrice": "$4.99/month",
+    "premiumPrice": "$9.99/month",
+    "loading": "Loading dashboard...",
+    "notAvailable": "Not available",
+    "notSet": "Not set",
+    "used": "used"
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "subtitle": "Everything you need to know about Prepcart",
+    "questions": [
+      {
+        "question": "Is Prepcart available across Canada?",
+        "answer": "Yes! Prepcart works anywhere in Canada. Our grocery integration supports major retailers like Walmart, Loblaws, Metro, Sobeys, and Costco, with real-time pricing and availability based on your postal code. We also adjust meal recommendations for regional availability and seasonal produce."
+      },
+      {
+        "question": "How are meal plans generated?",
+        "answer": "Prepcart uses smart meal planning technology to create personalized meal plans based on your dietary preferences, budget, family size, and cooking time. Our system balances nutrition, minimizes ingredient waste through smart ingredient overlap, and accounts for seasonal availability. You can regenerate plans until you find the perfect fit."
+      },
+      {
+        "question": "Can I adjust recipes for allergies or dietary restrictions?",
+        "answer": "Absolutely. During setup, you can specify allergies, intolerances, and dietary preferences (gluten-free, dairy-free, vegetarian, etc.). Our smart system automatically excludes unsuitable ingredients and suggests alternatives. You can also manually swap any recipe in your plan."
+      },
+      {
+        "question": "Is Instacart required to use Prepcart?",
+        "answer": "No, Instacart is optional. While we offer seamless integration with Instacart for one-click grocery ordering, you can also use Prepcart to generate shopping lists and shop manually at any store. The app helps you compare prices across retailers regardless of how you choose to shop."
+      }
+    ],
+    "cantFind": "Can’t find what you’re looking for?",
+    "chatSupport": "Chat with Support",
+    "helpCenter": "View Help Center"
+  },
+  "problemStatement": {
+    "title": "Everyday cooking shouldn’t feel this hard ",
+    "description": "You are not alone — Prepcart makes weekly meal planning simple again.",
+    "painPoints": [
+      {
+        "title": "<italic>“What do I cook today?”</italic> — every single day."
+      },
+      {
+        "title": "Groceries going to waste <highlight>every week</highlight>"
+      },
+      {
+        "title": "Takeout eating up your budget"
+      },
+      {
+        "title": "<highlight>Dietary needs, allergies, picky eaters —exhausting</highlight>"
+      }
+    ]
+  },
+  "howItWorks": {
+    "title": "How It Works",
+    "subtitle": "Three simple steps to your perfect meal plan",
+    "steps": [
+      {
+        "title": "Tell us your preferences",
+        "description": "Your tastes, dietary needs, allergies, budget & cooking skill — we tailor everything to YOU."
+      },
+      {
+        "title": "Get your custom weekly meal plan",
+        "description": "We build a balanced, realistic meal plan you can actually stick to — with easy recipes."
+      },
+      {
+        "title": "Shop your groceries instantly",
+        "description": "Your plan comes with a smart, optimized grocery list - One click to order everything you need."
+      }
+    ]
+  },
+  "whyPeopleLove": {
+    "title": "Why People Love Prepcart",
+    "subtitle": "Join thousands of Canadians who are transforming their grocery routine",
+    "reasons": [
+      {
+        "title": "Save up to 30% on groceries",
+        "desc": "Buy only what you need and reduce food waste every week."
+      },
+      {
+        "title": "Cut monthly food costs by $80–$150",
+        "desc": "Smart planning keeps your grocery bill predictable and on budget."
+      },
+      {
+        "title": "Zero meal stress",
+        "desc": "Your weekly plan is created for you — no guessing, no decision fatigue."
+      },
+      {
+        "title": "Smart grocery sync",
+        "desc": "Compare prices across stores instantly and shop your list in one tap."
+      }
+    ]
+  },
+  "quickPlans": {
+    "title": "Quick, Curated Meals You'll Love",
+    "subtitle": "Short on time? Get healthy, curated meals designed for your lifestyle and budget — effortless cooking, every day.",
+    "ctaTitle": "Unlock Premium Recipe Collections",
+    "ctaSubtitle": "Subscribe for the premium plans, unlimited and exclusive recipes",
+    "ctaButton": "Try 7 days free",
+    "premium": "Premium",
+    "viewPlan": "View plan",
+    "plans": [
+      {
+        "title": "Keto",
+        "description": "Low-carb, high-fat meals",
+        "icon": "🥑",
+        "premium": true
+      },
+      {
+        "title": "Vegan",
+        "description": "100% plant-based",
+        "icon": "🌱",
+        "premium": false
+      },
+      {
+        "title": "Vegetarian",
+        "description": "Meat-free, protein-rich",
+        "icon": "🍆",
+        "premium": false
+      },
+      {
+        "title": "Halal",
+        "description": "Halal-certified",
+        "iconType": "image",
+        "icon": "/halalll.jpg",
+        "premium": true
+      },
+      {
+        "title": "Gluten-Free",
+        "description": "No gluten, full flavour",
+        "icon": "🌾",
+        "premium": false
+      },
+      {
+        "title": "High-Protein",
+        "description": "Muscle-building meals",
+        "icon": "💪",
+        "premium": true
+      },
+      {
+        "title": "Low-Carb",
+        "description": "Reduced carbs",
+        "icon": "🍎",
+        "premium": false
+      },
+      {
+        "title": "Family-Friendly",
+        "description": "Kid-approved",
+        "icon": "👨‍👩‍👧",
+        "premium": true
+      },
+      {
+        "title": "Budget-Friendly",
+        "description": "Under $75/week",
+        "icon": "💰",
+        "premium": false
+      }
+    ]
+  },
+  "mealPlanning": {
+    "title": "Meal Planning, Reinvented",
+    "subtitle": "Smart meal creation, macro tracking, recipe swaps, and one-click grocery delivery.",
+    "plans": [
+      {
+        "title": "Budget-friendly",
+        "desc": "Plans from $50–$100/week tailored to your spending limit."
+      },
+      {
+        "title": "Family-friendly",
+        "desc": "Kid-approved recipes for 1 to 5+ people."
+      },
+      {
+        "title": "Smart swaps",
+        "desc": "Don't like a recipe? Swap it with intelligent alternatives."
+      },
+      {
+        "title": "AI-powered",
+        "desc": "Generate grocery-list instantly with unlimited variations."
+      }
+    ]
+  },
+  "pricing": {
+  "title": "Select Your Plan",
+  "subtitle": "Simple, flexible, commitment-free plans designed for you.",
+  "plans": [
+    {
+      "name": "Free",
+      "tagline": "Try Prepcart with the basics",
+      "badge": "Try Now",
+      "buttonText": "Get Started Free",
+      "features": [
+        "1 meal plan per month",
+        "Non-customized",
+        "No Swap (blur)",
+        "Grocery list generation – Instacart ready",
+        "Lists/plans cannot be saved",
+        "NO Pantry toggle",
+        "NO history"
+      ]
+    },
+    {
+      "name": "Plus",
+      "tagline": "More flexibility, more control",
+      "badge": "Most Popular",
+      "buttonText": "Start Plus Plan",
+      "features": [
+        "Max 6 meals per month",
+        "Customized",
+        "Swap available",
+        "Grocery list generation – Instacart ready",
+        "Lists can be saved",
+        "Pantry toggle",
+        "History saved",
+        "Full dashboard",
+        "Full nutrition & macro insights",
+        "New weekly recipes"
+      ]
+    },
+    {
+      "name": "Premium",
+      "tagline": "The full Prepcart experience",
+      "badge": "Unlimited Access",
+      "buttonText": "Go Premium",
+      "features": [
+        "Unlimited meals",
+        "Customized",
+        "Swap available",
+        "Grocery list generation – Instacart ready",
+        "Lists can be saved",
+        "Pantry toggle",
+        "History saved",
+        "Full dashboard access",
+        "Full nutrition & macro insights",
+        "New weekly recipes",
+        "Track budget",
+        "Early access to future features"
+      ]
+    }
+  ],
+  "messages": {
+    "launchDeal": "Launch Deal",
+    "processing": "Processing...",
+    "cancelling": "Cancelling...",
+    "currentPlan": "Current Plan",
+    "freePlan": "Free Plan",
+    "plusPlan": "Plus Plan",
+    "upgradePremium": "Upgrade to Premium",
+    "cancelPlan": "Cancel Plan"
+  },
+  "alerts": {
+    "paymentSuccess": "Payment successful!",
+    "paymentError": "Payment error:",
+    "cancellationSuccess": "cancelled! You're now on Free plan.",
+    "cancellationFailed": "Cancellation failed:",
+    "somethingWrong": "Something went wrong"
+  },
+  "currentAccount": "Current Account:",
+  "plan": "Plan:",
+  "swaps": "Swaps:"
+},
+  "groceryList": {
+    "title": "Generate My Grocery List →",
+    "subtitle": "🍁 Canada-ready, 🧺 auto-grouped, ✏️ fully editable, 🧂 pantry-aware, and 🛒 order-ready — everything you need for a smarter, stress-free grocery list in one place.",
+    "listTitle": "Weekly Grocery List",
+    "editButton": "Edit List",
+    "doneEditingButton": "Done Editing",
+    "hidePantryToggle": "Hide Pantry Items",
+    "progress": "{checkedCount} of {totalCount} items checked",
+    "inPantryBadge": "In Pantry",
+    "itemsCount": "items",
+    "readyToShopTitle": "Ready to Shop?",
+    "readyToShopDescription": "Your grocery list is organized and ready — tap to get everything delivered.",
+    "instacartButton": "Order Ingredients on Instacart →",
+    "cartLoadsText": "Cart loads instantly"
+  },
+  "testimonials": {
+    "title": "Prepcart — Smart Meal Planning for Canadians",
+    "subtitle": "Personalized weekly meals, smart grocery lists, and budget tools designed to help Canadians cook better, waste less, and save more.",
+    "joinButton": "Join Canadians simplifying their week →",
+    "partners": {
+      "title": "Become a Partner",
+      "description": "Are you a local farmer or grocery store interested in partnering with Prepcart?",
+      "email": "info@prepcart.ca"
+    }
+  },
+  "subscribe": {
+    "title": "Get Tips, Updates & Meal Planning Inspiration!",
+    "subtitle": "Join our community and stay updated with the latest recipes, nutrition tips and exclusive offers",
+    "emailPlaceholder": "Your Email Address",
+    "postalPlaceholder": "Postal Code (e.g. M5H 2N2)",
+    "buttonText": "Subscribe Now"
+  },
+  "footer": {
+    "tagline": "\"Made for real Canadian households🍁\"",
+    "company": "Company",
+    "legal": "Legal",
+    "help": "Help",
+    "followUs": "Follow Us",
+    "copyright": "© 2025 Prepcart. Made for real Canadian households. All rights reserved.",
+    "links": {
+      "howItWorks": "How It Works",
+      "pricing": "Pricing",
+      "recipes": "Recipes",
+      "partners": "Partners",
+      "terms": "Terms of Service",
+      "privacy": "Privacy Policy",
+      "support": "Support",
+      "contact": "Contact Us"
+    },
+    "social": {
+      "facebook": "Facebook",
+      "twitter": "Twitter",
+      "instagram": "Instagram",
+      "linkedin": "LinkedIn"
+    }
+  },
+  "generatePlan": {
+    "title": "Generate My Weekly Plan",
+    "form": {
+      "province": "Province *",
+      "goal": "Your Goal *",
+      "cuisine": "Cuisine Preferences",
+      "budgetLevel": "Budget Level",
+      "portions": "Portions",
+      "mealsPerDay": "Meals per Day",
+      "maxCookingTime": "Max Cooking Time (minutes)",
+      "likes": "Foods You Like",
+      "dislikes": "Foods You Dislike",
+      "cookingMethod": "Preferred Cooking Methods",
+      "skillLevel": "Cooking Skill Level",
+      "dietaryPreferences": "Dietary Preferences",
+      "allergies": "Allergies",
+      "cuisinePlaceholder": "e.g., Italian, Mexican, Asian",
+      "likesPlaceholder": "e.g., chicken, pasta, vegetables",
+      "dislikesPlaceholder": "e.g., mushrooms, olives, spicy food",
+      "cookingMethodPlaceholder": "e.g., bake, grill, stir-fry",
+      "selectGoal": "Select your goal",
+      "selectProvince": "Select province"
+    },
+    "generateButton": "Generate My Weekly Meal Plan",
+    "loading": "Generating Your Plan...",
+    "errorTitle": "Error",
+    "plan": {
+      "title": "Your Weekly Meal Plan",
+      "generatedFor": "Generated just for you •",
+      "swapsAvailable": "swaps available •",
+      "freePlan": "Free Plan",
+      "tier": "Tier",
+      "generateAnother": "Generate Another Plan",
+      "day": "Day",
+      "ingredients": "Ingredients",
+      "instructions": "Instructions",
+      "swapButton": "Swap This Meal",
+      "noSwapsLeft": "No Swaps Left",
+      "swapping": "Swapping...",
+      "savePlan": "Save Plan",
+      "updatePlan": "Update Plan",
+      "planSaved": "Plan Saved",
+      "savedMessage": "This plan is saved to your account. You can now generate grocery lists.",
+      "generateGroceryList": "Generate Grocery List",
+      "orderInstacart": "Order on Instacart",
+      "mealTypes": {
+        "breakfast": "B",
+        "lunch": "L",
+        "dinner": "D",
+        "snack": "S"
+      }
+    },
+    "alerts": {
+      "noSwaps": "No swaps remaining!",
+      "saveWarning": "Please login to save plans!",
+      "noPlan": "No plan to save!",
+      "grocerySuccess": "Grocery list generated!",
+      "instacartSuccess": "Instacart link generated!",
+      "accountWarning": "Please create an account to generate grocery list!",
+      "instacartWarning": "Please create an account to use Instacart!",
+      "upgradeWarning": "Upgrade to Tier 2 or Tier 3 to unlock Instacart integration!"
+    }
+  }
+}

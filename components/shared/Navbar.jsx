@@ -1,91 +1,106 @@
 "use client";
-import { useState, useEffect } from "react"; 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
+import { useParams, usePathname, useRouter } from "next/navigation";
 import { FiMenu, FiX } from "react-icons/fi";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "@/store/slices/authSlice";
 import { toast } from "react-toastify";
+import { useTranslations } from "next-intl"; // Add this
 
 export default function Navbar() {
+  const params = useParams();
+  const locale = params.locale;
+  const t = useTranslations("navbar");
+
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const [activeHash, setActiveHash] = useState(""); 
-  
+  const [activeHash, setActiveHash] = useState("");
+
   const { user, loading } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const router = useRouter();
 
-  // Handle hash changes
-  useEffect(() => {
-  // to get current hash
-  const getCurrentHash = () => {
-    if (typeof window !== "undefined") {
-      return window.location.hash;
+  const createLocalizedPath = (newLocale) => {
+    if (!pathname) return `/${newLocale}`;
+
+    const segments = pathname.split("/").filter(Boolean);
+    const currentLocale = segments[0];
+
+    if (!["en", "fr"].includes(currentLocale)) {
+      return `/${newLocale}${pathname}`;
     }
-    return "";
+
+    return `/${newLocale}${pathname.slice(currentLocale.length + 1) || "/"}`;
   };
 
-  // to defer the state update
-  const timeoutId = setTimeout(() => {
-    setActiveHash(getCurrentHash());
-  }, 0);
+  const currentLocale = pathname?.split("/")[1] || "en";
 
-  // Handle hash changes
-  const handleHashChange = () => {
-    setActiveHash(getCurrentHash());
-  };
+  // Update navItems to use translations
+  const navItems = [
+    { label: t("home"), href: `/${locale}` }, // Add locale to home
+    { label: t("howItWorks"), href: "#howitworks" },
+    { label: t("pricing"), href: "#pricing" },
+    // { label: t("recipes"), href: "#recipes" },
+    { label: t("partners"), href: "#partners" },
+    { label: t("faq"), href: "#faq" },
+  ];
 
-  // Listen to hash changes
-  window.addEventListener("hashchange", handleHashChange);
+  // Handle hash changes (keep this as is)
+  useEffect(() => {
+    const getCurrentHash = () => {
+      if (typeof window !== "undefined") {
+        return window.location.hash;
+      }
+      return "";
+    };
 
-  return () => {
-    clearTimeout(timeoutId);
-    window.removeEventListener("hashchange", handleHashChange);
-  };
-}, []);
+    const timeoutId = setTimeout(() => {
+      setActiveHash(getCurrentHash());
+    }, 0);
+
+    const handleHashChange = () => {
+      setActiveHash(getCurrentHash());
+    };
+
+    window.addEventListener("hashchange", handleHashChange);
+
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener("hashchange", handleHashChange);
+    };
+  }, []);
 
   const handleLogout = () => {
     dispatch(logout());
     setOpen(false);
-    toast.success("Logged Out Successfully!")
-    router.push("/");
+    toast.success(t("loggedOut"));
+    router.push(`/${locale}`); // Add locale to redirect
   };
-
-  const navItems = [
-    { label: "Home", href: "/" },
-    { label: "How It Works", href: "#howitworks" },
-    { label: "Pricing", href: "#pricing" },
-    { label: "Recipes", href: "#recipes" },
-    { label: "Partners", href: "#partners" },
-    { label: "FAQ", href: "#faq" },
-  ];
 
   // to determine if an item is active
   const isItemActive = (itemHref) => {
-    // For Home page
-    if (itemHref === "/") {
-      return pathname === "/" && !activeHash;
+    // For Home page - check with locale
+    if (itemHref === `/${locale}`) {
+      return pathname === `/${locale}` && !activeHash;
     }
-    
+
     // For hash links
     if (itemHref.startsWith("#")) {
       return activeHash === itemHref;
     }
-    
-    // For regular paths 
+
+    // For regular paths
     return pathname === itemHref;
   };
 
   // Handle nav item clicks for hash links
   const handleNavClick = (href) => {
     if (href.startsWith("#")) {
-      // For hash links, update the activeHash state
       setActiveHash(href);
-      setOpen(false); // Close mobile menu if open
+      setOpen(false);
     } else {
-      // For regular links, reset hash
       setActiveHash("");
       setOpen(false);
     }
@@ -96,9 +111,7 @@ export default function Navbar() {
     return (
       <nav className="w-full bg-white border-b border-gray-100 sticky top-0 z-50">
         <div className="h-16 flex items-center justify-between max-w-[1500px] mx-auto px-4 sm:px-6 md:px-8">
-          {/* Logo skeleton */}
           <div className="w-32 lg:w-40 xl:w-44 h-8 bg-gray-200 animate-pulse rounded"></div>
-          {/* Auth buttons skeleton */}
           <div className="flex items-center gap-3">
             <div className="w-20 h-10 bg-gray-200 animate-pulse rounded-md"></div>
             <div className="w-24 h-10 bg-gray-200 animate-pulse rounded-md"></div>
@@ -107,15 +120,15 @@ export default function Navbar() {
       </nav>
     );
   }
-  
+
   return (
     <nav className="w-full bg-white border-b border-gray-100 sticky top-0 z-50">
       {/* ---------------- DESKTOP NAV ---------------- */}
-      <div className="hidden lg:flex w-full items-center justify-between max-w-[1500px] mx-auto py-2 px-4 sm:px-6 md:px-8">
+      <div className="hidden md:flex items-center justify-between max-w-[1600px] mx-auto py-2 px-4 md:px-8">
         {/* LEFT */}
-        <div className="flex items-center gap-x-8 lg:gap-x-16 xl:gap-x-72">
-          {/* LOGO */}
-          <Link href="/" onClick={() => setActiveHash("")}>
+        <div className="flex items-center justify-between gap-x-8 md:gap-x-16">
+          {/* LOGO - Add locale */}
+          <Link href={`/${locale}`} onClick={() => setActiveHash("")}>
             <Image
               src="/logo1.png"
               alt="logo"
@@ -125,9 +138,10 @@ export default function Navbar() {
               priority
             />
           </Link>
-
+        </div>
+        <div>
           {/* MENU */}
-          <div className="flex items-center font-medium gap-4 lg:gap-6 xl:gap-8 text-sm lg:text-[15px]">
+          <div className="flex items-center font-medium gap-4 md:gap-6 text-sm md:text-[15px]">
             {navItems.map((item) => {
               const isActive = isItemActive(item.href);
 
@@ -143,7 +157,6 @@ export default function Navbar() {
                   }`}
                 >
                   {item.label}
-                  {/* Optional: Add underline for active item */}
                   {isActive && (
                     <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-[#4a9fd8]"></span>
                   )}
@@ -154,8 +167,8 @@ export default function Navbar() {
         </div>
 
         {/* RIGHT */}
-        <div className="flex items-center gap-3 lg:gap-4 xl:gap-6">
-          {/* Show user info if logged in, otherwise show auth buttons */}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 lg:gap-4 xl:gap-6">
           {user ? (
             <>
               {/* User Info */}
@@ -171,9 +184,12 @@ export default function Navbar() {
               </div>
 
               {/* Dashboard Button */}
-              <Link href="/dashboard" onClick={() => setActiveHash("")}>
+              <Link
+                href={`/${locale}/dashboard`}
+                onClick={() => setActiveHash("")}
+              >
                 <button className="px-3 lg:px-4 xl:px-5 py-2 lg:py-2.5 text-white font-medium rounded-md bg-[#4a9fd8] hover:bg-[#3b8ec4] transition-colors duration-200 cursor-pointer text-sm lg:text-base whitespace-nowrap">
-                  Dashboard
+                  {t("dashboard")}
                 </button>
               </Link>
 
@@ -182,33 +198,52 @@ export default function Navbar() {
                 onClick={handleLogout}
                 className="px-3 lg:px-4 xl:px-5 py-2 lg:py-2.5 text-white font-medium rounded-md bg-red-500 hover:bg-red-600 transition-colors duration-200 cursor-pointer text-sm lg:text-base whitespace-nowrap"
               >
-                Logout
+                {t("logout")}
               </button>
             </>
           ) : (
             <>
               {/* Login Button */}
-              <Link href="/login" onClick={() => setActiveHash("")}>
+              <Link href={`/${locale}/login`} onClick={() => setActiveHash("")}>
                 <button className="px-3 lg:px-4 xl:px-5 py-2 lg:py-2.5 text-[#4a9fd8] font-medium rounded-md border-2 border-[#4a9fd8] hover:bg-blue-50 transition-colors duration-200 cursor-pointer text-sm lg:text-base whitespace-nowrap">
-                  Login
+                  {t("login")}
                 </button>
               </Link>
 
               {/* Register Button */}
-              <Link href="/register" onClick={() => setActiveHash("")}>
+              <Link
+                href={`/${locale}/register`}
+                onClick={() => setActiveHash("")}
+              >
                 <button className="px-3 lg:px-4 xl:px-5 py-2 lg:py-2.5 text-white font-medium rounded-md bg-[#8cc63c] hover:bg-[#7ab32f] transition-colors duration-200 cursor-pointer text-sm lg:text-base whitespace-nowrap">
-                  Get Started
+                  {t("getStarted")}
                 </button>
               </Link>
             </>
           )}
         </div>
+        <div className="flex gap-x-2">
+          <Link
+            href={createLocalizedPath("en")}
+            className={currentLocale === "en" ? "font-bold" : ""}
+          >
+            EN
+          </Link>
+          <Link
+            href={createLocalizedPath("fr")}
+            className={currentLocale === "fr" ? "font-bold" : ""}
+          >
+            FR
+          </Link>
+        </div>
+        </div>
       </div>
+      
 
       {/* ---------------- MOBILE NAV ---------------- */}
       <div className="lg:hidden px-4 sm:px-6 md:px-8 py-3 flex items-center justify-between">
         {/* LEFT SIDE LOGO */}
-        <Link href="/" onClick={() => setActiveHash("")}>
+        <Link href={`/${locale}`} onClick={() => setActiveHash("")}>
           <Image
             src="/logo1.png"
             alt="logo"
@@ -221,7 +256,6 @@ export default function Navbar() {
 
         {/* MENU BUTTON */}
         <div className="flex items-center gap-4">
-          {/* Hamburger */}
           {open ? (
             <FiX
               className="text-2xl sm:text-[26px] cursor-pointer"
@@ -281,7 +315,7 @@ export default function Navbar() {
                 </div>
 
                 <Link
-                  href="/dashboard"
+                  href={`/${locale}/dashboard`}
                   onClick={() => {
                     setActiveHash("");
                     setOpen(false);
@@ -289,20 +323,20 @@ export default function Navbar() {
                   className="flex-1"
                 >
                   <button className="w-full px-4 sm:px-5 py-2.5 text-white font-medium rounded-md bg-[#4a9fd8] cursor-pointer text-sm sm:text-base">
-                    Dashboard
+                    {t("dashboard")}
                   </button>
                 </Link>
                 <button
                   onClick={handleLogout}
                   className="flex-1 px-4 sm:px-5 py-2.5 text-white font-medium rounded-md bg-red-500 cursor-pointer text-sm sm:text-base"
                 >
-                  Logout
+                  {t("logout")}
                 </button>
               </>
             ) : (
               <>
                 <Link
-                  href="/login"
+                  href={`/${locale}/login`}
                   onClick={() => {
                     setActiveHash("");
                     setOpen(false);
@@ -310,11 +344,11 @@ export default function Navbar() {
                   className="flex-1"
                 >
                   <button className="w-full px-4 sm:px-5 py-2.5 text-[#4a9fd8] font-medium rounded-md border-2 border-[#4a9fd8] cursor-pointer text-sm sm:text-base">
-                    Login
+                    {t("login")}
                   </button>
                 </Link>
                 <Link
-                  href="/register"
+                  href={`/${locale}/register`}
                   onClick={() => {
                     setActiveHash("");
                     setOpen(false);
@@ -322,7 +356,7 @@ export default function Navbar() {
                   className="flex-1"
                 >
                   <button className="w-full px-4 sm:px-5 py-2.5 text-white font-medium rounded-md bg-[#8cc63c] cursor-pointer text-sm sm:text-base">
-                    Get Started
+                    {t("getStarted")}
                   </button>
                 </Link>
               </>

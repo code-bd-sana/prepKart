@@ -11,6 +11,15 @@ const SWAPS_PER_PLAN = {
 };
 
 export async function POST(request) {
+  // Get locale from Accept-Language header
+  const acceptLanguage = request.headers.get('accept-language');
+  const locale = acceptLanguage?.startsWith('fr') ? 'fr' : 'en';
+  
+  // Use locale if needed
+  const errorMessage = locale === 'fr' 
+    ? 'Erreur de génération' 
+    : 'Generation error';
+    
   try {
     await connectDB();
 

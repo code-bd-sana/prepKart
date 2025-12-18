@@ -13,6 +13,7 @@ const planSchema = new mongoose.Schema(
       ref: "User",
       index: true
     },
+    // email
     userEmail: {
       type: String,
       default: null

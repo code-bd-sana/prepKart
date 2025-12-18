@@ -1,53 +1,44 @@
 import { HiAdjustmentsVertical } from "react-icons/hi2";
 import { LuShoppingCart } from "react-icons/lu";
 import { RiAiGenerate } from "react-icons/ri";
+import { useTranslations } from 'next-intl';
 
-const steps = [
-  {
-    icon: HiAdjustmentsVertical,
-    title: "Tell us your preferences",
-    description:
-      "Your tastes, dietary needs, allergies, budget, cooking skill — we tailor everything to YOU.",
-    bgColor: "bg-[#8cc63c]",
-    strokeWidth: 1,
-  },
-  {
-    icon: RiAiGenerate,
-    title: "Get your custom weekly meal plan",
-    description:
-      "We build a balanced, realistic meal plan you can actually stick to — with easy recipes.",
-    bgColor: "bg-[#8cc63c]",
-    strokeWidth: 1,
-  },
-  {
-    icon: LuShoppingCart,
-    title: "Shop your groceries instantly",
-    description:
-      "Your plan comes with a smart, optimized grocery list - One click to order everything you need.",
-    bgColor: "bg-[#8cc63c]",
-    strokeWidth: 2,
-  },
-];
+export default function HowItWorks({ locale }) { 
+  const t = useTranslations('howItWorks'); 
+  
+  const stepData = t.raw('steps');
+  
+  const stepConfig = stepData.map((step, index) => {
+    const icons = [HiAdjustmentsVertical, RiAiGenerate, LuShoppingCart];
+    const bgColors = ["bg-[#8cc63c]", "bg-[#8cc63c]", "bg-[#8cc63c]"];
+    const strokeWidths = [1, 1, 2];
+    
+    return {
+      ...step,
+      icon: icons[index],
+      bgColor: bgColors[index],
+      strokeWidth: strokeWidths[index]
+    };
+  });
 
-export default function HowItWorks() {
   return (
     <section className="py-16 md:py-20 " id="howitworks">  
       <div className="container mx-auto px-4 max-w-[1300px]">
         {/* Header */}
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-semibold text-[#1E1E1E] mb-3">
-            How It Works
+            {t('title')}
           </h2>
           <p className="text-base text-[#666666]">
-            Three simple steps to your perfect meal plan
+            {t('subtitle')}
           </p>
         </div>
 
         {/* Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-16 relative items-start justify-items-center">
-          {steps.map((step, index) => (
+          {stepConfig.map((step, index) => (
             <div
-              key={index}
+              key={`${step.title}-${index}`} 
               className="relative w-full max-w-[320px] animate-fade-in-up"
               style={{ animationDelay: `${index * 0.15}s` }}
             >
@@ -59,7 +50,7 @@ export default function HowItWorks() {
               </div>
 
               {/* Card */}
-              <div className="bg-white rounded-xl shadow-sm pt-12 pb-8 px-6 h-[250px] md:h-[300px] hover:shadow-xl hover:scale-105 transition-all duration-300 group">
+              <div className="bg-white rounded-xl shadow-sm pt-12 pb-8 px-6 h-[300px] md:h-[300px] hover:shadow-xl hover:scale-105 transition-all duration-300 group">
                 {/* Icon */}
                 <div className="flex justify-center mb-5">
                   <div
@@ -72,22 +63,18 @@ export default function HowItWorks() {
                   </div>
                 </div>
 
-                {/* Content */}
+                {/* Content  */}
                 <div className="text-center">
-                  {/* Title */}
                   <h3 className="text-lg font-semibold text-[#1E1E1E] mb-3">
                     {step.title}
                   </h3>
-
-                  {/* Description */}
                   <p className="text-[#666666] leading-relaxed text-[14px]">
                     {step.description}
                   </p>
                 </div>
               </div>
 
-              {/* Horizontal Line Connector */}
-              {index < steps.length - 1 && (
+              {index < stepConfig.length - 1 && (
                 <div className="hidden md:block absolute top-6 left-[calc(100%+2px)] w-32 h-1 bg-[#8cc63c] z-0 animate-expand-line"></div>
               )}
             </div>

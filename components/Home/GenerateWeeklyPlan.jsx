@@ -11,6 +11,7 @@ import {
 } from "@/lib/types";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
+import { useTranslations } from "next-intl";
 
 export default function GenerateWeeklyPlan({ voiceText }) {
   const [loading, setLoading] = useState(false);
@@ -18,6 +19,7 @@ export default function GenerateWeeklyPlan({ voiceText }) {
   const [error, setError] = useState("");
   const { user } = useSelector((state) => state.auth);
   const [isSwapping, setIsSwapping] = useState(false);
+  const t = useTranslations("generatePlan")
 
   // Form state
   const [form, setForm] = useState({
@@ -424,7 +426,7 @@ export default function GenerateWeeklyPlan({ voiceText }) {
     <section className="py-16 md:py-20">
       <div className="container mx-auto px-4 max-w-[1500px]">
         <p className="text-center text-3xl md:text-4xl font-semibold text-gray-900 mb-3">
-          Generate My Weekly Plan
+          {t('title')}
         </p>
 
         {/* Error Message */}
@@ -447,7 +449,7 @@ export default function GenerateWeeklyPlan({ voiceText }) {
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Province *
+                    {t(`form.province`)}
                   </label>
                   <select
                     name="province"
@@ -466,7 +468,7 @@ export default function GenerateWeeklyPlan({ voiceText }) {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Your Goal *
+                    {t(`form.goal`)}
                   </label>
                   <select
                     name="goal"
@@ -475,7 +477,7 @@ export default function GenerateWeeklyPlan({ voiceText }) {
                     required
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2"
                   >
-                    <option value="">Select your goal</option>
+                    <option value="">{t(`form.selectGoal`)}</option>
                     {GOALS.map((goal) => (
                       <option key={goal} value={goal}>
                         {goal}
@@ -489,21 +491,21 @@ export default function GenerateWeeklyPlan({ voiceText }) {
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Cuisine Preferences
+                    {t(`form.cuisine`)}
                   </label>
                   <input
                     type="text"
                     name="cuisine"
                     value={form.cuisine}
                     onChange={handleChange}
-                    placeholder="e.g., Italian, Mexican, Asian"
+                    placeholder={t(`form.cuisinePlaceholder`)}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2"
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Budget Level
+                    {t(`form.budgetLevel`)}
                   </label>
                   <select
                     name="budgetLevel"
@@ -524,7 +526,7 @@ export default function GenerateWeeklyPlan({ voiceText }) {
               <div className="grid md:grid-cols-3 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Portions
+                    {t(`form.portions`)}
                   </label>
                   <input
                     type="number"
@@ -539,7 +541,7 @@ export default function GenerateWeeklyPlan({ voiceText }) {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Meals per Day
+                    {t(`form.mealsPerDay`)}
                   </label>
                   <input
                     type="number"
@@ -554,7 +556,7 @@ export default function GenerateWeeklyPlan({ voiceText }) {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Max Cooking Time (minutes)
+                    {t(`form.maxCookingTime`)} (minutes)
                   </label>
                   <input
                     type="number"
@@ -572,28 +574,28 @@ export default function GenerateWeeklyPlan({ voiceText }) {
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Foods You Like
+                    {t(`form.likes`)}
                   </label>
                   <input
                     type="text"
                     name="likes"
                     value={form.likes}
                     onChange={handleChange}
-                    placeholder="e.g., chicken, pasta, vegetables"
+                    placeholder={t(`form.likesPlaceholder`)}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2"
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Foods You Dislike
+                    {t(`form.dislikes`)}
                   </label>
                   <input
                     type="text"
                     name="dislikes"
                     value={form.dislikes}
                     onChange={handleChange}
-                    placeholder="e.g., mushrooms, olives, spicy food"
+                    placeholder={t(`form.dislikesPlaceholder`)}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2"
                   />
                 </div>
@@ -603,7 +605,7 @@ export default function GenerateWeeklyPlan({ voiceText }) {
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Preferred Cooking Methods
+                    {t(`form.cookingMethod`)}
                   </label>
                   <input
                     type="text"
@@ -617,7 +619,7 @@ export default function GenerateWeeklyPlan({ voiceText }) {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Cooking Skill Level
+                    {t(`form.skillLevel`)}
                   </label>
                   <select
                     name="skillLevel"
@@ -637,7 +639,7 @@ export default function GenerateWeeklyPlan({ voiceText }) {
               {/* Dietary Preferences */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Dietary Preferences
+                  {t(`form.dietaryPreferences`)}
                 </label>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                   {DIETARY_PREFERENCES.map((pref) => (
@@ -662,7 +664,7 @@ export default function GenerateWeeklyPlan({ voiceText }) {
               {/* Allergies */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Allergies
+                  {t(`form.allergies`)}
                 </label>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {ALLERGIES.map((allergy) => (
@@ -693,10 +695,10 @@ export default function GenerateWeeklyPlan({ voiceText }) {
                 >
                   {loading ? (
                     <div className="flex items-center justify-center">
-                      Generating Your Plan...
+                      {t('loading')}
                     </div>
                   ) : (
-                    "Generate My Weekly Meal Plan"
+                    t('generateButton')
                   )}
                 </button>
               </div>
@@ -713,7 +715,7 @@ export default function GenerateWeeklyPlan({ voiceText }) {
                     {plan.title}
                   </h2>
                   <p className="text-gray-600 mt-2">
-                    Generated just for you •{" "}
+                    {t('plan.generatedFor')} {" "}
                     <span className="font-semibold text-[#8cc63c]">
                       {plan.swaps.remaining} of {plan.swaps.allowed} swaps
                       available
