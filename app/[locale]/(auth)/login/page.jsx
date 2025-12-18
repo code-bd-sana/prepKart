@@ -3,12 +3,17 @@
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { login, clearError } from "@/store/slices/authSlice";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "react-toastify";
+import { useTranslations } from "next-intl";
 
 export default function LoginPage() {
+  const t = useTranslations("login");
+  const params = useParams();
+  const locale = params.locale;
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -44,17 +49,15 @@ export default function LoginPage() {
             className="inline-flex items-center text-sm text-gray-600 hover:text-gray-800 transition"
           >
             <ArrowLeft />
-            Back to Home
+            {t("backToHome")}
           </Link>
         </div>
 
         <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
           {/* Header */}
           <div className="bg-linear-to-r from-[#ebf2f7] to-[#dae2e9] px-6 py-8 text-center">
-            <h1 className="text-2xl font-bold mb-1">Welcome Back!</h1>
-            <p className="text-sm text-[#8cc63c]">
-              Login to continue with PrepCart
-            </p>
+            <h1 className="text-2xl font-bold mb-1"> {t("title")}</h1>
+            <p className="text-sm text-[#8cc63c]">{t("subtitle")}</p>
           </div>
 
           <div className="px-6 py-6">
@@ -69,7 +72,7 @@ export default function LoginPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                  Email Address
+                  {t("email")}
                 </label>
                 <input
                   type="email"
@@ -83,7 +86,7 @@ export default function LoginPage() {
 
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                  Password
+                  {t("password")}
                 </label>
                 <input
                   type="password"
@@ -107,10 +110,10 @@ export default function LoginPage() {
                 >
                   {loading ? (
                     <span className="flex items-center justify-center">
-                      Logging in...
+                      {t("loggingIn")}
                     </span>
                   ) : (
-                    "Login to PrepCart"
+                    t("loginButton")
                   )}
                 </button>
               </div>
@@ -119,12 +122,12 @@ export default function LoginPage() {
             <div className="mt-6 pt-6 border-t border-gray-200">
               <div className="text-center">
                 <p className="text-sm text-gray-600">
-                  Do not have an account?{" "}
+                  {t("noAccount")}{" "}
                   <Link
-                    href="/register"
+                    href={`/${locale}/register`}
                     className="text-[#8cc63c] hover:text-[#7ab32f] font-semibold"
                   >
-                    Create an Account
+                    {t("createAccount")}
                   </Link>
                 </p>
               </div>

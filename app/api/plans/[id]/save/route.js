@@ -131,16 +131,6 @@ export async function POST(request, { params }) {
     const userEmail = body.userEmail || planData.userEmail;
     const userTier = body.userTier || planData.tier || "free";
 
-    // console.log("Save request data:", {
-    //   planId: id,
-    //   hasPlanData: !!planData,
-    //   hasDays: !!planData.days,
-    //   daysCount: planData.days?.length || 0,
-    //   userId: userId,
-    //   userTier: userTier,
-    //   isTempPlan: id.startsWith("temp_")
-    // });
-
     // Validate
     if (!userId) {
       return NextResponse.json(

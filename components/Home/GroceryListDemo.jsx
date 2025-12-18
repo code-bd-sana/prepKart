@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Edit2, ShoppingCart, Check } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 const initialItems = [
   // Produce
@@ -241,6 +242,7 @@ export default function GroceryListDemo() {
   const [items, setItems] = useState(initialItems);
   const [hidePantry, setHidePantry] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
+  const t = useTranslations("groceryList")
 
   const toggleItemChecked = (id) => {
     setItems(
@@ -279,12 +281,10 @@ export default function GroceryListDemo() {
       <div className="container mx-auto px-4 max-w-[1200px]">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-semibold text-[#1E1E1E] mb-3">
-            Generate My Grocery List →
+             {t(`title`)}
           </h2>
           <p className="text-base text-[#666666] max-w-[770px] mx-auto">
-            🍁 Canada-ready, 🧺 auto-grouped, ✏️ fully editable, 🧂
-            pantry-aware, and 🛒 order-ready — everything you need for a
-            smarter, stress-free grocery list in one place.
+             {t(`subtitle`)}
           </p>
         </div>
 
@@ -293,7 +293,7 @@ export default function GroceryListDemo() {
           <div className="p-6 px-4">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <h3 className="text-2xl font-semibold text-gray-900 md:-mx-3">
-                Weekly Grocery List
+                 {t(`listTitle`)}
               </h3>
               <div className="flex items-center gap-4 ">
                 <button
@@ -310,7 +310,7 @@ export default function GroceryListDemo() {
                   "
                 >
                   <Edit2 className="h-4 w-4" />
-                  {isEditing ? "Done Editing" : "Edit List"}
+                  {isEditing ? t("doneEditingButton") : t("editButton")}
                 </button>
 
                 <div className="flex items-center gap-2">
@@ -333,7 +333,7 @@ export default function GroceryListDemo() {
                     />
                   </button>
                   <span className="text-sm text-gray-600">
-                    Hide Pantry Items
+                    t{`hidePantryToggle`}
                   </span>
                 </div>
               </div>
@@ -422,7 +422,7 @@ export default function GroceryListDemo() {
                             </span>
                             {item.inPantry && (
                               <span className="ml-2 inline-flex items-center rounded-full border border-[#4a9fd8] px-2 py-0.5 text-xs font-medium text-[#4a9fd8]">
-                                In Pantry
+                                {t(`inPantryBadge`)}
                               </span>
                             )}
                           </div>
@@ -481,11 +481,10 @@ export default function GroceryListDemo() {
             <div className="mt-16 bg-linear-to-r from-[#5a9e3a] to-[#4a9fd8] rounded-2xl px-8 md:px-16 py-8 text-center text-white max-w-[1500px] mx-auto">
               <div className="text-center">
                 <h3 className="text-xl md:text-3xl font-semibold mb-3">
-                  Ready to Shop?
+                  {t(`readyToShopTitle`)}
                 </h3>
                 <p className="text-base md:text-sm mb-6 opacity-95">
-                  Your grocery list is organized and ready — tap to get
-                  everything delivered.
+                  {t(`readyToShopDescription`)}
                 </p>
                 <button
                   className="
@@ -495,11 +494,11 @@ export default function GroceryListDemo() {
   "
                 >
                   <ShoppingCart className="h-5 w-5" />
-                  Order Ingredients on Instacart →
+                  {t(`instacartButton`)}
                 </button>
 
                 <p className="text-base md:text-sm my-3 opacity-95 flash-dark">
-                  Cart loads instantly
+                  {t(`cartLoadsText`)}
                 </p>
               </div>
             </div>

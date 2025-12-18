@@ -1,0 +1,464 @@
+{  
+  "homeBanner": {
+    "title": "Du Stress de la Cuisine au Succès de l'Épicerie",
+    "subtitle": "Prepcart crée <highlight>des plans de repas hebdomadaires personnalisés, des listes de courses faciles et des suggestions de recettes économiques</highlight> adaptés à vos goûts, votre régime et votre mode de vie — pour vous faire gagner du temps, de l’argent et de l’énergie mentale.",
+    "inputPlaceholder": "Vos préférences",
+    "voiceButtonListening": "Écoute...",
+    "voiceButtonDefault": "Voix",
+    "voiceInput": "Entrée vocale :",
+    "clearButton": "Effacer",
+    "generateButton": "Générer Mon Plan Hebdomadaire",
+    "quickStartButton": "Commencez avec un plan rapide",
+    "badges": {
+      "trusted": "De Confiance par les Canadiens",
+      "budget": "Options économiques",
+      "noCommitment": "Sans engagement"
+    }
+  
+},
+  "register": {
+    "title": "Créer un Compte",
+    "backToHome": "Retour à l'Accueil",
+    "basicInfo": "Informations de Base",
+    "fullName": "Nom Complet",
+    "email": "E-mail",
+    "password": "Mot de Passe",
+    "province": "Province",
+    "dietaryPreferences": "Préférences Alimentaires",
+    "selectDietary": "Sélectionner une préférence...",
+    "customDietaryPlaceholder": "Ou ajouter une préférence personnalisée",
+    "add": "Ajouter",
+    "allergies": "Allergies",
+    "selectAllergy": "Sélectionner une allergie...",
+    "customAllergyPlaceholder": "Ou ajouter une allergie personnalisée",
+    "ageVerification": "Je confirme que j'ai 18 ans ou plus",
+    "createAccount": "Créer un Compte",
+    "creatingAccount": "Création du compte...",
+    "alreadyHaveAccount": "Vous avez déjà un compte?",
+    "loginHere": "Connectez-vous ici",
+    "terms": "En créant un compte, vous acceptez nos Conditions d'Utilisation et Politique de Confidentialité",
+    "required": "obligatoire",
+    "emailExists": "Cet e-mail existe déjà. Veuillez vous connecter ou utiliser un autre e-mail.",
+    "registrationFailed": "Échec de l'inscription",
+    "mustBe18": "Vous devez avoir 18 ans ou plus pour utiliser PrepCart"
+  },
+  "login": {
+    "title": "Bon Retour !",
+    "subtitle": "Connectez-vous pour continuer avec PrepCart",
+    "email": "Adresse E-mail",
+    "password": "Mot de Passe",
+    "loginButton": "Se Connecter à PrepCart",
+    "loggingIn": "Connexion en cours...",
+    "noAccount": "Vous n'avez pas de compte ?",
+    "createAccount": "Créer un Compte",
+    "backToHome": "Retour à l'Accueil",
+    "invalidCredentials": "E-mail ou mot de passe invalide",
+    "loginFailed": "Échec de la Connexion",
+    "loginSuccess": "Connecté avec Succès !"
+  },
+  "navbar": {
+    "home": "Accueil",
+    "howItWorks": "Comment Ça Marche",
+    "pricing": "Tarifs",
+    "recipes": "Recettes",
+    "partners": "Partenaires",
+    "faq": "FAQ",
+    "dashboard": "Tableau de Bord",
+    "login": "Connexion",
+    "getStarted": "Commencer",
+    "logout": "Déconnexion",
+    "loggedOut": "Déconnecté avec Succès !"
+  },
+  "dashboard": {
+    "welcome": "Bienvenue",
+    "backToHome": "Retour à l'Accueil",
+    "accountOverview": "Aperçu du Compte",
+    "emailAddress": "Adresse E-mail",
+    "location": "Localisation",
+    "accountCreated": "Compte Créé",
+    "subscriptionStatus": "Statut de l'Abonnement",
+    "swapsAvailable": "Échanges Disponibles",
+    "yourPlan": "Votre Plan",
+    "upgradePlan": "Améliorer le Plan",
+    "manageSubscription": "Gérer l'Abonnement",
+    "cancelSubscription": "Annuler l'Abonnement",
+    "freePlan": "Gratuit",
+    "plusPlan": "Plus",
+    "premiumPlan": "Premium",
+    "freePrice": "$0/mois",
+    "plusPrice": "$4,99/mois",
+    "premiumPrice": "$9,99/mois",
+    "loading": "Chargement du tableau de bord...",
+    "notAvailable": "Non disponible",
+    "notSet": "Non défini",
+    "used": "utilisé"
+  },
+  "faq": {
+    "title": "Questions fréquemment posées",
+    "subtitle": "Tout ce que vous devez savoir sur Prepcart",
+    "questions": [
+      {
+        "question": "Prepcart est-il disponible partout au Canada ?",
+        "answer": "Oui ! Prepcart est disponible partout au Canada. Notre intégration avec les épiceries prend en charge les principaux détaillants comme Walmart, Loblaws, Metro, Sobeys et Costco, avec des prix et une disponibilité en temps réel selon votre code postal. Nous adaptons également les recommandations de repas en fonction de la disponibilité régionale et des produits de saison."
+      },
+      {
+        "question": "Comment les plans de repas sont-ils créés ?",
+        "answer": "Prepcart utilise une technologie de planification de repas intelligente pour créer des plans personnalisés en fonction de vos préférences alimentaires, de votre budget, de la taille de votre foyer et de votre temps de cuisine. Notre système équilibre la nutrition, réduit le gaspillage grâce à une utilisation intelligente des ingrédients et tient compte de la saisonnalité. Vous pouvez régénérer les plans jusqu’à trouver celui qui vous convient parfaitement."
+      },
+      {
+        "question": "Puis-je ajuster les recettes en fonction des allergies ou des restrictions alimentaires ?",
+        "answer": "Absolument. Lors de la configuration, vous pouvez indiquer vos allergies, intolérances et préférences alimentaires (sans gluten, sans produits laitiers, végétarien, etc.). Notre système intelligent exclut automatiquement les ingrédients inadaptés et propose des alternatives. Vous pouvez également remplacer manuellement n’importe quelle recette de votre plan."
+      },
+      {
+        "question": "Instacart est-il obligatoire pour utiliser Prepcart ?",
+        "answer": "Non, Instacart est facultatif. Bien que nous proposions une intégration fluide avec Instacart pour la commande des courses en un clic, vous pouvez aussi utiliser Prepcart pour générer des listes de courses et faire vos achats manuellement dans n’importe quel magasin. L’application vous aide à comparer les prix entre différents détaillants, quelle que soit votre méthode d’achat."
+      }
+    ],
+    "cantFind": "Vous ne trouvez pas ce que vous cherchez ?",
+    "chatSupport": "Discuter avec le support",
+    "helpCenter": "Voir le centre d’aide"
+  },
+  "problemStatement": {
+    "title": "La Cuisine Quotidienne Ne Devrait Pas Être Aussi Difficile",
+    "description": "Vous n'êtes pas seul — Prepcart simplifie à nouveau la planification des repas hebdomadaires.",
+    "painPoints": [
+      {
+        "title": "Qu'est-ce que je cuisine aujourd'hui ? — chaque. jour."
+      },
+      {
+        "title": "Les courses qui se perdent"
+      },
+      {
+        "title": "Les repas à emporter qui grignotent votre budget"
+      },
+      {
+        "title": "Besoins alimentaires, allergies, famille difficile… épuisant"
+      }
+    ]
+  },
+  "howItWorks": {
+    "title": "Comment Ça Marche",
+    "subtitle": "Trois étapes simples pour votre plan de repas parfait",
+    "steps": [
+      {
+        "title": "Dites-nous vos préférences",
+        "description": "Vos goûts, besoins alimentaires, allergies, budget, compétences culinaires — nous personnalisons tout pour VOUS."
+      },
+      {
+        "title": "Obtenez votre plan de repas hebdomadaire personnalisé",
+        "description": "Nous créons un plan de repas équilibré et réaliste auquel vous pouvez réellement vous tenir — avec des recettes faciles."
+      },
+      {
+        "title": "Faites vos courses instantanément",
+        "description": "Votre plan comprend une liste d'épicerie intelligente et optimisée - Un clic pour commander tout ce dont vous avez besoin."
+      }
+    ]
+  },
+  "whyPeopleLove": {
+    "title": "Pourquoi les Gens Aiment PrepCart",
+    "subtitle": "Rejoignez des milliers de Canadiens qui transforment leur routine d'épicerie",
+    "reasons": [
+      {
+        "title": "Économisez Jusqu'à 30% sur l'Épicerie",
+        "desc": "Achetez uniquement ce dont vous avez besoin et réduisez le gaspillage alimentaire chaque semaine."
+      },
+      {
+        "title": "Réduisez les Coûts Alimentaires Mensuels de 80 à 150 $",
+        "desc": "Une planification intelligente rend votre facture d'épicerie prévisible et dans le budget."
+      },
+      {
+        "title": "Zéro Stress de Repas",
+        "desc": "Votre plan hebdomadaire est créé pour vous — pas de devinettes, pas de fatigue décisionnelle."
+      },
+      {
+        "title": "Synchronisation Intelligente de l'Épicerie",
+        "desc": "Comparez les prix entre les magasins instantanément et magasinez votre liste en un seul clic."
+      }
+    ]
+  },
+  "quickPlans": {
+    "title": "Repas Rapides et Curatés Que Vous Adorerez",
+    "subtitle": "Manquez de temps ? Obtenez des repas sains et curatés conçus pour votre style de vie et votre budget — cuisine sans effort, chaque jour.",
+    "ctaTitle": "Débloquez les Collections de Recettes Premium",
+    "ctaSubtitle": "Abonnez-vous pour tous les plans premium, générations IA illimitées et recettes exclusives",
+    "ctaButton": "Essayer 7 Jours Gratuit",
+    "premium": "Premium",
+    "viewPlan": "Voir le Plan",
+    "plans": [
+      {
+        "title": "Kéto",
+        "description": "Repas faibles en glucides, riches en graisses",
+        "icon": "🥑",
+        "premium": true
+      },
+      {
+        "title": "Végan",
+        "description": "100% végétalien",
+        "icon": "🌱",
+        "premium": false
+      },
+      {
+        "title": "Végétarien",
+        "description": "Sans viande, riche en protéines",
+        "icon": "🍆",
+        "premium": false
+      },
+      {
+        "title": "Halal",
+        "description": "Certifié halal",
+        "icon": "👨‍👩‍👧‍👦",
+        "premium": true
+      },
+      {
+        "title": "Sans Gluten",
+        "description": "Pas de gluten, plein de saveur",
+        "icon": "🌾",
+        "premium": false
+      },
+      {
+        "title": "Riche en Protéines",
+        "description": "Repas pour développer les muscles",
+        "icon": "💪",
+        "premium": true
+      },
+      {
+        "title": "Faible en Glucides",
+        "description": "Glucides réduits",
+        "icon": "🍓",
+        "premium": false
+      },
+      {
+        "title": "Adapté aux Familles",
+        "description": "Approuvé par les enfants",
+        "icon": "👨‍👩‍👧",
+        "premium": true
+      },
+      {
+        "title": "Économique",
+        "description": "Moins de 75 $/semaine",
+        "icon": "💰",
+        "premium": false
+      }
+    ]
+  },
+   "mealPlanning": {
+    "title": "Planification des Repas, Réinventée",
+    "subtitle": "Création intelligente de repas, suivi des macronutriments, échange de recettes et livraison des courses en un clic.",
+    "plans": [
+      {
+        "title": "Économique",
+        "desc": "Plans de 50 à 100 $/semaine adaptés à votre limite de dépenses."
+      },
+      {
+        "title": "Adapté aux Familles",
+        "desc": "Recettes approuvées par les enfants pour 1 à 5+ personnes."
+      },
+      {
+        "title": "Échanges Intelligents",
+        "desc": "Vous n’aimez pas une recette ? Échangez-le avec des alternatives intelligentes."
+      },
+      {
+        "title": "Alimenté par IA",
+        "desc": "Générez instantanément des listes de courses avec des variations illimitées."
+      }
+    ]
+  },
+  "pricing": {
+  "title": "Choisissez Votre Plan",
+  "subtitle": "Plans simples, flexibles et sans engagement conçus pour vous.",
+  "plans": [
+    {
+      "name": "Gratuit",
+      "tagline": "Essayez Prepcart avec les bases",
+      "badge": "Essayez Maintenant",
+      "buttonText": "Commencer Gratuitement",
+      "features": [
+        "1 plan de repas par mois",
+        "Non personnalisé",
+        "Pas d'échange (flou)",
+        "Génération de liste d'épicerie – Prêt pour Instacart",
+        "Listes/plans non sauvegardables",
+        "NO Basculer garde-manger",
+        "NO historique"
+      ]
+    },
+    {
+      "name": "Plus",
+      "tagline": "Plus de flexibilité, plus de contrôle",
+      "badge": "Le Plus Populaire",
+      "buttonText": "Démarrer le Plan Plus",
+      "features": [
+        "Max 6 repas par mois",
+        "Personnalisé",
+        "Échange disponible",
+        "Génération de liste d'épicerie – Prêt pour Instacart",
+        "Listes sauvegardables",
+        "Basculer garde-manger",
+        "Historique sauvegardé",
+        "Tableau de bord complet",
+        "Analyse complète nutrition & macros",
+        "Nouvelles recettes hebdomadaires"
+      ]
+    },
+    {
+      "name": "Premium",
+      "tagline": "L'expérience Prepcart complète",
+      "badge": "Accès Illimité",
+      "buttonText": "Passer au Premium",
+      "features": [
+        "Repas illimités",
+        "Personnalisé",
+        "Échange disponible",
+        "Génération de liste d'épicerie – Prêt pour Instacart",
+        "Listes sauvegardables",
+        "Basculer garde-manger",
+        "Historique sauvegardé",
+        "Accès complet au tableau de bord",
+        "Analyse complète nutrition & macros",
+        "Nouvelles recettes hebdomadaires",
+        "Suivi du budget",
+        "Accès anticipé aux futures fonctionnalités"
+      ]
+    }
+  ],
+  "messages": {
+    "launchDeal": "Offre de Lancement",
+    "processing": "Traitement...",
+    "cancelling": "Annulation...",
+    "currentPlan": "Plan Actuel",
+    "freePlan": "Plan Gratuit",
+    "plusPlan": "Plan Plus",
+    "upgradePremium": "Passer au Premium",
+    "cancelPlan": "Annuler le Plan"
+  },
+  "alerts": {
+    "paymentSuccess": "Paiement réussi !",
+    "paymentError": "Erreur de paiement :",
+    "cancellationSuccess": "annulé ! Vous êtes maintenant sur le plan Gratuit.",
+    "cancellationFailed": "Échec de l'annulation :",
+    "somethingWrong": "Quelque chose s'est mal passé"
+  },
+  "currentAccount": "Compte actuel :",
+  "plan": "Plan :",
+  "swaps": "Échanges :"
+},
+  "groceryList": {
+    "title": "Générer Ma Liste d'Épicerie →",
+    "subtitle": "🍁 Prêt pour le Canada, 🧺 auto-grouper, ✏️ entièrement modifiable, 🧂 conscient du garde-manger, et 🛒 prêt à commander — tout ce dont vous avez besoin pour une liste d'épicerie plus intelligente et sans stress en un seul endroit.",
+    "listTitle": "Liste d'Épicerie Hebdomadaire",
+    "editButton": "Modifier la Liste",
+    "doneEditingButton": "Terminer la Modification",
+    "hidePantryToggle": "Masquer les Articles du Garde-Manger",
+    "progress": "{checkedCount} sur {totalCount} articles cochés",
+    "inPantryBadge": "Dans le Garde-Manger",
+    "itemsCount": "articles",
+    "readyToShopTitle": "Prêt à Magasiner ?",
+    "readyToShopDescription": "Votre liste d'épicerie est organisée et prête — appuyez pour tout faire livrer.",
+    "instacartButton": "Commander les Ingrédients sur Instacart →",
+    "cartLoadsText": "Panier chargé instantanément"
+  },
+  "testimonials": {
+    "title": "Prepcart — Planification Intelligente des Repas pour les Canadiens",
+    "subtitle": "Repas hebdomadaires personnalisés, listes d'épicerie intelligentes et outils budgétaires conçus pour aider les Canadiens à mieux cuisiner, gaspiller moins et économiser plus.",
+    "joinButton": "Rejoignez les Canadiens qui simplifient leur semaine →",
+    "partners": {
+      "title": "Devenir Partenaire",
+      "description": "Êtes-vous un agriculteur local ou une épicerie intéressé à devenir partenaire de Prepcart?",
+      "email": "info@prepcart.ca"
+    }
+  },
+   "subscribe": {
+    "title": "Recevez des Conseils, des Mises à Jour & de l'Inspiration pour la Planification des Repas !",
+    "subtitle": "Rejoignez notre communauté et restez informé des dernières recettes, conseils nutritionnels et offres exclusives",
+    "emailPlaceholder": "Votre Adresse E-mail",
+    "postalPlaceholder": "Code Postal (ex. M5H 2N2)",
+    "buttonText": "S'abonner Maintenant"
+  },
+  "footer": {
+    "tagline": "\"Fait pour les vraies familles canadiennes🍁\"",
+    "company": "Entreprise",
+    "legal": "Légal",
+    "help": "Aide",
+    "followUs": "Suivez-nous",
+    "copyright": "© 2025 Prepcart. Fait pour les vraies familles canadiennes. Tous droits réservés.",
+    "links": {
+      "howItWorks": "Comment Ça Marche",
+      "pricing": "Tarifs",
+      "recipes": "Recettes",
+      "partners": "Partenaires",
+      "terms": "Conditions d'Utilisation",
+      "privacy": "Politique de Confidentialité",
+      "support": "Support",
+      "contact": "Contactez-nous"
+    },
+    "social": {
+      "facebook": "Facebook",
+      "twitter": "Twitter",
+      "instagram": "Instagram",
+      "linkedin": "LinkedIn"
+    }
+  },
+  "generatePlan": {
+    "title": "Générer Mon Plan Hebdomadaire",
+    "form": {
+      "province": "Province *",
+      "goal": "Votre Objectif *",
+      "cuisine": "Préférences Culinaires",
+      "budgetLevel": "Niveau de Budget",
+      "portions": "Portions",
+      "mealsPerDay": "Repas par Jour",
+      "maxCookingTime": "Temps de Cuisson Maximum (minutes)",
+      "likes": "Aliments Que Vous Aimez",
+      "dislikes": "Aliments Que Vous N'Aimez Pas",
+      "cookingMethod": "Méthodes de Cuisson Préférées",
+      "skillLevel": "Niveau de Compétence Culinaire",
+      "dietaryPreferences": "Préférences Alimentaires",
+      "allergies": "Allergies",
+      "cuisinePlaceholder": "ex. Italien, Mexicain, Asiatique",
+      "likesPlaceholder": "ex. poulet, pâtes, légumes",
+      "dislikesPlaceholder": "ex. champignons, olives, nourriture épicée",
+      "cookingMethodPlaceholder": "ex. cuire au four, griller, faire sauter",
+      "selectGoal": "Sélectionnez votre objectif",
+      "selectProvince": "Sélectionnez la province"
+    },
+    "generateButton": "Générer Mon Plan de Repas Hebdomadaire",
+    "loading": "Génération de votre plan...",
+    "errorTitle": "Erreur",
+    "plan": {
+      "title": "Votre Plan de Repas Hebdomadaire",
+      "generatedFor": "Généré juste pour vous •",
+      "swapsAvailable": "échanges disponibles •",
+      "freePlan": "Plan Gratuit",
+      "tier": "Niveau",
+      "generateAnother": "Générer un Autre Plan",
+      "day": "Jour",
+      "ingredients": "Ingrédients",
+      "instructions": "Instructions",
+      "swapButton": "Échanger Ce Repas",
+      "noSwapsLeft": "Plus d'Échanges",
+      "swapping": "Échange en cours...",
+      "savePlan": "Sauvegarder le Plan",
+      "updatePlan": "Mettre à Jour le Plan",
+      "planSaved": "Plan Sauvegardé",
+      "savedMessage": "Ce plan est sauvegardé dans votre compte. Vous pouvez maintenant générer des listes d'épicerie.",
+      "generateGroceryList": "Générer Liste d'Épicerie",
+      "orderInstacart": "Commander sur Instacart",
+      "mealTypes": {
+        "breakfast": "P",
+        "lunch": "D",
+        "dinner": "S",
+        "snack": "C"
+      }
+    },
+    "alerts": {
+      "noSwaps": "Plus d'échanges disponibles!",
+      "saveWarning": "Veuillez vous connecter pour sauvegarder les plans!",
+      "noPlan": "Aucun plan à sauvegarder!",
+      "grocerySuccess": "Liste d'épicerie générée!",
+      "instacartSuccess": "Lien Instacart généré!",
+      "accountWarning": "Veuillez créer un compte pour générer une liste d'épicerie!",
+      "instacartWarning": "Veuillez créer un compte pour utiliser Instacart!",
+      "upgradeWarning": "Passez au Niveau 2 ou 3 pour débloquer l'intégration Instacart!"
+    }
+  }
+}

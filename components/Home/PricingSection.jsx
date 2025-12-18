@@ -1,117 +1,76 @@
 "use client";
 
 import { fetchUserData } from "@/store/slices/authSlice";
-import { Check, X } from "lucide-react";
+import { Check } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
-
-const plans = [
-  {
-    name: "FREE PLAN",
-    tagline: "Try Prepcart with the basics — no commitment.",
-    price: "Free",
-    badge: "Try Now",
-    color: "#4a9fd8",
-    buttonColor: "bg-[#4a9fd8] hover:bg-[#3a8fc8] text-white",
-    features: {
-      included: [
-        "1 meal plan per week",
-        "1 grocery list",
-        "Limited quick plans",
-        "Limited recipes",
-        "1 Instacart-integrated list",
-        "Basic dashboard view",
-      ],
-      notIncluded: [
-        "No saving meal plans",
-        "No saving grocery lists",
-        "No budget planner",
-        "No macros/nutrition breakdown",
-      ],
-    },
-    description: "Best for: First-time users",
-    buttonText: "Get Started Free",
-  },
-  {
-    name: "PLUS PLAN",
-    tagline: "More flexibility. More control. Zero stress.",
-    price: "$4.99",
-    period: "/ month",
-    oldPrice: "$7.99",
-    badge: "Most Popular",
-    color: "#8cc63c",
-    buttonColor: "bg-[#8cc63c] hover:bg-[#7cb52c] text-white",
-    popular: true,
-    stripeTier: "tier2", // for Stripe
-    features: {
-      included: [
-        "4 meal plans per week",
-        "4 Instacart-integrated lists",
-        "Save & print plans",
-        "Macros & nutrition insights",
-        "New weekly recipes",
-        "Save favorite meals",
-        "Full Dashboard Access",
-        "Track budget",
-        "Organize weekly plans",
-      ],
-      notIncluded: [
-        "Limited budget organizer",
-        "No priority support",
-        "No early feature access",
-      ],
-    },
-    description: "Best for: Busy individuals & families",
-    buttonText: "Start Plus Plan",
-  },
-  {
-    name: "PREMIUM PLAN",
-    tagline: "The full Prepcart experience — effortless and personalized.",
-    price: "$9.99",
-    period: "/ month",
-    oldPrice: "$12.99",
-    badge: "Unlimited Access",
-    color: "#1E1E1E",
-    buttonColor: "bg-[#1E1E1E] hover:bg-[#0E0E0E] text-white",
-    stripeTier: "tier3", // for Stripe
-    features: {
-      included: [
-        "Unlimited meal plans",
-        "Unlimited Instacart lists",
-        "All recipes unlocked",
-        "Early access to new features",
-        "Priority support",
-        "Smart reminders & alerts",
-        "Full Dashboard Access",
-        "Save everything",
-        "Track spending",
-        "Build long-term meal routines",
-      ],
-      notIncluded: [],
-    },
-    description:
-      "Best for: Meal preppers, health-focused users, and power planners",
-    buttonText: "Go Premium",
-  },
-];
+import { useTranslations } from "next-intl";
+import { useParams } from "next/navigation";
 
 export default function PricingSection() {
   const { user, loading } = useSelector((state) => state.auth);
   const [processing, setProcessing] = useState(false);
   const dispatch = useDispatch();
   const [cancelling, setCancelling] = useState(false);
+  const t = useTranslations("pricing");
+  const params = useParams();
+  const locale = params?.locale;
 
   const isLoggedIn = Boolean(user);
   const userTier = user?.tier;
 
+  // Get translated plans data
+  const translatedPlans = t.raw("plans");
+
+  // Plan styling data
+  const planStyles = [
+    {
+      name: "Free plan",
+      price: "Free",
+      oldPrice: null,
+      period: "",
+      color: "#4a9fd8",
+      buttonColor: "bg-[#4a9fd8] hover:bg-[#3a8fc8] text-white",
+      popular: false,
+      stripeTier: null,
+    },
+    {
+      name: "Plus plan",
+      price: "$4.99",
+      oldPrice: "$7.99",
+      period: "/mo",
+      color: "#8cc63c",
+      buttonColor: "bg-[#8cc63c] hover:bg-[#7cb52c] text-white",
+      popular: true,
+      stripeTier: "tier2",
+    },
+    {
+      name: "Premium plan",
+      price: "$9.99",
+      oldPrice: "$12.99",
+      period: "/mo",
+      color: "#1E1E1E",
+      buttonColor: "bg-[#1E1E1E] hover:bg-[#0E0E0E] text-white",
+      popular: false,
+      stripeTier: "tier3",
+    },
+  ];
+
+  // Combine translated content with styling
+  const plans = translatedPlans.map((plan, index) => ({
+    ...plan,
+    ...planStyles[index],
+  }));
+
+  
   const handleCancel = async (plan) => {
     const message =
-      plan.name === "FREE PLAN"
+      plan.name === "Free"
         ? `Are you sure you want to cancel your ${
             userTier === "tier2" ? "Plus" : "Premium"
           } plan and switch to Free?`
-        : `Are you sure you want to cancel your ${plan.name}?`;
+        : `Are you sure you want to cancel your ${plan.name} plan?`;
 
     if (!window.confirm(message)) {
       return;
@@ -119,11 +78,11 @@ export default function PricingSection() {
 
     try {
       setCancelling(true);
-
       const token =
         localStorage.getItem("token") || localStorage.getItem("accessToken");
       if (!token) {
-        window.location.href = "/login";
+        toast.error("Please login to continue");
+        window.location.href = `/${locale}/login`;
         return;
       }
 
@@ -138,22 +97,19 @@ export default function PricingSection() {
       const data = await response.json();
 
       if (data.success) {
-        toast.success(`${plan.name} cancelled! You're now on Free plan.`);
-
-        // Refresh user data
+        toast.success(`${plan.name} ${t("alerts.cancellationSuccess")}`);
         dispatch(fetchUserData());
       } else {
-        toast.error("Cancellation failed: " + data.error);
+        toast.error(t("alerts.cancellationFailed") + " " + data.error);
       }
     } catch (error) {
       console.error("Cancel error:", error);
-      toast.error("Something went wrong");
+      toast.error(t("alerts.somethingWrong"));
     } finally {
       setCancelling(false);
     }
   };
 
-  // Handle URL hash changes for payment status
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash;
@@ -161,16 +117,15 @@ export default function PricingSection() {
         const params = new URLSearchParams(hash.split("?")[1] || "");
         const paramsObj = Object.fromEntries(params.entries());
 
-        // Show error alert
         if (paramsObj.error) {
-          alert("Payment error: " + decodeURIComponent(paramsObj.error));
-          toast.error("Payment error: " + decodeURIComponent(paramsObj.error))
+          toast.error(
+            t("alerts.paymentError") + " " + decodeURIComponent(paramsObj.error)
+          );
           window.history.replaceState({}, "", "/#pricing");
         }
 
-        // Handle success
         if (paramsObj.payment === "success") {
-          toast.success("Successful!")
+          toast.success(t("alerts.paymentSuccess"));
           window.history.replaceState({}, "", "/#pricing");
         }
       }
@@ -179,41 +134,48 @@ export default function PricingSection() {
     handleHashChange();
     window.addEventListener("hashchange", handleHashChange);
     return () => window.removeEventListener("hashchange", handleHashChange);
-  }, [dispatch]);
+  }, [dispatch, t]);
 
   const handlePayment = async (plan) => {
+    // For Free plan without stripeTier
     if (!plan.stripeTier) {
-      // Free plan clicked
       if (!isLoggedIn) {
-        window.location.href = "/login";
+        toast.error("Please login to access the Free plan");
+        setTimeout(() => {
+          window.location.href = `/${locale}/login`;
+        }, 1500);
         return;
       }
 
-      // If user is on a paid plan (tier2 or tier3) and clicks Free plan, it means they want to cancel/downgrade
       if (userTier !== "free") {
-        // Call cancel subscription function
         handleCancel(plan);
         return;
       }
 
-      // If already on free plan, go to dashboard
-      window.location.href = "/dashboard#pricing";
+      window.location.href =`/${locale}/dashboard`;
+      return;
+    }
+
+    // For Plus and Premium plans
+    if (!isLoggedIn) {
+      toast.error("Please login to subscribe to " + plan.name + " plan");
+      setTimeout(() => {
+        window.location.href = `/${locale}/login`;
+      }, 1500);
       return;
     }
 
     try {
       setProcessing(true);
-
-      // Get token from localStorage
       const token =
         localStorage.getItem("token") || localStorage.getItem("accessToken");
 
       if (!token) {
-        window.location.href = "/login";
+        toast.error("Please login to continue");
+        window.location.href = `/${locale}/login`;
         return;
       }
 
-      // Call Stripe checkout API
       const response = await fetch("/api/billing/subscribe", {
         method: "POST",
         headers: {
@@ -226,19 +188,19 @@ export default function PricingSection() {
       const data = await response.json();
 
       if (data.success && data.url) {
-        // Redirect to Stripe checkout
-        toast.success("Payment Successsful!")
+        // toast.success(t("alerts.paymentSuccess"));
         window.location.href = data.url;
       } else {
-        toast.error(data.error || "Payment failed. Please try again.");
+        toast.error(data.error || t("alerts.paymentError"));
       }
     } catch (error) {
       console.error("Payment error:", error);
-      toast.error("Something went wrong. Please try again.");
+      toast.error(t("alerts.somethingWrong"));
     } finally {
       setProcessing(false);
     }
   };
+
   const getButtonState = (plan) => {
     if (!isLoggedIn) {
       return {
@@ -250,9 +212,9 @@ export default function PricingSection() {
     }
 
     const planTierMap = {
-      "FREE PLAN": "free",
-      "PLUS PLAN": "tier2",
-      "PREMIUM PLAN": "tier3",
+      Free: "free",
+      Plus: "tier2",
+      Premium: "tier3",
     };
 
     const currentPlanTier = planTierMap[plan.name];
@@ -262,41 +224,38 @@ export default function PricingSection() {
     let buttonClass = plan.buttonColor;
     let disabled = false;
 
-    // Handle different user tiers
     if (userTier === "free") {
-      // Free user
-      if (plan.name === "FREE PLAN") {
-        buttonText = "Current Plan";
+      if (plan.name === "Free plan") {
+        buttonText = t("messages.currentPlan");
         buttonClass =
           "bg-gray-100 text-gray-700 border border-gray-300 cursor-default";
         disabled = true;
       }
-      // PLUS and PREMIUM plans are enabled for free users
     } else if (userTier === "tier2") {
-      // Plus user logic
-      if (plan.name === "FREE PLAN") {
-        buttonText = "Free Plan";
+      if (plan.name === "Free plan") {
+        buttonText = t("messages.freePlan");
         buttonClass =
           "bg-gray-100 text-gray-700 border border-gray-300 cursor-not-allowed";
-        disabled = true; 
-      } else if (plan.name === "PLUS PLAN") {
-        buttonText = "Current Plan";
+        disabled = true;
+      } else if (plan.name === "Plus plan") {
+        buttonText = t("messages.currentPlan");
         buttonClass =
           "bg-gray-100 text-gray-700 border border-gray-300 cursor-default";
         disabled = true;
-      } else if (plan.name === "PREMIUM PLAN") {
-        buttonText = "Upgrade to Premium";
-    
+      } else if (plan.name === "Premium plan") {
+        buttonText = t("messages.upgradePremium");
       }
     } else if (userTier === "tier3") {
-      // Premium user logic for only that user
-      if (plan.name === "FREE PLAN" || plan.name === "PLUS PLAN") {
-        buttonText = plan.name === "FREE PLAN" ? "Free Plan" : "Plus Plan";
+      if (plan.name === "Free plan" || plan.name === "Plus plan") {
+        buttonText =
+          plan.name === "Free plan"
+            ? t("messages.freePlan")
+            : t("messages.plusPlan");
         buttonClass =
           "bg-gray-100 text-gray-700 border border-gray-300 cursor-not-allowed";
-        disabled = true; 
-      } else if (plan.name === "PREMIUM PLAN") {
-        buttonText = "Current Plan";
+        disabled = true;
+      } else if (plan.name === "Premium plan") {
+        buttonText = t("messages.currentPlan");
         buttonClass =
           "bg-gray-100 text-gray-700 border border-gray-300 cursor-default";
         disabled = true;
@@ -314,144 +273,103 @@ export default function PricingSection() {
   };
 
   return (
-    <section className="py-16 md:py-20" id="pricing">
-      <div className="container mx-auto px-4 max-w-[1200px]">
-        {/* Header */}
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-[#1E1E1E] mb-3">
-            Select Your Plan
+    <section className="py-12 md:py-16" id="pricing">
+      <div className="container mx-auto px-4 max-w-6xl">
+        {/* Minimal Header */}
+        <div className="text-center mb-12">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+            {t("title")}
           </h2>
-          <p className="text-lg text-[#666666] max-w-2xl mx-auto">
-            Choose a plan designed to fit your lifestyle, goals, and budget —
-            simple, flexible, and commitment-free.
-          </p>
+          <p className="text-gray-600 max-w-xl mx-auto">{t("subtitle")}</p>
         </div>
 
-        {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {/* Minimal Pricing Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {plans.map((plan, index) => {
             const buttonState = getButtonState(plan);
 
             return (
               <div key={index} className="relative">
                 {plan.popular && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
-                    <div
-                      className="text-white px-4 py-2 rounded-full text-sm font-semibold shadow-md"
-                      style={{ backgroundColor: plan.color }}
-                    >
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
+                    <div className="bg-linear-to-r from-green-400 to-emerald-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-sm">
                       {plan.badge}
                     </div>
                   </div>
                 )}
 
                 <div
-                  className={`h-full  flex flex-col justify-between rounded-2xl border-2 p-6 bg-white ${
+                  className={`h-full flex flex-col rounded-xl border p-6 bg-white transition-all duration-200 ${
                     plan.popular
-                      ? "border-[#8cc63c] shadow-lg"
-                      : "border-gray-200"
-                  } transition-all duration-300 hover:shadow-xl hover:-translate-y-1`}
+                      ? "border-emerald-300 shadow-lg ring-1 ring-emerald-50"
+                      : "border-gray-200 hover:border-gray-300"
+                  }`}
                 >
-                  <div className="text-center mb-8">
-                    {!plan.popular && (
-                      <div
-                        className="inline-block px-4 py-1.5 rounded-full text-sm font-semibold mb-4"
-                        style={{
-                          backgroundColor: `${plan.color}15`,
-                          color: plan.color,
-                        }}
-                      >
-                        {plan.badge}
-                      </div>
-                    )}
+                  {/* Plan Header */}
+                  <div className="text-center mb-6">
+                    <div className="flex items-center justify-center gap-2 mb-3">
+                      {/* <span className="text-2xl">{plan.icon}</span> */}
+                      <h3 className="text-xl font-bold text-gray-900">
+                        {plan.name}
+                      </h3>
+                    </div>
 
-                    <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
-                    <p className="text-gray-600 text-sm mb-6">{plan.tagline}</p>
+                    <p className="text-gray-600 text-sm mb-4">{plan.tagline}</p>
 
-                    <div className="mb-6">
-                      {plan.oldPrice && (
-                        <div className="flex justify-center gap-2 mb-2">
-                          <span className="text-gray-400 line-through text-sm">
-                            {plan.oldPrice}
-                          </span>
-                          <span className="bg-[#8cc63c] text-white text-xs px-2 py-0.5 rounded">
-                            Launch Deal
-                          </span>
-                        </div>
-                      )}
-                      <div className="flex justify-center gap-1 items-baseline">
-                        <span
-                          className="text-4xl font-bold"
-                          style={{ color: plan.color }}
-                        >
+                    {/* Price */}
+                    <div className="mb-4">
+                      <div className="flex justify-center items-baseline gap-1">
+                        <span className="text-3xl font-bold text-gray-900">
                           {plan.price}
                         </span>
                         {plan.period && (
-                          <span className="text-gray-600">{plan.period}</span>
+                          <span className="text-gray-600 text-sm">
+                            {plan.period}
+                          </span>
                         )}
                       </div>
+                      {plan.oldPrice && (
+                        <div className="flex justify-center items-center gap-2 mt-1">
+                          <span className="text-gray-400 line-through text-sm">
+                            {plan.oldPrice}
+                          </span>
+                          <span className="bg-linear-to-r from-green-400 to-emerald-500 text-white text-xs px-2 py-0.5 rounded">
+                            {t("messages.launchDeal")}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
 
-                  <div className="mb-6">
-                    <ul className="space-y-2">
-                      {plan.features.included.map((f, i) => (
-                        <li key={i} className="flex gap-2">
-                          <Check className="w-4 h-4 text-green-500 mt-0.5" />
-                          <span className="text-sm text-gray-700">{f}</span>
+                  {/* Features List */}
+                  <div className="mb-6 grow">
+                    <ul className="space-y-2.5">
+                      {plan.features.map((feature, i) => (
+                        <li key={i} className="flex items-start gap-2">
+                          <Check className="w-4 h-4 text-emerald-500 mt-0.5shrink-0" />
+                          <span className="text-sm text-gray-700">
+                            {feature}
+                          </span>
                         </li>
                       ))}
                     </ul>
                   </div>
 
-                  {plan.features.notIncluded.length > 0 && (
-                    <div className="mb-6">
-                      <ul className="space-y-2">
-                        {plan.features.notIncluded.map((f, i) => (
-                          <li key={i} className="flex gap-2">
-                            <X className="w-4 h-4 text-gray-400 mt-0.5" />
-                            <span className="text-sm text-gray-500">{f}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-
-                  <div className="mb-6 text-center bg-gray-50 p-3 rounded-lg">
-                    <p className="text-sm font-medium text-gray-700">
-                      {plan.description}
-                    </p>
-                  </div>
-
-                  <div className="space-y-2">
-                    {/* Main Plan Button */}
+                  {/* Action Button */}
+                  <div className="mt-auto">
                     <button
                       onClick={() => handlePayment(plan)}
                       disabled={buttonState.disabled}
-                      className={`w-full py-3.5 rounded-lg font-semibold ${
+                      className={`w-full py-3 rounded-lg font-medium transition-all duration-200 ${
                         buttonState.className
                       } ${
                         buttonState.disabled
-                          ? "opacity-70 cursor-not-allowed"
-                          : ""
+                          ? "opacity-80 cursor-not-allowed"
+                          : "hover:shadow-md"
                       }`}
                     >
-                      {processing ? "Processing..." : buttonState.text}
+                      {processing ? t("messages.processing") : buttonState.text}
                     </button>
-
-                    {/* Cancel Button - Only show for PLUS and PREMIUM plans */}
-                    {/* {isLoggedIn &&
-                      userTier !== "free" &&
-                      ["PLUS PLAN", "PREMIUM PLAN"].includes(plan.name) &&
-                      buttonState.isCurrentPlan && (
-                        <button
-                          onClick={() => handleCancel(plan)}
-                          disabled={cancelling}
-                          className="w-full py-2.5 rounded-lg font-semibold bg-red-50 text-red-600 border border-red-300 hover:bg-red-100 mt-2"
-                        >
-                          {cancelling ? "Cancelling..." : "Cancel Plan"}
-                        </button>
-                      )} */}
                   </div>
                 </div>
               </div>
@@ -459,106 +377,27 @@ export default function PricingSection() {
           })}
         </div>
 
-        {/* User Status Info */}
+        {/* Minimal User Status */}
         {isLoggedIn && (
-          <div className="mt-8 p-4 bg-gray-50 border border-gray-200 rounded-lg">
-            <p className="text-gray-800 text-sm text-center">
-              👤 <strong>Current Account:</strong> {user.email} |{" "}
-              <strong>Plan:</strong> {userTier?.toUpperCase() || "FREE"} |{" "}
-              <strong>Swaps:</strong> {user.swapsAllowed || 1}
-            </p>
+          <div className="mt-8 p-4 bg-linear-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-lg max-w-md mx-auto">
+            <div className="flex  items-center justify-center gap-4 text-sm text-gray-700">
+              <div className="flex items-center gap-1">
+                {/* <span>{t("currentAccount")}</span> */}
+                <span className="font-semibold">{user.email}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="font-medium">{t("plan")}</span>
+                <span className="font-semibold px-2 py-0.5 bg-gray-200 rounded">
+                  {userTier?.toUpperCase() || "FREE"}
+                </span>
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="font-medium">{t("swaps")}</span>
+                <span className="font-semibold">{user.swapsAllowed || 1}</span>
+              </div>
+            </div>
           </div>
         )}
-        {/* Comparison Table */}
-        <div className="mt-16 p-6 bg-gray-50 rounded-xl border border-gray-200">
-          <h3 className="text-xl font-semibold text-[#1E1E1E] mb-4 text-center">
-            Plan Comparison
-          </h3>
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[600px]">
-              <thead>
-                <tr className="border-b border-gray-300">
-                  <th className="text-left p-3 font-medium text-gray-700">
-                    Features
-                  </th>
-                  <th className="p-3 text-center font-medium text-gray-700">
-                    Free
-                  </th>
-                  <th className="p-3 text-center font-medium text-gray-700">
-                    Plus
-                  </th>
-                  <th className="p-3 text-center font-medium text-gray-700">
-                    Premium
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  {
-                    feature: "Weekly Meal Plans",
-                    free: "1",
-                    plus: "4 / week",
-                    premium: "Unlimited",
-                  },
-                  {
-                    feature: "Instacart Lists",
-                    free: "1 / week",
-                    plus: "4 / week",
-                    premium: "Unlimited",
-                  },
-                  {
-                    feature: "Save & Print",
-                    free: "—",
-                    plus: "✓",
-                    premium: "✓",
-                  },
-                  {
-                    feature: "Nutrition Insights",
-                    free: "—",
-                    plus: "✓",
-                    premium: "✓",
-                  },
-                  {
-                    feature: "Budget Tracking",
-                    free: "—",
-                    plus: "Limited",
-                    premium: "✓",
-                  },
-                  {
-                    feature: "Priority Support",
-                    free: "—",
-                    plus: "—",
-                    premium: "✓",
-                  },
-                  {
-                    feature: "Swaps per Plan",
-                    free: "1",
-                    plus: "2",
-                    premium: "3",
-                  },
-                ].map((row, idx) => (
-                  <tr
-                    key={idx}
-                    className={idx % 2 === 0 ? "bg-white" : "bg-gray-100/50"}
-                  >
-                    <td className="p-3 font-medium text-gray-700">
-                      {row.feature}
-                    </td>
-                    <td className="p-3 text-center text-gray-600">
-                      {row.free}
-                    </td>
-                    <td className="p-3 text-center text-green-600 font-medium">
-                      {row.plus}
-                    </td>
-                    <td className="p-3 text-center text-[#1E1E1E] font-semibold">
-                      {row.premium}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
       </div>
     </section>
   );

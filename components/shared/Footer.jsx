@@ -3,36 +3,38 @@ import { MdOutlineHandshake } from "react-icons/md";
 import Image from "next/image";
 import Link from "next/link";
 import { FaFacebook, FaInstagram, FaLinkedin, FaTwitter } from "react-icons/fa";
+import { useTranslations } from 'next-intl';
 
 const Footer = () => {
+  const t = useTranslations('footer');
+
   const socialLinks = [
-    { icon: FaFacebook, href: "#", label: "Facebook" },
-    { icon: FaTwitter, href: "#", label: "Twitter" },
-    { icon: FaInstagram, href: "#", label: "Instagram" },
-    { icon: FaLinkedin, href: "#", label: "LinkedIn" },
+    { icon: FaFacebook, href: "#", label: t('social.facebook') },
+    { icon: FaTwitter, href: "#", label: t('social.twitter') },
+    { icon: FaInstagram, href: "#", label: t('social.instagram') },
+    { icon: FaLinkedin, href: "#", label: t('social.linkedin') },
   ];
 
   const footerLinks = {
     home: [
-      { label: "How It Works", href: "/#howitworks" },
-      { label: "Pricing", href: "/#pricing" },
-      { label: "Recipes", href: "/#recipes" },
-      { label: "Partners", href: "/#partners" },
+      { label: t('links.howItWorks'), href: "/#howitworks" },
+      { label: t('links.pricing'), href: "/#pricing" },
+      { label: t('links.recipes'), href: "/#recipes" },
+      { label: t('links.partners'), href: "/#partners" },
     ],
     legal: [
-      { name: "Terms of Service", href: "/terms" },
-      { name: "Privacy Policy", href: "/privacy" },
+      { name: t('links.terms'), href: "/terms" },
+      { name: t('links.privacy'), href: "/privacy" },
     ],
     help: [
-      { name: "Support", href: "/" },
-      { name: "Contact Us", href: "/" },
+      { name: t('links.support'), href: "/support" },
+      { name: t('links.contact'), href: "/contact" },
     ],
-    partners: [{ name: "Become a Partner", href: "/partners" }],
   };
 
   return (
     <footer className="w-full bg-[#fafff3] py-8 md:py-10">
-      <div className="mx-auto max-w-[1500px] px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-8">
         {/* Footer Content */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8 lg:gap-6">
           {/* Logo - Takes 2 columns on lg */}
@@ -48,13 +50,13 @@ const Footer = () => {
               />
             </Link>
             <p className="text-gray-600 text-sm mt-3 lg:mt-4 pl-1">
-              &quot;Made for real Canadian households🍁&quot;
+              {t('tagline')}
             </p>
           </div>
 
           {/* Company Links */}
           <div>
-            <p className="font-semibold text-gray-800 mb-4">Company</p>
+            <p className="font-semibold text-gray-800 mb-4">{t('company')}</p>
             <ul className="space-y-3">
               {footerLinks.home.map((link) => (
                 <li key={link.label}>
@@ -71,7 +73,7 @@ const Footer = () => {
 
           {/* Legal Links */}
           <div>
-            <p className="font-semibold text-gray-800 mb-4">Legal</p>
+            <p className="font-semibold text-gray-800 mb-4">{t('legal')}</p>
             <ul className="space-y-3">
               {footerLinks.legal.map((link) => (
                 <li key={link.name}>
@@ -86,25 +88,12 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Partners and Follow Us Side by Side - Takes 2 columns on lg */}
+          {/* Help and Follow Us Side by Side - Takes 2 columns on lg */}
           <div className="md:col-span-2 lg:col-span-2">
             <div className="grid grid-cols-2 gap-6 lg:gap-8">
-              {/* Partners Column */}
-              {/* <div>
-                <div className="flex items-center gap-2 mb-4">
-                  <MdOutlineHandshake className="text-2xl text-[#4a9fd8]" />
-                  <p className="font-semibold text-gray-800">Partners</p>
-                </div>
-                <a
-                  href="/partners"
-                  className="text-gray-600 hover:text-teal-600 transition-colors duration-200 text-sm inline-block hover:translate-x-1"
-                >
-                  Become a Partner
-                </a>
-              </div> */}
               {/* Help Links */}
               <div>
-                <p className="font-semibold text-gray-800 mb-4">Help</p>
+                <p className="font-semibold text-gray-800 mb-4">{t('help')}</p>
                 <ul className="space-y-3">
                   {footerLinks.help.map((link) => (
                     <li key={link.name}>
@@ -121,7 +110,7 @@ const Footer = () => {
 
               {/* Follow Us Column */}
               <div>
-                <p className="font-semibold text-gray-800 mb-4">Follow Us</p>
+                <p className="font-semibold text-gray-800 mb-4">{t('followUs')}</p>
                 <div className="flex gap-3">
                   {socialLinks.map((social) => (
                     <a
@@ -145,7 +134,7 @@ const Footer = () => {
         {/* Copyright */}
         <div className="flex justify-center items-center gap-2">
           <p className="text-gray-500 text-sm text-center sm:text-left order-2 sm:order-1">
-            © 2025 Prepcart. Made for real Canadian households. All rights reserved.
+            {t('copyright')}
           </p>
         </div>
       </div>

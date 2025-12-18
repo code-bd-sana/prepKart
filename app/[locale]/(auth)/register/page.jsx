@@ -3,27 +3,28 @@
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { register, clearError } from "@/store/slices/authSlice";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "react-toastify";
+import { useTranslations } from "next-intl";
 
-// Canadian provinces array
-const PROVINCES = [
-  "Ontario",
-  "Quebec",
-  "British Columbia",
-  "Alberta",
-  "Manitoba",
-  "Saskatchewan",
-  "Nova Scotia",
-  "New Brunswick",
-  "Newfoundland and Labrador",
-  "Prince Edward Island",
+// PROVINCES in both languages
+const PROVINCES_EN = [
+  "Ontario", "Quebec", "British Columbia", "Alberta", "Manitoba",
+  "Saskatchewan", "Nova Scotia", "New Brunswick", 
+  "Newfoundland and Labrador", "Prince Edward Island"
+];
+
+const PROVINCES_FR = [
+  "Ontario", "Québec", "Colombie-Britannique", "Alberta", "Manitoba",
+  "Saskatchewan", "Nouvelle-Écosse", "Nouveau-Brunswick",
+  "Terre-Neuve-et-Labrador", "Île-du-Prince-Édouard"
 ];
 
 // Dietary preferences for checkboxes
 const DIETARY_OPTIONS = [
+  "Halal",
   "Vegetarian",
   "Vegan",
   "Gluten-Free",
@@ -37,18 +38,28 @@ const DIETARY_OPTIONS = [
 
 // Common allergies
 const ALLERGY_OPTIONS = [
-  "Peanuts",
-  "Tree Nuts",
-  "Shellfish",
-  "Fish",
+   "Eggs",
   "Milk",
-  "Eggs",
-  "Wheat",
+  "Mustard",
+  "Peanuts",
+  "Crustaceans and molluscs",
+  "Fish",
+  "Sesame seeds",
   "Soy",
-  "Sesame",
+  "Sulphites",
+  "Tree Nuts",
+  "Wheat and triticale",
+  "Gluten",
 ];
 
 export default function RegisterPage() {
+  const params = useParams();
+  const locale = params.locale;
+  const t = useTranslations('register'); 
+
+  // Get provinces based on locale
+  const PROVINCES = locale === 'fr' ? PROVINCES_FR : PROVINCES_EN;
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -195,6 +206,7 @@ export default function RegisterPage() {
     e.preventDefault();
 
     if (!formData.ageVerified) {
+      toast.warning(t('mustBe18'));
       toast.warning("You must be 18+ to use PrepCart");
       return;
     }
@@ -203,11 +215,10 @@ export default function RegisterPage() {
 
     try {
       await dispatch(register(formData)).unwrap();
-      toast.success("Registered Successfully!")
+      toast.success("Registered Successfully!");
       router.push("/");
     } catch (error) {
-      toast.error("Registartion Failed")
-      console.log("Registration failed");
+      toast.error(t('registrationFailed'));
     }
   };
 
@@ -217,16 +228,17 @@ export default function RegisterPage() {
         {/* Home Button */}
         <div className="mb-4">
           <Link
-            href="/"
+             href={`/${locale}`}
             className="inline-flex items-center text-sm text-gray-600 hover:text-gray-800 transition"
           >
             <ArrowLeft />
+            {t('backToHome')}
             Back to Home
           </Link>
           <div>
             <div className="bg-linear-to-r from-[#ebf2f7] to-[#dae2e9] mb-6 p-5 rounded-xl text-center">
               <h1 className="text-3xl font-bold text-[#8cc63c]">
-                Create Account
+                {t('title')}
               </h1>
             </div>
           </div>
@@ -234,7 +246,7 @@ export default function RegisterPage() {
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded text-sm">
               {error.includes("409")
-                ? "Email already exists. Please login or use a different email."
+                ? t('emailExists')
                 : error}
             </div>
           )}
@@ -243,13 +255,13 @@ export default function RegisterPage() {
             {/* Section 1: Basic Information */}
             <div className="space-y-4">
               <h2 className="text-base font-semibold text-gray-700 pb-2 border-b">
-                Basic Information
+                {t('basicInfo')}
               </h2>
 
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1">
-                    Full Name <span className="text-red-500">*</span>
+                    {t('fullName')} <span className="text-red-500">*</span>
                   </label>
                   <input
                     name="name"
@@ -264,7 +276,7 @@ export default function RegisterPage() {
 
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1">
-                    Email <span className="text-red-500">*</span>
+                    {t('email')} <span className="text-red-500">*</span>
                   </label>
                   <input
                     name="email"
@@ -281,7 +293,7 @@ export default function RegisterPage() {
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1">
-                    Password <span className="text-red-500">*</span>
+                    {t('password')} <span className="text-red-500">*</span>
                   </label>
                   <input
                     name="password"
@@ -297,7 +309,7 @@ export default function RegisterPage() {
 
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1">
-                    Province <span className="text-red-500">*</span>
+                    {t('province')} <span className="text-red-500">*</span>
                   </label>
                   <select
                     name="province"
@@ -319,19 +331,19 @@ export default function RegisterPage() {
             {/* Section 2: Dietary Preferences */}
             <div className="space-y-4">
               <h2 className="text-base font-semibold text-gray-700 pb-2 border-b">
-                Dietary Preferences
+                {t('dietaryPreferences')}
               </h2>
 
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-1">
-                  Dietary Preferences
+                  {t('dietaryPreferences')}
                 </label>
                 <select
                   onChange={handleDietarySelect}
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-[#4a9fd8] focus:border-[#4a9fd8] outline-none bg-white mb-2"
                   defaultValue=""
                 >
-                  <option value="">Select dietary preference...</option>
+                  <option value="">{t('selectDietary')}</option>
                   {DIETARY_OPTIONS.filter(
                     (opt) => !formData.dietaryPreferences.includes(opt)
                   ).map((option) => (
@@ -346,7 +358,7 @@ export default function RegisterPage() {
                     type="text"
                     value={customDietary}
                     onChange={(e) => setCustomDietary(e.target.value)}
-                    placeholder="Or add custom preference"
+                    placeholder={t('customDietaryPlaceholder')}
                     className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-[#4a9fd8] focus:border-[#4a9fd8] outline-none"
                     onKeyPress={(e) =>
                       e.key === "Enter" && handleCustomDietary(e)
@@ -357,7 +369,7 @@ export default function RegisterPage() {
                     onClick={handleCustomDietary}
                     className="px-4 py-2 text-sm bg-[#8cc63c] hover:bg-[#7ab32f] text-white rounded"
                   >
-                    Add
+                    {t('add')}
                   </button>
                 </div>
 
@@ -384,14 +396,14 @@ export default function RegisterPage() {
 
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-1">
-                  Allergies
+                  {t('allergies')}
                 </label>
                 <select
                   onChange={handleAllergySelect}
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-[#4a9fd8] focus:border-[#4a9fd8] outline-none bg-white mb-2"
                   defaultValue=""
                 >
-                  <option value="">Select allergy...</option>
+                  <option value="">{t('selectAllergy')}</option>
                   {ALLERGY_OPTIONS.filter(
                     (opt) => !formData.allergies.includes(opt)
                   ).map((option) => (
@@ -406,7 +418,7 @@ export default function RegisterPage() {
                     type="text"
                     value={customAllergy}
                     onChange={(e) => setCustomAllergy(e.target.value)}
-                    placeholder="Or add custom allergy"
+                    placeholder={t('customAllergyPlaceholder')}
                     className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-[#4a9fd8] focus:border-[#4a9fd8] outline-none"
                     onKeyPress={(e) =>
                       e.key === "Enter" && handleCustomAllergy(e)
@@ -417,7 +429,7 @@ export default function RegisterPage() {
                     onClick={handleCustomAllergy}
                     className="px-4 py-2 text-sm bg-[#8cc63c] hover:bg-[#7ab32f] text-white rounded"
                   >
-                    Add
+                     {t('add')}
                   </button>
                 </div>
 
@@ -602,7 +614,7 @@ export default function RegisterPage() {
                 required
               />
               <label htmlFor="ageVerified" className="text-xs text-gray-700">
-                I confirm that I am 18 years of age or older{" "}
+                {t('ageVerification')} <span className="text-red-500">*</span>
                 <span className="text-red-500">*</span>
               </label>
             </div>
@@ -617,23 +629,23 @@ export default function RegisterPage() {
                     : "bg-[#8cc63c] hover:bg-[#7ab32f] text-white"
                 }`}
               >
-                {loading ? "Creating Account..." : "Create Account"}
+                {loading ? t('creatingAccount') : t('createAccount')}
               </button>
             </div>
           </form>
 
           <div className="mt-6 text-center text-sm text-gray-500">
             <p>
-              Already have an account?{" "}
+               {t('alreadyHaveAccount')}{" "}
               <Link
-                href="/login"
+                href={`/${locale}/login`}
                 className="text-[#8cc63c] hover:text-[#7ab32f] font-medium"
               >
-                Login here
+                 {t('loginHere')}
               </Link>
             </p>
             <p className="mt-2">
-              By creating an account, you agree to our Terms and Privacy Policy
+                {t('terms')}
             </p>
           </div>
         </div>
