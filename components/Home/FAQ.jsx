@@ -1,33 +1,19 @@
-"use client"
+"use client";
 
 import { useState } from "react";
 import { Plus, Minus } from "lucide-react";
+import { useTranslations } from 'next-intl';
 
-const faqs = [
-  {
-    question: "Is Prepcart available across Canada?",
-    answer: "Yes! Prepcart works anywhere in Canada. Our grocery integration supports major retailers like Walmart, Loblaws, Metro, Sobeys, and Costco, with real-time pricing and availability based on your postal code. We also adjust meal recommendations for regional availability and seasonal produce."
-  },
-  {
-    question: "How are meal plans generated?",
-    answer: "Prepcart uses AI (OpenAI) to create personalized meal plans based on your dietary preferences, budget, family size, and cooking time. The AI considers nutrition balance, ingredient overlap to reduce waste, and seasonal availability. You can regenerate plans until you find the perfect fit."
-  },
-  {
-    question: "Can I adjust recipes for allergies or dietary restrictions?",
-    answer: "Absolutely. During setup, you can specify allergies, intolerances, and dietary preferences (gluten-free, dairy-free, vegetarian, etc.). Our AI automatically excludes unsuitable ingredients and suggests alternatives. You can also manually swap any recipe in your plan."
-  },
-  {
-    question: "Is Instacart required to use Prepcart?",
-    answer: "No, Instacart is optional. While we offer seamless integration with Instacart for one-click grocery ordering, you can also use Prepcart to generate shopping lists and shop manually at any store. The app helps you compare prices across retailers regardless of how you choose to shop."
-  }
-];
-
-export default function FAQSection() {
-  const [openIndex, setOpenIndex] = useState(0); // First one open by default
+export default function FAQSection({ locale }) { 
+  const [openIndex, setOpenIndex] = useState(0);
+  const t = useTranslations('faq'); 
 
   const toggleFAQ = (index) => {
     setOpenIndex(openIndex === index ? null : index);
   };
+
+  // Get questions from translations
+  const faqs = t.raw('questions');
 
   return (
     <section className="py-16 md:py-20 bg-[linear-gradient(to_bottom,rgba(74,159,216,0.1),rgba(140,198,60,0.1))]" id="faq">
@@ -35,10 +21,10 @@ export default function FAQSection() {
         {/* Header */}
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-[#1E1E1E] mb-3">
-            Frequently Asked Questions
+            {t('title')}
           </h2>
           <p className="text-lg text-[#666666]">
-            Everything you need to know about Prepcart
+            {t('subtitle')}
           </p>
         </div>
 
@@ -79,14 +65,14 @@ export default function FAQSection() {
         {/* CTA */}
         <div className="text-center mt-12">
           <p className="text-gray-700 mb-6">
-            Can not find what you are looking for?
+            {t('cantFind')}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button className="px-6 py-3 bg-[#8cc63c] text-white rounded-lg font-semibold hover:bg-[#7cb52c] transition-colors duration-200">
-              Chat with Support
+              {t('chatSupport')}
             </button>
             <button className="px-6 py-3 bg-white border border-[#4a9fd8] text-[#4a9fd8] rounded-lg font-semibold hover:bg-[#4a9fd8] hover:text-white transition-colors duration-200">
-              View Help Center
+              {t('helpCenter')}
             </button>
           </div>
         </div>
