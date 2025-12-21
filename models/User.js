@@ -48,8 +48,34 @@ const userSchema = new mongoose.Schema(
     // Tier System
     tier: {
       type: String,
-      enum: ["free", "tier2", "tier3"],
+      enum: ["free", "tier2", "tier3", "admin"],
       default: "free",
+    },
+
+    marketing_consent: {
+      type: Boolean,
+      default: false,
+    },
+    consent_timestamp: Date,
+    consent_ip: String,
+    monthly_plan_count: {
+      type: Number,
+      default: 0,
+    },
+    last_plan_date: Date,
+    weekly_plan_count: {
+      type: Number,
+      default: 0,
+    },
+    last_weekly_reset: Date,
+    ageVerified: {
+      type: Boolean,
+      default: false,
+    },
+    age: {
+      type: Number,
+      min: 18,
+      max: 120,
     },
 
     // Social Login
@@ -102,33 +128,33 @@ const userSchema = new mongoose.Schema(
     stripeCustomerId: String,
 
     subscription: {
-      stripeSubscriptionId: String,
-      stripePriceId: String, // Links to tier
-      status: {
-        type: String,
-        enum: [
-          "active",
-          "canceled",
-          "past_due",
-          "unpaid",
-          "incomplete",
-          "incomplete_expired",
-          "trialing",
-          null,
-        ],
-        default: null,
-      },
-      currentPeriodEnd: Date,
-      cancelAtPeriodEnd: {
-        type: Boolean,
-        default: false,
-      },
-      tier: {
-        type: String,
-        enum: ["free", "tier2", "tier3"],
-        default: "free",
-      },
-    },
+  stripeSubscriptionId: String,
+  stripePriceId: String,
+  status: {
+    type: String,
+    enum: [
+      "active",
+      "canceled",
+      "past_due",
+      "unpaid",
+      "incomplete",
+      "incomplete_expired",
+      "trialing",
+      null,
+    ],
+    default: null,
+  },
+  currentPeriodEnd: Date,
+  cancelAtPeriodEnd: {
+    type: Boolean,
+    default: false,
+  },
+  tier: {
+    type: String,
+    enum: ["free", "tier2", "tier3", "admin"], 
+    default: "free",
+  },
+},
     isActive: {
       type: Boolean,
       default: true,

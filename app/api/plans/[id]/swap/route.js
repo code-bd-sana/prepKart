@@ -5,17 +5,39 @@ import User from "@/models/User";
 import { generateAlternativeMeal } from "@/lib/openai";
 
 const SWAPS_PER_PLAN = {
-  free: 1,
+  free: 0,
   tier2: 2,
   tier3: 3,
 };
 
+// Add at the top after imports
+async function withTimeout(promise, timeoutMs = 15000) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("Request timeout")), timeoutMs)
+    ),
+  ]);
+}
+
 export async function POST(request, { params }) {
   try {
+    console.log("Swap endpoint called");
     await connectDB();
 
     const { id } = await params;
-    const body = await request.json();
+    // const body = await request.json();
+    let body;
+    try {
+      body = await request.json();
+      // console.log("Swap request body keys:", Object.keys(body));
+    } catch (parseError) {
+      console.error("Failed to parse swap request:", parseError);
+      return NextResponse.json(
+        { error: "Invalid JSON in request body" },
+        { status: 400 }
+      );
+    }
 
     const { dayIndex, mealIndex, userId, userTier, planData } = body;
 
@@ -34,12 +56,12 @@ export async function POST(request, { params }) {
       isTempPlan = true;
       plan = planData || body.planData || {};
 
-      // Initialize swaps for temp plan if not present
+      // For temp plans, initialize swaps
       if (!plan.swaps) {
         plan.swaps = {
-          allowed: 1,
+          allowed: 0,
           used: 0,
-          remaining: 1,
+          remaining: 0,
         };
       }
     } else {
@@ -52,20 +74,36 @@ export async function POST(request, { params }) {
 
     const oldMeal = plan.days[dayIndex].meals[mealIndex];
 
-    // Determine user tier
-    let actualUserTier = userTier || "free";
-    let userName = "Guest";
+    // Now get user info
+    let actualUserTier = "free"; 
 
     if (userId) {
       const user = await User.findById(userId);
       if (user) {
         actualUserTier = user.tier || "free";
-        userName = user.name || "User";
       }
     }
 
+    // Block logged-in free users from swapping
+    if (userId && actualUserTier === "free") {
+      return NextResponse.json(
+        {
+          error:
+            "Free users cannot swap meals. Upgrade to Plus or Premium for swap features.",
+          requiresUpgrade: true,
+          tier: actualUserTier,
+        },
+        { status: 403 }
+      );
+    }
+    // Update temp plan swaps based on user tier
+    if (isTempPlan) {
+      plan.swaps.allowed = SWAPS_PER_PLAN[actualUserTier] || 0;
+      plan.swaps.remaining = plan.swaps.allowed - plan.swaps.used;
+    }
+
     // Get swap allowance for this tier
-    const swapsAllowedForTier = SWAPS_PER_PLAN[actualUserTier] || 1;
+    const swapsAllowedForTier = SWAPS_PER_PLAN[actualUserTier] || 0;
 
     // Check plan swaps
     let planSwapsAllowed = swapsAllowedForTier;
@@ -81,9 +119,7 @@ export async function POST(request, { params }) {
       planSwapsUsed = plan.swaps?.used || 0;
     }
 
-    // console.log(`Swap check: User=${userName}, Tier=${actualUserTier}, PlanSwapsUsed=${planSwapsUsed}/${planSwapsAllowed}`);
-
-    // Check PLAN swaps only (NOT user.swapsUsed)
+    // Check if swaps are available
     if (planSwapsUsed >= planSwapsAllowed) {
       return NextResponse.json(
         {
@@ -97,6 +133,7 @@ export async function POST(request, { params }) {
     // Generate alternative meal
     const alternativeInputs = {
       ...(plan.inputs || {}),
+      userTier: actualUserTier, 
       mealType: oldMeal.mealType,
       cookingTime: plan.inputs?.maxCookingTime || 30,
       portions: plan.inputs?.portions || 2,
@@ -110,16 +147,58 @@ export async function POST(request, { params }) {
       skillLevel: plan.inputs?.skillLevel || "Beginner",
     };
 
-    const newMeal = await generateAlternativeMeal(
-      alternativeInputs,
-      oldMeal.recipeName
-    );
+    // TIMEOUT FUNCTION 
+    async function withTimeout(promise, timeoutMs = 15000) {
+      return Promise.race([
+        promise,
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("Request timeout")), timeoutMs)
+        ),
+      ]);
+    }
+
+    // GENERATE WITH TIMEOUT
+    let newMeal;
+    try {
+      newMeal = await withTimeout(
+        generateAlternativeMeal(
+          alternativeInputs,
+          oldMeal.recipeName,
+          actualUserTier 
+        ),
+        10000 
+      );
+    } catch (timeoutError) {
+      console.error(
+        "Alternative meal generation timeout:",
+        timeoutError.message
+      );
+
+      // Use immediate fallback instead of waiting
+      newMeal = {
+        mealType: oldMeal.mealType,
+        recipeName: `Quick ${oldMeal.mealType} Alternative`,
+        ingredients: [
+          {
+            name: "Alternative protein",
+            quantity: plan.inputs?.portions || 2,
+            unit: "servings",
+          },
+          { name: "Vegetables", quantity: 2, unit: "cups" },
+          { name: "Spices", quantity: 1, unit: "tablespoon" },
+        ],
+        cookingTime: 25,
+        instructions: ["Quickly prepare", "Cook efficiently", "Serve fresh"],
+        recipeSource: "timeout-fallback",
+        isAlternative: true,
+        tier: actualUserTier,
+      };
+    }
 
     if (!newMeal) {
       throw new Error("Failed to generate alternative meal");
     }
-
-    // Update PLAN swaps only (NOT user.swapsUsed)
+    // Update PLAN swaps only
     const newPlanSwapsUsed = planSwapsUsed + 1;
     const swapsRemaining = planSwapsAllowed - newPlanSwapsUsed;
 
@@ -127,8 +206,12 @@ export async function POST(request, { params }) {
     const updatedMeal = {
       ...newMeal,
       isSwapped: true,
-      originalRecipe: oldMeal.recipeName,
+      originalRecipe: oldMeal.recipeName, 
+      swappedAt: new Date().toISOString(),
     };
+
+    // Update the plan
+    plan.days[dayIndex].meals[mealIndex] = updatedMeal;
 
     let updatedPlan = null;
 
@@ -140,6 +223,10 @@ export async function POST(request, { params }) {
       plan.updatedAt = new Date();
       await plan.save();
       updatedPlan = plan;
+    } else {
+      plan.days[dayIndex].meals[mealIndex] = updatedMeal;
+      plan.swaps.used = newPlanSwapsUsed;
+      plan.swaps.remaining = swapsRemaining;
     }
 
     return NextResponse.json({
@@ -153,7 +240,7 @@ export async function POST(request, { params }) {
       },
       userTier: actualUserTier,
 
-      // IMPORTANT: Return updated plan data for frontend to use when saving
+      // Return updated plan data for frontend to use when saving
       updatedPlanData: !isTempPlan
         ? {
             id: plan._id,
@@ -220,7 +307,7 @@ export async function GET(request, { params }) {
     if (id.startsWith("temp_")) {
       // Temp plan
       isTempPlan = true;
-      const swapsAllowed = SWAPS_PER_PLAN[userTier] || 1;
+      const swapsAllowed = SWAPS_PER_PLAN[userTier] || 0;
 
       return NextResponse.json({
         swapsAllowed,

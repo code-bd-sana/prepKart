@@ -11,15 +11,29 @@ import { useTranslations } from "next-intl";
 
 // PROVINCES in both languages
 const PROVINCES_EN = [
-  "Ontario", "Quebec", "British Columbia", "Alberta", "Manitoba",
-  "Saskatchewan", "Nova Scotia", "New Brunswick", 
-  "Newfoundland and Labrador", "Prince Edward Island"
+  "Ontario",
+  "Quebec",
+  "British Columbia",
+  "Alberta",
+  "Manitoba",
+  "Saskatchewan",
+  "Nova Scotia",
+  "New Brunswick",
+  "Newfoundland and Labrador",
+  "Prince Edward Island",
 ];
 
 const PROVINCES_FR = [
-  "Ontario", "Québec", "Colombie-Britannique", "Alberta", "Manitoba",
-  "Saskatchewan", "Nouvelle-Écosse", "Nouveau-Brunswick",
-  "Terre-Neuve-et-Labrador", "Île-du-Prince-Édouard"
+  "Ontario",
+  "Québec",
+  "Colombie-Britannique",
+  "Alberta",
+  "Manitoba",
+  "Saskatchewan",
+  "Nouvelle-Écosse",
+  "Nouveau-Brunswick",
+  "Terre-Neuve-et-Labrador",
+  "Île-du-Prince-Édouard",
 ];
 
 // Dietary preferences for checkboxes
@@ -38,7 +52,7 @@ const DIETARY_OPTIONS = [
 
 // Common allergies
 const ALLERGY_OPTIONS = [
-   "Eggs",
+  "Eggs",
   "Milk",
   "Mustard",
   "Peanuts",
@@ -55,10 +69,10 @@ const ALLERGY_OPTIONS = [
 export default function RegisterPage() {
   const params = useParams();
   const locale = params.locale;
-  const t = useTranslations('register'); 
+  const t = useTranslations("register");
 
   // Get provinces based on locale
-  const PROVINCES = locale === 'fr' ? PROVINCES_FR : PROVINCES_EN;
+  const PROVINCES = locale === "fr" ? PROVINCES_FR : PROVINCES_EN;
 
   const [formData, setFormData] = useState({
     email: "",
@@ -75,12 +89,31 @@ export default function RegisterPage() {
     maxCookingTime: 60,
     goal: "general_health",
     budgetLevel: "medium",
+    marketing_consent: false,
+    age: "",
+    agreeTerms: false,
   });
 
   const [likesText, setLikesText] = useState("");
   const [dislikesText, setDislikesText] = useState("");
   const [customDietary, setCustomDietary] = useState("");
   const [customAllergy, setCustomAllergy] = useState("");
+
+  // validation function
+  const isFormValid = () => {
+    // Check required fields
+    if (!formData.name.trim()) return false;
+    if (!formData.email.trim()) return false;
+    if (!formData.password || formData.password.length < 6) return false;
+    if (!formData.province) return false;
+
+    // Check checkboxes
+    if (!formData.ageVerified) return false;
+    if (!formData.agreeTerms) return false;
+    if (!formData.marketing_consent) return false;
+
+    return true;
+  };
 
   const dispatch = useDispatch();
   const router = useRouter();
@@ -89,8 +122,16 @@ export default function RegisterPage() {
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
 
-    if (type === "checkbox" && name === "ageVerified") {
-      setFormData((prev) => ({ ...prev, ageVerified: checked }));
+    if (type === "checkbox") {
+      if (
+        name === "ageVerified" ||
+        name === "marketing_consent" ||
+        name === "agreeTerms"
+      ) {
+        setFormData((prev) => ({ ...prev, [name]: checked }));
+      } else {
+        setFormData((prev) => ({ ...prev, [name]: value }));
+      }
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
@@ -205,9 +246,21 @@ export default function RegisterPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.ageVerified) {
-      toast.warning(t('mustBe18'));
-      toast.warning("You must be 18+ to use PrepCart");
+    // Validate all fields
+    if (!isFormValid()) {
+      const missingFields = [];
+      if (!formData.name.trim()) missingFields.push("Name");
+      if (!formData.email.trim()) missingFields.push("Email");
+      if (!formData.password || formData.password.length < 6)
+        missingFields.push("Password");
+      if (!formData.province) missingFields.push("Province");
+      if (!formData.ageVerified) missingFields.push("Age Verification");
+      if (!formData.agreeTerms) missingFields.push("Terms & Privacy");
+      if (!formData.marketing_consent) missingFields.push("Marketing Consent");
+
+      toast.warning(
+        `Please fill in all required fields: ${missingFields.join(", ")}`
+      );
       return;
     }
 
@@ -218,36 +271,32 @@ export default function RegisterPage() {
       toast.success("Registered Successfully!");
       router.push("/");
     } catch (error) {
-      toast.error(t('registrationFailed'));
+      toast.error(t("registrationFailed"));
     }
   };
-
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden p-6">
         {/* Home Button */}
         <div className="mb-4">
           <Link
-             href={`/${locale}`}
+            href={`/${locale}`}
             className="inline-flex items-center text-sm text-gray-600 hover:text-gray-800 transition"
           >
             <ArrowLeft />
-            {t('backToHome')}
-            Back to Home
+            {t("backToHome")}
           </Link>
           <div>
             <div className="bg-linear-to-r from-[#ebf2f7] to-[#dae2e9] mb-6 p-5 rounded-xl text-center">
               <h1 className="text-3xl font-bold text-[#8cc63c]">
-                {t('title')}
+                {t("title")}
               </h1>
             </div>
           </div>
 
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded text-sm">
-              {error.includes("409")
-                ? t('emailExists')
-                : error}
+              {error.includes("409") ? t("emailExists") : error}
             </div>
           )}
 
@@ -255,20 +304,29 @@ export default function RegisterPage() {
             {/* Section 1: Basic Information */}
             <div className="space-y-4">
               <h2 className="text-base font-semibold text-gray-700 pb-2 border-b">
-                {t('basicInfo')}
+                {t("basicInfo")}
               </h2>
 
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1">
-                    {t('fullName')} <span className="text-red-500">*</span>
+                    {t("fullName")} <span className="text-red-500">*</span>
+                    {!formData.name.trim() && (
+                      <span className="text-red-500 text-xs ml-2">
+                        Required
+                      </span>
+                    )}
                   </label>
                   <input
                     name="name"
                     type="text"
                     value={formData.name}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-[#4a9fd8] focus:border-[#4a9fd8] outline-none"
+                    className={`w-full px-3 py-2 text-sm border rounded focus:ring-1 focus:ring-[#4a9fd8] outline-none ${
+                      !formData.name.trim()
+                        ? "border-red-300"
+                        : "border-gray-300"
+                    }`}
                     placeholder="John Doe"
                     required
                   />
@@ -276,14 +334,23 @@ export default function RegisterPage() {
 
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1">
-                    {t('email')} <span className="text-red-500">*</span>
+                    {t("email")} <span className="text-red-500">*</span>
+                    {!formData.email.trim() && (
+                      <span className="text-red-500 text-xs ml-2">
+                        Required
+                      </span>
+                    )}
                   </label>
                   <input
                     name="email"
                     type="email"
                     value={formData.email}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-[#4a9fd8] focus:border-[#4a9fd8] outline-none"
+                    className={`w-full px-3 py-2 text-sm border rounded focus:ring-1 focus:ring-[#4a9fd8] outline-none ${
+                      !formData.email.trim()
+                        ? "border-red-300"
+                        : "border-gray-300"
+                    }`}
                     placeholder="you@example.com"
                     required
                   />
@@ -293,14 +360,23 @@ export default function RegisterPage() {
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1">
-                    {t('password')} <span className="text-red-500">*</span>
+                    {t("password")} <span className="text-red-500">*</span>
+                    {(!formData.password || formData.password.length < 6) && (
+                      <span className="text-red-500 text-xs ml-2">
+                        {formData.password ? "Min 6 characters" : "Required"}
+                      </span>
+                    )}
                   </label>
                   <input
                     name="password"
                     type="password"
                     value={formData.password}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-[#4a9fd8] focus:border-[#4a9fd8] outline-none"
+                    className={`w-full px-3 py-2 text-sm border rounded focus:ring-1 focus:ring-[#4a9fd8] outline-none ${
+                      !formData.password || formData.password.length < 6
+                        ? "border-red-300"
+                        : "border-gray-300"
+                    }`}
                     placeholder="At least 6 characters"
                     minLength="6"
                     required
@@ -309,15 +385,23 @@ export default function RegisterPage() {
 
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1">
-                    {t('province')} <span className="text-red-500">*</span>
+                    {t("province")} <span className="text-red-500">*</span>
+                    {!formData.province && (
+                      <span className="text-red-500 text-xs ml-2">
+                        Required
+                      </span>
+                    )}
                   </label>
                   <select
                     name="province"
                     value={formData.province}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-[#4a9fd8] focus:border-[#4a9fd8] outline-none bg-white"
+                    className={`w-full px-3 py-2 text-sm border rounded focus:ring-1 focus:ring-[#4a9fd8] outline-none ${
+                      !formData.province ? "border-red-300" : "border-gray-300"
+                    }`}
                     required
                   >
+                    <option value="">Select Province</option>
                     {PROVINCES.map((province) => (
                       <option key={province} value={province}>
                         {province}
@@ -331,19 +415,19 @@ export default function RegisterPage() {
             {/* Section 2: Dietary Preferences */}
             <div className="space-y-4">
               <h2 className="text-base font-semibold text-gray-700 pb-2 border-b">
-                {t('dietaryPreferences')}
+                {t("dietaryPreferences")}
               </h2>
 
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-1">
-                  {t('dietaryPreferences')}
+                  {t("dietaryPreferences")}
                 </label>
                 <select
                   onChange={handleDietarySelect}
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-[#4a9fd8] focus:border-[#4a9fd8] outline-none bg-white mb-2"
                   defaultValue=""
                 >
-                  <option value="">{t('selectDietary')}</option>
+                  <option value="">{t("selectDietary")}</option>
                   {DIETARY_OPTIONS.filter(
                     (opt) => !formData.dietaryPreferences.includes(opt)
                   ).map((option) => (
@@ -358,7 +442,7 @@ export default function RegisterPage() {
                     type="text"
                     value={customDietary}
                     onChange={(e) => setCustomDietary(e.target.value)}
-                    placeholder={t('customDietaryPlaceholder')}
+                    placeholder={t("customDietaryPlaceholder")}
                     className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-[#4a9fd8] focus:border-[#4a9fd8] outline-none"
                     onKeyPress={(e) =>
                       e.key === "Enter" && handleCustomDietary(e)
@@ -369,7 +453,7 @@ export default function RegisterPage() {
                     onClick={handleCustomDietary}
                     className="px-4 py-2 text-sm bg-[#8cc63c] hover:bg-[#7ab32f] text-white rounded"
                   >
-                    {t('add')}
+                    {t("add")}
                   </button>
                 </div>
 
@@ -396,14 +480,14 @@ export default function RegisterPage() {
 
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-1">
-                  {t('allergies')}
+                  {t("allergies")}
                 </label>
                 <select
                   onChange={handleAllergySelect}
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-[#4a9fd8] focus:border-[#4a9fd8] outline-none bg-white mb-2"
                   defaultValue=""
                 >
-                  <option value="">{t('selectAllergy')}</option>
+                  <option value="">{t("selectAllergy")}</option>
                   {ALLERGY_OPTIONS.filter(
                     (opt) => !formData.allergies.includes(opt)
                   ).map((option) => (
@@ -418,7 +502,7 @@ export default function RegisterPage() {
                     type="text"
                     value={customAllergy}
                     onChange={(e) => setCustomAllergy(e.target.value)}
-                    placeholder={t('customAllergyPlaceholder')}
+                    placeholder={t("customAllergyPlaceholder")}
                     className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-[#4a9fd8] focus:border-[#4a9fd8] outline-none"
                     onKeyPress={(e) =>
                       e.key === "Enter" && handleCustomAllergy(e)
@@ -429,7 +513,7 @@ export default function RegisterPage() {
                     onClick={handleCustomAllergy}
                     className="px-4 py-2 text-sm bg-[#8cc63c] hover:bg-[#7ab32f] text-white rounded"
                   >
-                     {t('add')}
+                    {t("add")}
                   </button>
                 </div>
 
@@ -602,51 +686,120 @@ export default function RegisterPage() {
               </div>
             </div> */}
 
-            {/* 18 Age or Not */}
-            <div className="flex items-start space-x-2 p-3 bg-gray-50 rounded border border-gray-200">
-              <input
-                type="checkbox"
-                id="ageVerified"
-                name="ageVerified"
-                checked={formData.ageVerified}
-                onChange={handleChange}
-                className="mt-0.5 h-4 w-4 text-[#4a9fd8] rounded focus:ring-[#4a9fd8]"
-                required
-              />
-              <label htmlFor="ageVerified" className="text-xs text-gray-700">
-                {t('ageVerification')} <span className="text-red-500">*</span>
-                <span className="text-red-500">*</span>
-              </label>
+            <div className="space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-3">
+                {/* 18 Age or Not */}
+                <div
+                  className={`flex items-start space-x-2 p-3 rounded border ${
+                    !formData.ageVerified
+                      ? " border-red-200"
+                      : "bg-green-50 border-green-200"
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    id="ageVerified"
+                    name="ageVerified"
+                    checked={formData.ageVerified}
+                    onChange={handleChange}
+                    className="mt-0.5 h-4 w-4 text-[#4a9fd8] rounded focus:ring-[#4a9fd8]"
+                    required
+                  />
+                  <label
+                    htmlFor="ageVerified"
+                    className="text-xs text-gray-700"
+                  >
+                    {t("ageVerification")}{" "}
+                    <span className="text-red-500">*</span>
+                  </label>
+                </div>
+                {/* MANDATORY TERMS CHECKBOX  */}
+                <div
+                  className={`flex items-start space-x-2 p-3 rounded border ${
+                    !formData.agreeTerms
+                      ? " border-red-200"
+                      : "bg-green-50 border-green-200"
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    id="agreeTerms"
+                    name="agreeTerms"
+                    checked={formData.agreeTerms}
+                    onChange={handleChange}
+                    className="mt-0.5 h-4 w-4 text-[#4a9fd8] rounded focus:ring-[#4a9fd8]"
+                    required
+                  />
+                  <label htmlFor="agreeTerms" className="text-xs text-gray-700">
+                    I agree to the{" "}
+                    <a
+                      href={`/${locale}/terms`}
+                      className="text-[#4a9fd8] hover:text-[#3a8ec8] hover:underline font-medium"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Terms of Service
+                    </a>{" "}
+                    and{" "}
+                    <a
+                      href={`/${locale}/privacy`}
+                      className="text-[#4a9fd8] hover:text-[#3a8ec8] hover:underline font-medium"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Privacy Policy
+                    </a>
+                  </label>
+                </div>
+              </div>
+
+              {/* CASL MARKETING CONSENT CHECKBOX */}
+              <div className="flex items-start space-x-2 p-3 bg-gray-50 rounded border border-gray-200 mt-3">
+                <input
+                  type="checkbox"
+                  id="marketing_consent"
+                  name="marketing_consent"
+                  checked={formData.marketing_consent}
+                  onChange={handleChange}
+                  className="mt-0.5 h-4 w-4 text-[#4a9fd8] rounded focus:ring-[#4a9fd8]"
+                />
+                <label
+                  htmlFor="marketing_consent"
+                  className="text-xs text-gray-700"
+                >
+                  I agree to receive emails from Prepcart about meal plans,
+                  feature updates, and special offers. I can unsubscribe at any
+                  time.
+                </label>
+              </div>
             </div>
             {/* Submit Button */}
             <div className="pt-2">
               <button
                 type="submit"
-                disabled={loading || !formData.ageVerified}
-                className={`w-full py-2.5 px-4 rounded text-lg font-medium ${
-                  loading || !formData.ageVerified
+                disabled={loading || !isFormValid()}
+                className={`w-full py-2.5 px-4 rounded text-lg font-medium transition-all ${
+                  loading || !isFormValid()
                     ? "bg-gray-300 cursor-not-allowed text-gray-500"
-                    : "bg-[#8cc63c] hover:bg-[#7ab32f] text-white"
+                    : "bg-[#8cc63c] hover:bg-[#7ab32f] text-white shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                 }`}
               >
-                {loading ? t('creatingAccount') : t('createAccount')}
+                {loading ? t("creatingAccount") : t("createAccount")}
               </button>
             </div>
           </form>
 
           <div className="mt-6 text-center text-sm text-gray-500">
             <p>
-               {t('alreadyHaveAccount')}{" "}
+              {t("alreadyHaveAccount")}{" "}
               <Link
                 href={`/${locale}/login`}
                 className="text-[#8cc63c] hover:text-[#7ab32f] font-medium"
               >
-                 {t('loginHere')}
+                {t("loginHere")}
               </Link>
             </p>
-            <p className="mt-2">
-                {t('terms')}
-            </p>
+            <p className="mt-2">{t("terms")}</p>
           </div>
         </div>
       </div>
