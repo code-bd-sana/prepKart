@@ -1,0 +1,1110 @@
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
+import { use } from "react";
+import { useSelector } from "react-redux";
+import { toast } from "react-toastify";
+import {
+  Edit2,
+  ShoppingCart,
+  Check,
+  Printer,
+  ArrowLeft,
+  Share2,
+  Plus,
+  Minus,
+  Trash2,
+  Save,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
+import { useRouter } from "next/navigation"; // Changed from next/router
+import Navbar from "@/components/shared/Navbar";
+
+// Aisle order for sorting
+const aisleOrder = [
+  "Produce",
+  "Proteins",
+  "Dairy",
+  "Pantry",
+  "Snacks",
+  "Bakery",
+  "Frozen",
+  "Spices",
+  "Beverages",
+  "Other",
+];
+
+export default function GroceryListPage({ params }) {
+  const unwrappedParams = use(params);
+  const { id } = unwrappedParams;
+
+  const { user } = useSelector((state) => state.auth);
+  const router = useRouter();
+
+  const getAuthToken = () => {
+    const token =
+      localStorage.getItem("token") || localStorage.getItem("accessToken");
+    return token || "";
+  };
+
+  const fetchWithAuth = async (url, options = {}) => {
+    const token = getAuthToken();
+    const headers = {
+      "Content-Type": "application/json",
+      ...(token && { Authorization: `Bearer ${token}` }),
+      ...options.headers,
+    };
+
+    return fetch(url, { ...options, headers });
+  };
+
+  const [groceryList, setGroceryList] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [hidePantry, setHidePantry] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [newItem, setNewItem] = useState({
+    name: "",
+    quantity: 1,
+    unit: "unit",
+    aisle: "Other",
+  });
+  const [userPantry, setUserPantry] = useState([]);
+  const [expandedAisles, setExpandedAisles] = useState({});
+
+  // Initialize all aisles as expanded by default
+  useEffect(() => {
+    const initialExpanded = {};
+    aisleOrder.forEach((aisle) => {
+      initialExpanded[aisle] = true;
+    });
+
+    if (groceryList?.items) {
+      groceryList.items.forEach((item) => {
+        const aisle = item.aisle || item.category || "Other";
+        if (!initialExpanded.hasOwnProperty(aisle)) {
+          initialExpanded[aisle] = true;
+        }
+      });
+    }
+
+    setExpandedAisles(initialExpanded);
+  }, [groceryList]);
+
+  const toggleAisle = (aisle) => {
+    setExpandedAisles((prev) => ({
+      ...prev,
+      [aisle]: !prev[aisle],
+    }));
+  };
+
+  // Define markPantryItems function
+  const markPantryItems = useCallback(
+    async (groceryItems) => {
+      if (!user || user?.tier === "free") {
+        return groceryItems.map((item) => ({ ...item, inPantry: false }));
+      }
+
+      try {
+        const token = getAuthToken();
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+        const response = await fetch("/api/pantry", { headers });
+
+        if (response.ok) {
+          const pantryData = await response.json();
+          const pantryItems = pantryData.pantry?.items || [];
+
+          return groceryItems.map((item) => {
+            // Check if item exists in pantry
+            const inPantry = pantryItems.some((pantryItem) => {
+              // Use exact normalized name matching
+              const groceryNormalized =
+                item.normalizedName?.toLowerCase() || item.name.toLowerCase();
+              const pantryNormalized =
+                pantryItem.normalizedName?.toLowerCase() ||
+                pantryItem.name.toLowerCase();
+
+              // Exact match or very close match
+              return (
+                groceryNormalized === pantryNormalized ||
+                pantryNormalized.startsWith(groceryNormalized)
+              );
+            });
+
+            return {
+              ...item,
+              inPantry,
+              pantryQuantity: inPantry
+                ? pantryItems.find(
+                    (p) =>
+                      p.name.toLowerCase().includes(item.name.toLowerCase()) ||
+                      item.name.toLowerCase().includes(p.name.toLowerCase())
+                  )?.quantity
+                : null,
+            };
+          });
+        }
+      } catch (error) {
+        console.error("Error checking pantry:", error);
+      }
+
+      return groceryItems.map((item) => ({ ...item, inPantry: false }));
+    },
+    [user]
+  ); // Add user as dependency
+
+  // Fetch grocery list - now includes markPantryItems as dependency
+  const fetchGroceryList = useCallback(
+    async (listId) => {
+      try {
+        setLoading(true);
+        const token = getAuthToken();
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+        const response = await fetch(`/api/groceryLists/${listId}`, {
+          headers,
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to load: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+          const list = data.groceryList;
+
+          // Mark items that are in pantry
+          const itemsWithPantryStatus = await markPantryItems(list.items);
+          setGroceryList({
+            ...list,
+            items: itemsWithPantryStatus,
+          });
+        } else {
+          toast.error(data.error || "Failed to load");
+        }
+      } catch (error) {
+        console.error("Error:", error);
+        toast.error("Error loading: " + error.message);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [markPantryItems]
+  );
+
+  // Fetch user pantry
+  const fetchUserPantry = useCallback(async () => {
+    if (user?.tier === "free") return;
+
+    try {
+      // Move fetchWithAuth logic inline
+      const token = getAuthToken();
+      const headers = {
+        "Content-Type": "application/json",
+        ...(token && { Authorization: `Bearer ${token}` }),
+      };
+
+      const response = await fetch("/api/pantry", { headers });
+
+      if (response.status === 403) {
+        return;
+      }
+
+      if (response.ok) {
+        const data = await response.json();
+        setUserPantry(data.pantry?.items || []);
+
+        if (groceryList?.items) {
+          const updatedItems = await markPantryItems(groceryList.items);
+          setGroceryList({
+            ...groceryList,
+            items: updatedItems,
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching pantry:", error);
+    }
+  }, [user, groceryList, markPantryItems]);
+
+  useEffect(() => {
+    if (id) {
+      fetchGroceryList(id);
+    }
+  }, [id, fetchGroceryList]);
+
+  // Calculate grouped items
+  const getGroupedItems = useCallback(() => {
+    if (!groceryList?.items) return {};
+
+    const itemsToDisplay = hidePantry
+      ? groceryList.items.filter((item) => !item.inPantry)
+      : groceryList.items;
+
+    const grouped = {};
+    itemsToDisplay.forEach((item) => {
+      const aisle = item.aisle || item.category || "Other";
+      if (!grouped[aisle]) {
+        grouped[aisle] = [];
+      }
+      grouped[aisle].push(item);
+    });
+
+    return grouped;
+  }, [groceryList, hidePantry]);
+
+  const groupedItems = getGroupedItems();
+
+  // Sort aisles according to aisleOrder
+  const sortedAisles = Object.keys(groupedItems).sort((a, b) => {
+    const indexA = aisleOrder.indexOf(a);
+    const indexB = aisleOrder.indexOf(b);
+    if (indexA === -1 && indexB === -1) return a.localeCompare(b);
+    if (indexA === -1) return 1;
+    if (indexB === -1) return -1;
+    return indexA - indexB;
+  });
+
+  // Calculate totals
+  const getProgressItems = useCallback(() => {
+    if (!groceryList?.items) return [];
+
+    return hidePantry
+      ? groceryList.items.filter((item) => !item.inPantry) // Only non-pantry items count
+      : groceryList.items; // All items count
+  }, [groceryList, hidePantry]);
+
+  // Use this for progress calculations
+  const progressItems = getProgressItems();
+  const visibleCheckedCount =
+    progressItems.filter((item) => item.checked).length || 0;
+  const visibleProgressItemsCount = progressItems.length || 0;
+  const pantryItemsCount =
+    groceryList?.items?.filter((item) => item.inPantry).length || 0;
+
+  const estimatedTotal =
+    groceryList?.items?.reduce(
+      (sum, item) => sum + (item.estimatedPrice || 0),
+      0
+    ) || 0;
+
+  // toggleItemChecked function
+  const toggleItemChecked = async (itemId) => {
+  if (!groceryList) return;
+
+  const updatedItems = groceryList.items.map((item) =>
+    item._id === itemId ? { ...item, checked: !item.checked } : item
+  );
+
+  const updatedList = {
+    ...groceryList,
+    items: updatedItems,
+    checkedItems: updatedItems.filter((item) => item.checked).length,
+  };
+
+  setGroceryList(updatedList);
+
+  // Save to database
+  try {
+    const response = await fetchWithAuth(`/api/groceryLists/${groceryList._id}`, {
+      method: "PATCH",
+      body: JSON.stringify({
+        items: updatedItems,
+        checkedItems: updatedList.checkedItems,
+      }),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+  
+      if (data.success && data.groceryList) {
+        setGroceryList(data.groceryList);
+      }
+    }
+  } catch (error) {
+    toast.error("Failed to update item");
+  }
+};
+
+  // updateQuantity function
+  const updateQuantity = async (itemId, newQuantity) => {
+    if (!groceryList || newQuantity < 0.1) return;
+
+    const updatedItems = groceryList.items.map((item) => {
+      if (item._id === itemId) {
+        const newPrice = calculateEstimatedPrice(
+          item.name,
+          parseFloat(newQuantity),
+          item.unit
+        );
+        return {
+          ...item,
+          quantity: parseFloat(newQuantity),
+          estimatedPrice: newPrice,
+        };
+      }
+      return item;
+    });
+
+    const updatedList = {
+      ...groceryList,
+      items: updatedItems,
+      estimatedTotal: updatedItems.reduce(
+        (sum, item) => sum + (item.estimatedPrice || 0),
+        0
+      ),
+    };
+
+    setGroceryList(updatedList);
+
+    // Save to database
+    try {
+      await fetchWithAuth(`/api/groceryLists/${groceryList._id}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          items: updatedItems,
+          estimatedTotal: updatedList.estimatedTotal,
+        }),
+      });
+    } catch (error) {
+      toast.error("Failed to update quantity");
+    }
+  };
+
+  // removeItem function
+  const removeItem = async (itemId) => {
+    if (!groceryList) return;
+
+    if (!confirm("Remove this item from the list?")) return;
+
+    const updatedItems = groceryList.items.filter(
+      (item) => item._id !== itemId
+    );
+
+    try {
+      const response = await fetchWithAuth(
+        `/api/groceryLists/${groceryList._id}`,
+        {
+          method: "PATCH",
+          body: JSON.stringify({ items: updatedItems }),
+        }
+      );
+
+      if (response.ok) {
+        setGroceryList({ ...groceryList, items: updatedItems });
+        toast.success("Item removed");
+      }
+    } catch (error) {
+      toast.error("Failed to remove item");
+    }
+  };
+
+  // addNewItem function
+  const addNewItem = async () => {
+    if (!newItem.name.trim() || !groceryList) {
+      toast.error("Please enter an item name");
+      return;
+    }
+
+    try {
+      const tempId = `temp_${Date.now()}_${Math.random()
+        .toString(36)
+        .substr(2, 9)}`;
+      const newItemObj = {
+        _id: tempId,
+        name: newItem.name,
+        quantity: newItem.quantity,
+        unit: newItem.unit,
+        aisle: newItem.aisle,
+        category: newItem.aisle,
+        checked: false,
+        inPantry: false,
+        estimatedPrice: calculateEstimatedPrice(
+          newItem.name,
+          newItem.quantity,
+          newItem.unit
+        ),
+        normalizedName: newItem.name.toLowerCase(),
+        recipeSources: [],
+        note: "",
+      };
+
+      // Create the updated items array
+      const updatedItems = [...groceryList.items, newItemObj];
+
+      // Call saveChanges with the updated items directly
+      await saveChanges(updatedItems);
+
+      // Only update local state and clear form AFTER successful save
+      setGroceryList({ ...groceryList, items: updatedItems });
+      setNewItem({ name: "", quantity: 1, unit: "unit", aisle: "Other" });
+
+      toast.success("Item added!");
+    } catch (error) {
+      toast.error("Failed to add item");
+    }
+  };
+  // price calculation
+  const calculateEstimatedPrice = (name, quantity, unit) => {
+    const itemName = name.toLowerCase();
+    let pricePerUnit = 0;
+
+    // More realistic Canadian prices
+    const priceMap = {
+      chicken: 12.99,
+      beef: 16.99,
+      pork: 11.99,
+      rice: 4.99,
+      pasta: 2.49,
+      tomato: 3.99,
+      onion: 2.49,
+      garlic: 1.99,
+      potato: 1.99,
+      carrot: 1.99,
+      broccoli: 3.99,
+      spinach: 4.99,
+      egg: 0.35,
+      milk: 1.5,
+      cheese: 22.47,
+      butter: 14.97,
+      oil: 9.99,
+      bread: 3.99,
+    };
+
+    for (const [key, price] of Object.entries(priceMap)) {
+      if (itemName.includes(key)) {
+        pricePerUnit = price;
+        break;
+      }
+    }
+
+    if (pricePerUnit === 0) {
+      if (
+        itemName.includes("meat") ||
+        itemName.includes("chicken") ||
+        itemName.includes("beef")
+      ) {
+        pricePerUnit = 12.99;
+      } else if (
+        itemName.includes("vegetable") ||
+        itemName.includes("produce")
+      ) {
+        pricePerUnit = 3.99;
+      } else if (itemName.includes("dairy")) {
+        pricePerUnit = 5.99;
+      } else {
+        pricePerUnit = 2.99;
+      }
+    }
+
+    let estimated = pricePerUnit;
+
+    // Adjust for different units
+    if (unit === "kg" || unit === "kilogram") {
+      estimated = pricePerUnit * quantity;
+    } else if (unit === "g" || unit === "gram") {
+      estimated = (pricePerUnit / 1000) * quantity;
+    } else if (unit === "lb" || unit === "pound") {
+      estimated = pricePerUnit * quantity * 0.453592;
+    } else if (unit === "cup") {
+      estimated = pricePerUnit * quantity * 0.25;
+    } else if (unit === "ml" || unit === "milliliter") {
+      estimated = (pricePerUnit / 1000) * quantity;
+    } else if (unit === "l" || unit === "liter") {
+      estimated = pricePerUnit * quantity;
+    } else {
+      estimated = pricePerUnit * quantity;
+    }
+
+    return parseFloat(estimated.toFixed(2));
+  };
+
+  // printList function
+  const printList = () => {
+    window.print();
+  };
+  // shareList function
+  const shareList = async () => {
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: groceryList?.title || "Grocery List",
+          text: `Check out my grocery list from PrepCart`,
+          url: window.location.href,
+        });
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+        toast.success("Link copied to clipboard!");
+      }
+    } catch (error) {
+      console.error("Share error:", error);
+    }
+  };
+
+  // saveChanges function
+  const saveChanges = async (itemsToSaveParam = null) => {
+    if (!groceryList) return;
+    const itemsToSave = itemsToSaveParam || groceryList.items;
+
+    try {
+      const processedItems = itemsToSave.map((item) => ({
+        ...item,
+        estimatedPrice:
+          item.estimatedPrice ||
+          calculateEstimatedPrice(item.name, item.quantity, item.unit),
+      }));
+
+      const totalItems = processedItems.length;
+      const checkedItems = processedItems.filter((item) => item.checked).length;
+      const estimatedTotal = processedItems.reduce(
+        (sum, item) => sum + (item.estimatedPrice || 0),
+        0
+      );
+
+      const response = await fetchWithAuth(
+        `/api/groceryLists/${groceryList._id}`,
+        {
+          method: "PATCH",
+          body: JSON.stringify({
+            items: processedItems,
+            totalItems,
+            checkedItems,
+            estimatedTotal,
+            updatedAt: new Date().toISOString(),
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to save to server");
+      }
+
+      const data = await response.json();
+
+      if (data.success && data.groceryList) {
+        setGroceryList(data.groceryList);
+        toast.success("Changes saved!");
+        setIsEditing(false);
+      } else {
+        toast.error("Failed to save changes");
+      }
+    } catch (error) {
+      console.error("Save error:", error);
+      toast.error("Failed to save changes");
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading your grocery list...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!groceryList) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-4xl mb-4">🛒</div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            Grocery List Not Found
+          </h2>
+          <button
+            onClick={() => router.push("/dashboard")}
+            className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700"
+          >
+            Back to Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <section>
+      <Navbar />
+      <div className="container mx-auto px-4 max-w-[1200px] py-8 md:py-16 min-h-screen">
+        {/* Header with back button */}
+        <div className="mb-8">
+          <button
+            onClick={() => router.back()}
+            className="flex items-center text-green-600 hover:text-green-800 mb-4"
+          >
+            <ArrowLeft className="h-5 w-5 mr-2" />
+            Back
+          </button>
+        </div>
+
+        <div className="rounded-xl mx-auto max-w-[1200px] bg-white shadow-lg">
+          {/* Card Header */}
+          <div className="p-6 px-4 border-b border-gray-200">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div className="flex-1">
+                <h1 className="text-2xl font-semibold text-gray-900">
+                  {groceryList.title}
+                </h1>
+                <div className="flex flex-wrap gap-4 mt-2 text-gray-600 text-sm">
+                  <span>{visibleProgressItemsCount} items to buy</span>
+                  {pantryItemsCount > 0 && (
+                    <>
+                      <span>•</span>
+                      <span className="text-[#4a9fd8]">
+                        {pantryItemsCount} in pantry
+                      </span>
+                    </>
+                  )}
+                  <span>•</span>
+                  <span className="font-semibold text-green-600">
+                    Estimated: ${estimatedTotal.toFixed(2)}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => setIsEditing(!isEditing)}
+                  className="h-9 px-4 rounded-lg bg-white hover:bg-gray-50 transition-colors text-sm font-medium text-gray-700 flex items-center gap-2 border border-gray-300"
+                >
+                  {isEditing ? (
+                    <>
+                      <Save className="h-4 w-4" />
+                      Save Changes
+                    </>
+                  ) : (
+                    <>
+                      <Edit2 className="h-4 w-4" />
+                      Edit List
+                    </>
+                  )}
+                </button>
+
+                {user?.tier !== "free" && (
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={hidePantry}
+                      onClick={() => setHidePantry(!hidePantry)}
+                      className={`
+                        relative inline-flex h-6 w-11 items-center rounded-full transition-colors
+                        ${hidePantry ? "bg-teal-600" : "bg-gray-200"}
+                        focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2
+                      `}
+                    >
+                      <span
+                        className={`
+                          inline-block h-4 w-4 transform rounded-full bg-white transition-transform
+                          ${hidePantry ? "translate-x-6" : "translate-x-1"}
+                        `}
+                      />
+                    </button>
+                    <span className="text-sm text-gray-600">
+                      Hide pantry items
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Progress */}
+            <div className="mt-6">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm font-medium text-gray-700">
+                  {visibleCheckedCount} of {visibleProgressItemsCount} items
+                  checked
+                </span>
+                <span className="text-sm text-gray-500">
+                  {Math.round(
+                    (visibleCheckedCount / visibleProgressItemsCount) * 100
+                  ) || 0}
+                  %
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2.5">
+                <div
+                  className="bg-green-500 h-2.5 rounded-full transition-all duration-300"
+                  style={{
+                    width: `${
+                      visibleProgressItemsCount > 0
+                        ? (visibleCheckedCount / visibleProgressItemsCount) *
+                          100
+                        : 0
+                    }%`,
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Add Item Form (when editing) */}
+          {isEditing && (
+            <div className="p-6 border-b border-gray-200 bg-gray-50">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Add New Item
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Item Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={newItem.name}
+                    onChange={(e) =>
+                      setNewItem({ ...newItem, name: e.target.value })
+                    }
+                    placeholder="e.g., Apples, Bread, Milk"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Quantity
+                  </label>
+                  <input
+                    type="number"
+                    min="0.1"
+                    step="0.1"
+                    value={newItem.quantity}
+                    onChange={(e) =>
+                      setNewItem({
+                        ...newItem,
+                        quantity: parseFloat(e.target.value) || 1,
+                      })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Unit
+                  </label>
+                  <select
+                    value={newItem.unit}
+                    onChange={(e) =>
+                      setNewItem({ ...newItem, unit: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  >
+                    <option value="unit">unit</option>
+                    <option value="kg">kg</option>
+                    <option value="g">g</option>
+                    <option value="lb">lb</option>
+                    <option value="cup">cup</option>
+                    <option value="tbsp">tbsp</option>
+                    <option value="tsp">tsp</option>
+                    <option value="ml">ml</option>
+                    <option value="l">l</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Aisle
+                  </label>
+                  <select
+                    value={newItem.aisle}
+                    onChange={(e) =>
+                      setNewItem({ ...newItem, aisle: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  >
+                    {aisleOrder.map((aisle) => (
+                      <option key={aisle} value={aisle}>
+                        {aisle}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="flex items-end">
+                  <button
+                    onClick={addNewItem}
+                    className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition font-medium flex items-center justify-center"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Item
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Grocery Items */}
+          <div className="p-4">
+            {sortedAisles.length === 0 ? (
+              <div className="p-8 text-center">
+                <div className="text-4xl mb-4">🛒</div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  {hidePantry && pantryItemsCount > 0
+                    ? "All items are in your pantry!"
+                    : "Your grocery list is empty"}
+                </h3>
+                <p className="text-gray-600">
+                  {hidePantry && pantryItemsCount > 0
+                    ? "Toggle off 'Hide pantry items' to see all items"
+                    : "Add items to get started"}
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div
+                  className={`
+                    grid gap-4
+                    ${
+                      sortedAisles.length === 1
+                        ? "grid-cols-1"
+                        : sortedAisles.length === 2
+                        ? "grid-cols-1 md:grid-cols-2"
+                        : "grid-cols-1 md:grid-cols-2"
+                    }
+                  `}
+                >
+                  {sortedAisles.map((aisle) => (
+                    <div
+                      key={aisle}
+                      className="border border-gray-200 rounded-lg overflow-hidden"
+                    >
+                      <button
+                        onClick={() => toggleAisle(aisle)}
+                        className="w-full bg-gray-50 px-4 py-3 border-b border-gray-200 flex justify-between items-center hover:bg-gray-100 transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          {expandedAisles[aisle] ? (
+                            <ChevronUp className="h-4 w-4 text-gray-500" />
+                          ) : (
+                            <ChevronDown className="h-4 w-4 text-gray-500" />
+                          )}
+                          <h3 className="font-semibold text-[#568515]">
+                            {aisle}
+                          </h3>
+                        </div>
+                        <span className="text-sm text-gray-600">
+                          ({groupedItems[aisle].length} items)
+                        </span>
+                      </button>
+
+                      {expandedAisles[aisle] && (
+                        <div className="divide-y divide-gray-100">
+                          {groupedItems[aisle].map((item) => (
+                            <div
+                              key={item._id}
+                              className={`px-4 py-3 flex items-center gap-4 ${
+                                item.checked ? "bg-green-50" : ""
+                              }`}
+                            >
+                              <button
+                                onClick={() => toggleItemChecked(item._id)}
+                                className={`
+                                  h-5 w-5 rounded border flex items-center justify-center shrink-0
+                                  transition-colors
+                                  ${
+                                    item.checked
+                                      ? "bg-green-500 border-green-500"
+                                      : "border-gray-300 hover:border-gray-400"
+                                  }
+                                `}
+                              >
+                                {item.checked && (
+                                  <Check className="h-3 w-3 text-white" />
+                                )}
+                              </button>
+
+                              <div className="flex-1 flex items-center">
+                                <span
+                                  className={`font-medium ${
+                                    item.checked
+                                      ? "text-green-700"
+                                      : "text-gray-900"
+                                  }`}
+                                >
+                                  {item.name}
+                                </span>
+                                {item.inPantry && !hidePantry && (
+                                  <span className="ml-2 inline-flex items-center rounded-full border border-[#4a9fd8] px-2 py-0.5 text-xs font-medium text-[#4a9fd8]">
+                                    In Pantry
+                                  </span>
+                                )}
+                              </div>
+
+                              {isEditing ? (
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    onClick={() =>
+                                      updateQuantity(
+                                        item._id,
+                                        item.quantity - 0.5
+                                      )
+                                    }
+                                    className="h-6 w-6 rounded border border-gray-300 flex items-center justify-center hover:bg-gray-50 text-gray-600"
+                                  >
+                                    <Minus className="h-3 w-3" />
+                                  </button>
+                                  <input
+                                    type="number"
+                                    min="0.1"
+                                    step="0.1"
+                                    value={item.quantity}
+                                    onChange={(e) =>
+                                      updateQuantity(
+                                        item._id,
+                                        parseFloat(e.target.value) || 0.1
+                                      )
+                                    }
+                                    className="w-16 px-2 py-1 border border-gray-300 rounded text-center"
+                                  />
+                                  <button
+                                    onClick={() =>
+                                      updateQuantity(
+                                        item._id,
+                                        item.quantity + 0.5
+                                      )
+                                    }
+                                    className="h-6 w-6 rounded border border-gray-300 flex items-center justify-center hover:bg-gray-50 text-gray-600"
+                                  >
+                                    <Plus className="h-3 w-3" />
+                                  </button>
+
+                                  <select
+                                    value={item.unit || "unit"}
+                                    onChange={(e) => {
+                                      const updatedItems =
+                                        groceryList.items.map((i) =>
+                                          i._id === item._id
+                                            ? { ...i, unit: e.target.value }
+                                            : i
+                                        );
+                                      setGroceryList({
+                                        ...groceryList,
+                                        items: updatedItems,
+                                      });
+                                    }}
+                                    className="px-2 py-1 border border-gray-300 rounded text-sm"
+                                  >
+                                    <option value="unit">unit</option>
+                                    <option value="kg">kg</option>
+                                    <option value="g">g</option>
+                                    <option value="cup">cup</option>
+                                    <option value="tbsp">tbsp</option>
+                                  </select>
+
+                                  <button
+                                    onClick={() => removeItem(item._id)}
+                                    className="text-red-600 hover:text-red-800 ml-2"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </button>
+                                </div>
+                              ) : (
+                                <span className="text-gray-600 text-sm">
+                                  {item.quantity} {item.unit}
+                                </span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Bottom Section */}
+          <div className="p-6 border-t border-gray-200">
+            <div className="flex justify-between items-center">
+              <div className="text-sm text-gray-600">
+                <p className="mt-1">
+                  Note: Prices are estimates based on average Canadian grocery
+                  prices.
+                </p>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={printList}
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                >
+                  <Printer className="h-4 w-4 mr-2" />
+                  Print
+                </button>
+
+                <button
+                  onClick={shareList}
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                >
+                  <Share2 className="h-4 w-4 mr-2" />
+                  Share
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Instacart CTA - Always show but with different behavior based on tier */}
+        <div className="mt-8 bg-linear-to-r from-[#5a9e3a] to-[#4a9fd8] rounded-2xl p-8 text-center text-white">
+          <h3 className="text-2xl font-bold mb-3">Ready to shop?</h3>
+          <p className="mb-6 opacity-90">
+            Order all ingredients with one click on Instacart
+          </p>
+
+          {user?.tier === "tier3" && groceryList.instacartDeepLink ? (
+            <>
+              <button
+                onClick={() => {
+                  if (user?.tier === "tier3" && groceryList.instacartDeepLink) {
+                    window.open(groceryList.instacartDeepLink, "_blank");
+                  } else {
+                    toast.info(
+                      "Upgrade to Premium to access Instacart integration"
+                    );
+                  }
+                }}
+                className={`py-3 px-8 rounded-lg font-bold flex items-center mx-auto ${
+                  user?.tier === "tier3" && groceryList.instacartDeepLink
+                    ? "bg-white text-[#5a9e3a] hover:bg-green-50"
+                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                }`}
+                disabled={
+                  user?.tier !== "tier3" || !groceryList.instacartDeepLink
+                }
+              >
+                <ShoppingCart className="h-5 w-5 mr-2" />
+                Order on Instacart
+              </button>
+              <p className="text-sm mt-3 opacity-90">
+                Your cart loads automatically with all items
+              </p>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={() => {
+                  toast.info(
+                    "Upgrade to Premium to access Instacart integration"
+                  );
+                }}
+                className="bg-white text-[#5a9e3a] py-3 px-8 rounded-lg font-bold hover:bg-green-50 flex items-center mx-auto"
+              >
+                <ShoppingCart className="h-5 w-5 mr-2" />
+                Order on Instacart
+              </button>
+              <p className="text-sm mt-3 opacity-90">
+                Upgrade to Premium for Instacart integration
+              </p>
+            </>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}

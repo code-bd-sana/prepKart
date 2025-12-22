@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import mongoose from 'mongoose';
-import Blogs from '@/models/Blog';
+import Blog from '@/models/Blog';
 
 // Database connection
 async function connectDB() {
@@ -9,118 +9,113 @@ async function connectDB() {
   }
   
   try {
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/blog_database', {
+    await mongoose.connect(process.env.MONGODB_URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
-    console.log('✅ MongoDB Connected');
   } catch (error) {
-    console.error('❌ MongoDB Connection Error:', error);
+    console.error('MongoDB Connection Error:', error);
     throw error;
   }
 }
 
-// GET all blogs
-export async function GET(request) {
-  console.log('📋 GET /api/admin/blog - Fetching all blogs');
-  
-  try {
-    // Connect to DB
-    await connectDB();
-    
-    // Fetch all blogs, sorted by newest first
-    const blogs = await Blogs.find({})
-      .sort({ createdAt: -1 })
-      .select('-content') // Don't include full content in list
-      .lean();
-    
-    console.log(`📚 Found ${blogs.length} blogs`);
-    
-    return NextResponse.json({
-      success: true,
-      blogs,
-      count: blogs.length
-    });
-    
-  } catch (error) {
-    console.error('❌ GET Error:', error);
-    return NextResponse.json(
-      { 
-        error: 'Failed to fetch blogs',
-        details: error.message
-      },
-      { status: 500 }
-    );
-  }
-}
-
-// POST create new blog (YOUR WORKING CODE)
 export async function POST(request) {
-  console.log('🚀 POST /api/admin/blog - Creating new blog');
   
   try {
-    // 1. Get the request body
+    // Get request body
     const body = await request.json();
-    console.log('📦 Request body:', body);
     
-    // 2. Validate
-    if (!body.title || !body.content) {
+    // FIXED: Check if body exists first
+    if (!body) {
+      return NextResponse.json(
+        { error: 'No data received' },
+        { status: 400 }
+      );
+    }
+    
+    // FIXED: Extract fields safely with defaults
+    const title = body.title || '';
+    const excerpt = body.excerpt || '';
+    const content = body.content || '';
+    const category = body.category || 'General';
+    const tags = body.tags || [];
+    const featuredImage = body.featuredImage || '';
+    const published = body.published !== undefined ? body.published : true;
+    
+    console.log('Extracted fields:', { title, category, published, hasImage: !!featuredImage });
+    
+    // Validate required fields
+    if (!title.trim() || !content.trim()) {
       return NextResponse.json(
         { error: 'Title and content are required' },
         { status: 400 }
       );
     }
     
-    // 3. Connect to DB
+    // Connect to database
     await connectDB();
     
-    // 4. Create slug manually
-    const slug = body.title
+    // Create slug from title
+    const slug = title
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '');
     
-    console.log('🔗 Generated slug:', slug);
+    // Check if slug already exists
+    const existingBlog = await Blog.findOne({ slug });
+    if (existingBlog) {
+      return NextResponse.json(
+        { error: 'A blog with similar title already exists' },
+        { status: 409 }
+      );
+    }
     
-    // 5. Create blog data
+    // Create blog data
     const blogData = {
-      title: body.title,
-      slug: slug,
-      excerpt: body.excerpt || body.content.substring(0, 200) + '...',
-      content: body.content,
-      category: body.category || 'General',
-      tags: Array.isArray(body.tags) ? body.tags : [],
-      published: body.published || false,
-      author: new mongoose.Types.ObjectId('65f7a1b2c3d4e5f6a7b8c9d0'), // Temporary ID
-      ...(body.published && { publishedAt: new Date() })
+      title: title.trim(),
+      slug,
+      excerpt: excerpt.trim() || content.substring(0, 200).trim() + '...',
+      content: content.trim(),
+      category: category.trim(),
+      tags: Array.isArray(tags) ? tags.map(t => t.trim()) : [],
+      published: published,
+      publishedAt: published ? new Date() : null,
+      author: new mongoose.Types.ObjectId('65f7a1b2c3d4e5f6a7b8c9d0'), 
+      featuredImage: featuredImage.trim(),
+      views: 0
     };
     
-    console.log('💾 Saving blog data:', blogData);
-    
-    // 6. Create and save
-    const blog = new Blogs(blogData);
+
+    // Save to database
+    const blog = new Blog(blogData);
     const savedBlog = await blog.save();
     
-    console.log('✅ Blog saved successfully! ID:', savedBlog._id);
-    
-    // 7. Return success
     return NextResponse.json({
       success: true,
-      message: 'Blog created successfully',
-      blog: savedBlog
+      message: published ? 'Blog published successfully!' : 'Blog saved as draft',
+      blog: {
+        _id: savedBlog._id,
+        title: savedBlog.title,
+        slug: savedBlog.slug,
+        category: savedBlog.category,
+        published: savedBlog.published,
+        publishedAt: savedBlog.publishedAt,
+        createdAt: savedBlog.createdAt
+      }
     }, { status: 201 });
     
   } catch (error) {
-    console.error('❌ POST Error Details:');
+    console.error('POST Error Details:');
     console.error('Message:', error.message);
     console.error('Name:', error.name);
     console.error('Code:', error.code);
     
     if (error.name === 'ValidationError') {
+      const errors = Object.values(error.errors).map(e => e.message);
       return NextResponse.json(
         { 
           error: 'Validation failed',
-          details: Object.values(error.errors).map(e => e.message)
+          details: errors.join(', ')
         },
         { status: 400 }
       );
@@ -128,7 +123,7 @@ export async function POST(request) {
     
     if (error.code === 11000) {
       return NextResponse.json(
-        { error: 'Duplicate slug - try a different title' },
+        { error: 'A blog with this title already exists' },
         { status: 409 }
       );
     }
@@ -144,6 +139,26 @@ export async function POST(request) {
   }
 }
 
-// Optional: Add PUT for batch updates or DELETE for multiple deletions
-// export async function PUT(request) { ... }
-// export async function DELETE(request) { ... }
+// GET method if missing
+export async function GET(request) {
+  try {
+    await connectDB();
+    
+    const blogs = await Blog.find({})
+      .sort({ createdAt: -1 })
+      .lean();
+    
+    return NextResponse.json({
+      success: true,
+      blogs,
+      count: blogs.length
+    });
+    
+  } catch (error) {
+    console.error('GET error:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch blogs' },
+      { status: 500 }
+    );
+  }
+}

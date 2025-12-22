@@ -15,12 +15,10 @@ export default function AdminDashboardPage({ params }) {
   const [pageLoading, setPageLoading] = useState(true);
 
   // Check admin status
-  const isAdmin = user?.tier === "tier3" || user?.tier === "admin";
+  const isAdmin = user?.tier === "admin";
 
   useEffect(() => {
-    // Early return if still loading
     if (authLoading) {
-      // console.log("Auth still loading...");
       return;
     }
 
@@ -37,10 +35,9 @@ export default function AdminDashboardPage({ params }) {
       if (storedUser && token) {
         try {
           const parsedUser = JSON.parse(storedUser);
-          // console.log("Parsed user:", parsedUser);
 
-          // Check if this user is admin
-          if (parsedUser.tier === "tier3" || parsedUser.tier === "admin") {
+          // if (parsedUser.tier === "tier3" || parsedUser.tier === "admin") {
+          if (parsedUser.tier === "admin") {
           } else {
             shouldRedirect = true;
             redirectPath = `/${locale}`;

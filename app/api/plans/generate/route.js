@@ -2,15 +2,15 @@ import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import User from "@/models/User";
 import { generateMealPlan } from "@/lib/openai";
-import { generateEdamamMealPlan } from "@/lib/edamam";
+import { generateSpoonacularMealPlan } from "@/lib/spoonacular";
 import { authenticate } from "@/middleware/auth";
 
 // TIER CONFIGURATION
 const TIER_CONFIG = {
   free: {
     name: "Free",
-    monthlyPlans: 1, // 1 meal plan per month
-    swapsPerPlan: 0, // NO SWAPS
+    monthlyPlans: 1,
+    swapsPerPlan: 0,
     source: "openai",
     canSave: false,
     hasPantry: false,
@@ -21,9 +21,9 @@ const TIER_CONFIG = {
   },
   tier2: {
     name: "Plus",
-    monthlyPlans: 6, // Max 6 meals per month
+    monthlyPlans: 6,
     swapsPerPlan: 2,
-    source: "edamam",
+    source: "spoonacular",
     canSave: true,
     hasPantry: true,
     hasHistory: true,
@@ -33,9 +33,9 @@ const TIER_CONFIG = {
   },
   tier3: {
     name: "Premium",
-    monthlyPlans: 999, // Unlimited
+    monthlyPlans: 999,
     swapsPerPlan: 3,
-    source: "edamam",
+    source: "spoonacular",
     canSave: true,
     hasPantry: true,
     hasHistory: true,
@@ -47,14 +47,40 @@ const TIER_CONFIG = {
 };
 
 // Get user's actual tier
+// async function getUserActualTier(userId) {
+//   if (!userId) return "free";
+//   const user = await User.findById(userId).select("tier subscription");
+//   if (!user) return "free";
+//   return user.subscription?.tier || user.tier || "free";
+// }
+
+// Get user's actual tier
 async function getUserActualTier(userId) {
   if (!userId) return "free";
-  const user = await User.findById(userId).select("tier subscription");
-  if (!user) return "free";
-  return user.subscription?.tier || user.tier || "free";
+  try {
+    const user = await User.findById(userId).select("tier subscription");
+    if (!user) return "free";
+
+    const tier = user.subscription?.tier || user.tier;
+
+    // Validate tier
+    const validTiers = ["free", "tier2", "tier3"];
+    if (tier && validTiers.includes(tier)) {
+      console.log(`Valid tier found for user ${userId}: ${tier}`);
+      return tier;
+    }
+
+    console.log(
+      ` Invalid or missing tier for user ${userId}, defaulting to free`
+    );
+    return "free";
+  } catch (error) {
+    console.error("Error getting user tier:", error);
+    return "free";
+  }
 }
 
-// Check if user can generate plan
+// Check if user can generate plan - FIXED VERSION
 async function canUserGeneratePlan(userId, userTier) {
   if (!userId) {
     return {
@@ -72,16 +98,11 @@ async function canUserGeneratePlan(userId, userTier) {
     };
   }
 
-  const config = TIER_CONFIG[userTier] || TIER_CONFIG.free;
+  // GET CONFIG HERE
+  const tierConfig = TIER_CONFIG[userTier] || TIER_CONFIG.free;
+
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-
-  // console.log(`🔍 User ${userId}:`, {
-  //   currentCount: user.monthly_plan_count,
-  //   lastPlanDate: user.lastPlanDate,
-  //   monthStart: startOfMonth.toISOString(),
-  //   tier: userTier,
-  // });
 
   // Check if we need to reset monthly count
   if (!user.last_plan_date || new Date(user.last_plan_date) < startOfMonth) {
@@ -91,6 +112,7 @@ async function canUserGeneratePlan(userId, userTier) {
   }
 
   const plansThisMonth = user.monthly_plan_count || 0;
+
   // Free user check
   if (userTier === "free") {
     if (plansThisMonth >= 1) {
@@ -106,29 +128,29 @@ async function canUserGeneratePlan(userId, userTier) {
     }
   }
 
-  // Paid user check
-  if (userTier !== "free" && plansThisMonth >= config.monthlyPlans) {
+  // Paid user check - USE tierConfig instead of config
+  if (userTier !== "free" && plansThisMonth >= tierConfig.monthlyPlans) {
     return {
       allowed: false,
       message:
         userTier === "tier2"
-          ? `Plus tier limit reached: ${config.monthlyPlans} plans per month. Upgrade to Premium for unlimited.`
+          ? `Plus tier limit reached: ${tierConfig.monthlyPlans} plans per month. Upgrade to Premium for unlimited.`
           : "Please contact support",
       limitReached: true,
       requiresUpgrade: userTier === "tier2",
       plansUsed: plansThisMonth,
-      plansAllowed: config.monthlyPlans,
+      plansAllowed: tierConfig.monthlyPlans,
     };
   }
 
   return {
     allowed: true,
     message: `You have ${
-      config.monthlyPlans - plansThisMonth
+      tierConfig.monthlyPlans - plansThisMonth
     } plans remaining this month`,
     plansUsed: plansThisMonth,
-    plansAllowed: config.monthlyPlans,
-    remaining: config.monthlyPlans - plansThisMonth,
+    plansAllowed: tierConfig.monthlyPlans,
+    remaining: tierConfig.monthlyPlans - plansThisMonth,
   };
 }
 
@@ -169,10 +191,14 @@ export async function POST(request) {
 
     // Determine user tier
     const userTier = await getUserActualTier(userId);
-    console.log(`🎯 User ID: ${userId}, Tier: ${userTier}`);
+    console.log(`User ID: ${userId}, Tier: ${userTier}`);
 
+    // Get tier config
+    const config = TIER_CONFIG[userTier] || TIER_CONFIG.free;
+    console.log(`Config for ${userTier}:`, config);
+
+    // Free user monthly limit check
     if (userId && userTier === "free") {
-      // Get current count from database
       const currentUser = await User.findById(userId);
       const plansThisMonth = currentUser?.monthly_plan_count || 0;
 
@@ -192,12 +218,10 @@ export async function POST(request) {
       }
     }
 
-    // Check if user can generate
+    // Check if user can generate plan
     const generationCheck = await canUserGeneratePlan(userId, userTier);
 
     if (!generationCheck.allowed) {
-      console.log(`BLOCKING USER: ${generationCheck.message}`);
-
       return NextResponse.json(
         {
           success: false,
@@ -206,19 +230,16 @@ export async function POST(request) {
           requiresLogin: generationCheck.requiresLogin || false,
           requiresUpgrade: generationCheck.requiresUpgrade || false,
           tier: userTier,
-          tierName: TIER_CONFIG[userTier]?.name || "Free",
+          tierName: config.name,
           plans: {
             used: generationCheck.plansUsed || 0,
             allowed: generationCheck.plansAllowed || 1,
             remaining: generationCheck.remaining || 0,
           },
         },
-        { status: 200 } 
+        { status: 200 }
       );
     }
-
-    // Get tier config
-    const config = TIER_CONFIG[userTier] || TIER_CONFIG.free;
 
     // Validate days count
     const daysCount = parseInt(inputs.days_count) || 7;
@@ -234,6 +255,7 @@ export async function POST(request) {
         { status: 400 }
       );
     }
+
     if (userTier === "free" && (daysCount < 3 || daysCount > 5)) {
       return NextResponse.json(
         {
@@ -249,30 +271,61 @@ export async function POST(request) {
       );
     }
 
-    console.log(`User allowed to generate. Tier: ${userTier}`);
+    console.log(
+      `User allowed to generate. Tier: ${userTier}, Source: ${config.source}`
+    );
 
     // Generate plan based on tier
     let planData;
     let sourceUsed = config.source;
 
-    if (config.source === "edamam" && userTier !== "free") {
+    if (
+      config.source === "spoonacular" &&
+      (userTier === "tier2" || userTier === "tier3")
+    ) {
       try {
-        planData = await generateEdamamMealPlan(inputs, userTier);
-      } catch (edamamError) {
-        console.error("Edamam failed:", edamamError);
-        planData = await generateMealPlan(inputs, userTier);
-        sourceUsed = "openai-fallback";
+        console.log(`Using Spoonacular ONLY for ${userTier} user`);
+        planData = await generateSpoonacularMealPlan(inputs, userTier);
+        sourceUsed = "spoonacular";
+        console.log(
+          `Spoonacular generated ${planData?.days?.length || 0} days`
+        );
+      } catch (spoonacularError) {
+        console.error("Spoonacular failed:", spoonacularError.message);
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Unable to generate plan with verified recipes: ${spoonacularError.message}`,
+            tier: userTier,
+          },
+          { status: 200 }
+        );
       }
     } else {
-      planData = await generateMealPlan(inputs, userTier);
+      // Free users use OpenAI
+      console.log(`Using OpenAI for ${userTier} user`);
+      try {
+        planData = await generateMealPlan(inputs, userTier);
+        sourceUsed = "openai";
+        console.log(`OpenAI generated ${planData?.days?.length || 0} days`);
+      } catch (openaiError) {
+        console.error("OpenAI error:", openaiError);
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Failed to generate meal plan. Please try again.",
+          },
+          { status: 200 }
+        );
+      }
     }
 
+    // Update user's plan count
     if (userId) {
       await User.findByIdAndUpdate(userId, {
         $inc: { monthly_plan_count: 1 },
         last_plan_date: new Date(),
       });
-      console.log(`Updated plan count for user ${userId}`);
     }
 
     // Generate plan ID

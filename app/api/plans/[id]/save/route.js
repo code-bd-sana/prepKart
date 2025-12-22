@@ -115,6 +115,7 @@ export async function POST(request, { params }) {
       planId: savedPlan._id,
       isNew: isNewPlan,
       userId: savedPlan.userId,
+      source: savedPlan.source,
       tier: savedPlan.tier,
       swapsAllowed: savedPlan.swapsAllowed,
       swapsUsed: savedPlan.swapsUsed,

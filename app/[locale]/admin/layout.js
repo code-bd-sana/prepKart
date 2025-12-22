@@ -3,8 +3,10 @@
 import { usePathname } from "next/navigation";
 import { FaHome, FaBlog, FaUsers, FaSignOutAlt } from "react-icons/fa";
 import Link from "next/link";
+import ToastProvider from "@/components/ToastProvider";
 
 export default function AdminLayout({ children }) {
+  
   const pathname = usePathname();
   const locale = pathname.split("/")[1] || "en";
 
@@ -14,6 +16,8 @@ export default function AdminLayout({ children }) {
     localStorage.removeItem("refreshToken");
     window.location.href = `/${locale}/login`;
   };
+
+  // Design Needed for mobile also  ==============================================
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -45,6 +49,12 @@ export default function AdminLayout({ children }) {
         </nav>
 
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-800">
+          <Link
+              href={`/${locale}`}
+              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition w-full text-white hover:text-gray-300"
+            >
+              ← Back to Home
+            </Link>
           <button
             onClick={handleLogout}
             className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition w-full text-red-400 hover:text-red-300"
@@ -55,7 +65,10 @@ export default function AdminLayout({ children }) {
       </div>
 
       {/* Main Content */}
-      <div>{children}</div>
+      <div className="">
+        {children}
+        <ToastProvider />
+      </div>
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import enMessages from '../../messages/en.json';
 import frMessages from '../../messages/fr.json';
 import Providers from '../providers';
+import ToastProvider from '@/components/ToastProvider';
 
 const validLocales = ['en', 'fr'];
 
@@ -78,6 +79,7 @@ export default function RootLayout({ children, params }) {
         <Providers>
           <NextIntlClientProvider locale={locale} messages={messages}>     
             {children}
+            <ToastProvider />
           </NextIntlClientProvider>
         </Providers>
       </body>
