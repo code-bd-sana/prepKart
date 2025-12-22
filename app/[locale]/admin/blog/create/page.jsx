@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
 import { toast } from "react-toastify";
+import Image from "next/image";
 
 export default function CreateBlogPage({ params }) {
   const router = useRouter();
@@ -15,9 +16,11 @@ export default function CreateBlogPage({ params }) {
     content: "",
     category: "General",
     tags: "",
-    published: false,
+    featuredImage: "",
+    published: true,
   });
   const [loading, setLoading] = useState(false);
+  const [imageUploading, setImageUploading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -38,26 +41,82 @@ export default function CreateBlogPage({ params }) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          ...form,
+          title: form.title,
+          excerpt: form.excerpt,
+          content: form.content,
+          category: form.category,
           tags: tagsArray,
+          featuredImage: form.featuredImage,
+          published: form.published,
         }),
       });
 
       const data = await res.json();
-      console.log("API Response:", data);
 
       if (res.ok) {
-        toast.success("Blog post created successfully!");
+        toast.success(
+          form.published
+            ? "Blog published successfully!"
+            : "Blog saved as draft!"
+        );
         router.push(`/${locale}/admin/blog`);
       } else {
-        toast.error(data.error || "Failed to create blog");
-        console.error("API Error:", data);
+        toast.error(data.error || "Failed to save blog");
       }
     } catch (error) {
-      console.error("Network error:", error);
-      toast.error("Network error. Please try again.");
+      console.error("Create error:", error);
+      toast.error("Network error");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleImageUpload = async (file) => {
+    if (!file) return;
+
+    // Validate file
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file (JPEG, PNG, etc.)");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      // 5MB limit
+      toast.error("Image must be less than 5MB");
+      return;
+    }
+
+    setImageUploading(true);
+    try {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+
+      reader.onloadend = async () => {
+        const base64 = reader.result;
+
+        const token =
+          localStorage.getItem("token") || localStorage.getItem("accessToken");
+        const res = await fetch("/api/upload/cloudinary", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ file: base64 }),
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          setForm({ ...form, featuredImage: data.url });
+          toast.success("Image uploaded successfully!");
+        } else {
+          toast.error(data.error || "Image upload failed");
+        }
+        setImageUploading(false);
+      };
+    } catch (error) {
+      console.error("Upload error:", error);
+      toast.error("Upload failed. Please try again.");
+      setImageUploading(false);
     }
   };
 
@@ -86,7 +145,7 @@ export default function CreateBlogPage({ params }) {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Short Description
+              Short Description *
             </label>
             <textarea
               required
@@ -114,6 +173,65 @@ export default function CreateBlogPage({ params }) {
               onChange={(e) => setForm({ ...form, content: e.target.value })}
               placeholder="Write your blog content here..."
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Featured Image
+            </label>
+
+            {/* Image Preview */}
+            {form.featuredImage && (
+              <div className="mb-4">
+                <Image
+                  height={100}
+                  width={100}
+                  src={form.featuredImage}
+                  alt="Preview"
+                  className="max-h-64 rounded-lg object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => setForm({ ...form, featuredImage: "" })}
+                  className="mt-2 text-sm text-red-600 hover:text-red-800"
+                >
+                  Remove Image
+                </button>
+              </div>
+            )}
+
+            {/* Upload Button */}
+            <div className="flex items-center space-x-4">
+              <label
+                className={`cursor-pointer px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 ${
+                  imageUploading ? "opacity-50" : ""
+                }`}
+              >
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleImageUpload(e.target.files[0])}
+                  disabled={imageUploading}
+                  className="hidden"
+                />
+                {imageUploading ? "Uploading..." : "Upload Image from Device"}
+              </label>
+
+              <span className="text-sm text-gray-500">or</span>
+
+              <input
+                type="url"
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg"
+                value={form.featuredImage}
+                onChange={(e) =>
+                  setForm({ ...form, featuredImage: e.target.value })
+                }
+                placeholder="Or paste image URL directly..."
+              />
+            </div>
+            <p className="text-xs text-gray-500 mt-2">
+              Upload an image (JPG, PNG, max 5MB) or paste a URL
+            </p>
           </div>
 
           <div className="grid grid-cols-2 gap-6">

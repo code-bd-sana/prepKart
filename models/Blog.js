@@ -42,6 +42,10 @@ const blogSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    featuredImage: {
+      type: String,
+      default: "",
+    },
   },
   {
     timestamps: true,

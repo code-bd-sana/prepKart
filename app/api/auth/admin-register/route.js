@@ -33,16 +33,16 @@ export async function POST(request) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
     
-    // ✅ CRITICAL: Create user with ADMIN PRIVILEGES
+    // Create user with ADMIN PRIVILEGES
     const adminUser = await User.create({
       email,
       password: hashedPassword,
       name: email.split('@')[0] || "Admin",
       province: "Ontario",
-      tier: "tier3", // Use tier3 since "admin" not in enum
+      tier: "admin", 
       marketing_consent: false,
-      monthly_plan_count: 99,
-      weekly_plan_count: 99,
+      monthly_plan_count: 999,
+      weekly_plan_count: 999,
       ageVerified: true,
       age: 30,
       preferences: {
@@ -59,14 +59,14 @@ export async function POST(request) {
       emailVerified: true,
       isActive: true,
       subscription: {
-        tier: "tier3",
+        tier: "admin",
         status: "active"
       }
     });
+
     
-    toast.success("Admin account created successfully", adminUser.email);
-    // console.log("Admin (tier3) created:", adminUser.email);
-    console.log("Swaps allowed:", adminUser.swapsAllowed);
+    
+    // toast.success("Admin account created successfully", adminUser.email);
     
     return NextResponse.json({ 
       success: true, 

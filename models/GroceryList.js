@@ -1,66 +1,133 @@
 import mongoose from "mongoose";
 
-const groceryItemSchema = new mongoose.Schema(
-  {
-    name: String,
-    normalizedName: String,
-    quantity: Number,
-    unit: String,
-    category: String,
-    aisle: String,
-    checked: { type: Boolean, default: false },
-    inPantry: { type: Boolean, default: false },
-    note: String,
-    estimatedPrice: Number,
-    instacartProductId: String,
+const groceryItemSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+    trim: true,
   },
-  { _id: false }
-);
+  
+  normalizedName: {
+    type: String,
+    lowercase: true,
+    trim: true,
+  },
+  
+  quantity: {
+    type: Number,
+    required: true,
+    min: 0.1,
+  },
+  
+  unit: {
+    type: String,
+    default: "unit",
+  },
+  
+  category: {
+    type: String,
+    enum: [
+      "Produce",
+      "Dairy",
+      "Meat",
+      "Seafood",
+      "Pantry",
+      "Bakery",
+      "Frozen",
+      "Beverages",
+      "Snacks",
+      "Spices",
+      "Canned Goods",
+      "Condiments",
+      "Other",
+    ],
+    default: "Other",
+  },
+  
+  aisle: {
+    type: String,
+    default: "Other",
+  },
+  
+  checked: {
+    type: Boolean,
+    default: false,
+  },
+  
+  note: String,
+  
+  estimatedPrice: Number,
+  
+  instacartProductId: String,
+  
+  recipeSources: [String], // Which recipes use this ingredient
+});
 
 const groceryListSchema = new mongoose.Schema(
   {
-    // References
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
       index: true,
     },
+    
     planId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "MealPlan",
-      required: true,
       index: true,
     },
-
-    // List info
-    title: String,
+    
+    planTitle: String,
+    
+    title: {
+      type: String,
+      default: "Grocery List",
+    },
+    
     items: [groceryItemSchema],
     
     // Settings
     pantryToggle: {
       type: Boolean,
-      default: true,
+      default: false,
     },
-    sortByAisle: {
-      type: Boolean,
-      default: true,
-    },
-
-    // Totals
-    totalItems: Number,
-    estimatedTotalPrice: Number,
     
-    // Instacart
+    // Summary
+    totalItems: {
+      type: Number,
+      default: 0,
+    },
+    
+    checkedItems: {
+      type: Number,
+      default: 0,
+    },
+    
+    estimatedTotal: Number,
+    
+    currency: {
+      type: String,
+      default: "CAD",
+    },
+    
+    // Instacart integration
     instacartDeepLink: String,
     instacartCartId: String,
-
-    // Status
+    
+    // Metadata
+    storePreference: String,
+    shoppingDate: Date,
+    
     isActive: {
       type: Boolean,
       default: true,
     },
-    completedAt: Date,
+    
+    expiresAt: {
+      type: Date,
+      default: () => new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+    },
   },
   {
     timestamps: true,
@@ -68,27 +135,9 @@ const groceryListSchema = new mongoose.Schema(
 );
 
 // Indexes
-groceryListSchema.index({ userId: 1, createdAt: -1 });
-groceryListSchema.index({ planId: 1 });
-
-// Virtual for unchecked items count
-groceryListSchema.virtual("remainingItems").get(function () {
-  return this.items.filter(item => !item.checked).length;
-});
-
-// Group items by aisle
-groceryListSchema.methods.getItemsByAisle = function () {
-  const aisles = {};
-  
-  this.items.forEach(item => {
-    if (!aisles[item.aisle || "Other"]) {
-      aisles[item.aisle || "Other"] = [];
-    }
-    aisles[item.aisle || "Other"].push(item);
-  });
-  
-  return aisles;
-};
+groceryListSchema.index({ userId: 1, isActive: 1 });
+groceryListSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 const GroceryList = mongoose.models.GroceryList || mongoose.model("GroceryList", groceryListSchema);
+
 export default GroceryList;

@@ -1,248 +1,306 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import Plan from "@/models/Plan";
+import GroceryList from "@/models/GroceryList";
+import Pantry from "@/models/Pantry";
+import User from "@/models/User";
 import { authenticate } from "@/middleware/auth";
+import {
+  mapToAisle,
+  normalizeIngredientName,
+  sortByAisle,
+} from "@/lib/aisleMapper";
 
 export async function POST(request) {
   try {
-    // 1. Connect to database
     await connectDB();
-    
-    // 2. Authenticate user
+
+    // Authenticate user
     const auth = await authenticate(request);
-    
     if (!auth.success) {
       return NextResponse.json(
-        { 
-          error: auth.error || "Authentication required",
-          message: "Please login to generate grocery lists"
-        },
+        { error: "Please login to generate grocery lists" },
         { status: 401 }
       );
     }
-    
-    // 3. Get request data
-    const { planId, pantryToggle = false } = await request.json();
-    
+
+    const { userId } = auth;
+
+    // Get accurate user tier
+    const user = await User.findById(userId).select("tier subscription");
+    const userTier = user?.subscription?.tier || user?.tier || "free";
+    const impactId = process.env.INSTACART_IMPACT_ID;
+
+    // Parse request body
+    const body = await request.json();
+    const { planId, pantryToggle = false } = body;
+
     if (!planId) {
       return NextResponse.json(
-        { error: "planId is required" },
+        { error: "Plan ID is required" },
         { status: 400 }
       );
     }
-    
-    // 4. Find the plan
-    const plan = await Plan.findById(planId);
-    
+
+    // Get the plan
+    const plan = await Plan.findOne({
+      $or: [{ _id: planId }, { id: planId }],
+    });
+
     if (!plan) {
-      return NextResponse.json(
-        { error: "Plan not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Plan not found" }, { status: 404 });
     }
-    
-    // 5. Check plan ownership
-    if (!plan.userId || plan.userId.toString() !== auth.userId.toString()) {
+
+    // Check if user owns the plan (if plan has userId)
+    if (plan.userId && plan.userId.toString() !== userId.toString()) {
       return NextResponse.json(
-        { 
-          error: "Unauthorized",
-          message: "You can only generate grocery lists from your saved plans"
-        },
+        { error: "Not authorized to access this plan" },
         { status: 403 }
       );
     }
-    
-    // 6. Check if plan is saved (required for grocery list)
-    if (!plan.isSaved) {
+
+    // Check tier for pantry toggle
+    if (pantryToggle && userTier === "free") {
       return NextResponse.json(
-        { 
-          error: "Plan not saved",
-          message: "Please save the plan first before generating grocery list"
-        },
-        { status: 400 }
+        { error: "Pantry toggle is only available for Plus and Premium users" },
+        { status: 403 }
       );
     }
-    
-    // 7. Generate grocery list
-    const groceryList = generateGroceryList(plan, pantryToggle);
-    
-    // 8. Return response with tier-specific features
-    const response = {
+
+    // console.log(`Generating grocery list for plan: ${planId}`);
+    // console.log(`User tier: ${userTier}, Pantry toggle: ${pantryToggle}`);
+
+    // Extract all ingredients from plan
+    const allIngredients = extractIngredientsFromPlan(plan);
+    console.log(`Total ingredients: ${allIngredients.length}`);
+
+    // Get user's pantry if toggle is enabled
+    let pantryItems = [];
+    if (pantryToggle) {
+      const pantry = await Pantry.findOne({ userId });
+      if (pantry) {
+        pantryItems = pantry.items || [];
+        console.log(`Pantry items: ${pantryItems.length}`);
+      }
+    }
+
+    // Process ingredients
+    const groceryItems = processIngredients(
+      allIngredients,
+      pantryItems,
+      pantryToggle,
+      plan.days
+    );
+
+    console.log(`Processed items: ${groceryItems.length}`);
+
+    // Sort items by aisle
+    const sortedItems = sortByAisle(groceryItems);
+
+    // Create grocery list
+    const groceryList = await GroceryList.create({
+      userId,
+      planId: plan._id,
+      planTitle: plan.title,
+      title: `Grocery List - ${plan.title}`,
+      items: sortedItems,
+      pantryToggle,
+      totalItems: sortedItems.length,
+      estimatedTotal: calculateEstimatedTotal(sortedItems),
+      currency: "CAD",
+      storePreference: "Instacart",
+      isActive: true,
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+    });
+
+    // Generate Instacart deep link (
+    const itemsForInstacart = sortedItems.filter((item) => item.checked);
+    const instacartLink = generateInstacartLink(
+      itemsForInstacart,
+      userTier,
+      impactId
+    );
+
+    // Update grocery list with Instacart link
+    await GroceryList.findByIdAndUpdate(groceryList._id, {
+      instacartDeepLink: instacartLink,
+    });
+
+    console.log(`Grocery list created: ${groceryList._id}`);
+
+    return NextResponse.json({
       success: true,
       message: "Grocery list generated successfully",
-      groceryList: groceryList,
-      userTier: auth.userTier,
-      features: {
-        canEdit: true,
-        canSave: true,
-        instacartAvailable: auth.userTier === "tier2" || auth.userTier === "tier3",
-        exportAvailable: true,
+      groceryList: {
+        id: groceryList._id,
+        title: groceryList.title,
+        items: groceryList.items,
+        totalItems: groceryList.totalItems,
+        estimatedTotal: groceryList.estimatedTotal,
+        currency: groceryList.currency,
+        pantryToggle: groceryList.pantryToggle,
+        instacartDeepLink: instacartLink,
+        createdAt: groceryList.createdAt,
       },
-      note: auth.userTier === "free" 
-        ? "Upgrade to Tier 2 or Tier 3 for Instacart integration"
-        : "Instacart integration available for your tier"
-    };
-    
-    return NextResponse.json(response);
-    
+    });
   } catch (error) {
-    console.error("Grocery list error:", error);
-    return NextResponse.json(
-      { 
-        error: "Failed to generate grocery list",
-        details: error.message 
-      },
-      { status: 500 }
-    );
+    console.error("Grocery list generation error:", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
-// Helper function to generate grocery list from plan
-function generateGroceryList(plan, pantryToggle = false) {
-  // This is where you'll process all ingredients
-  
-  // Step 1: Collect all ingredients from all meals
-  const allIngredients = [];
-  
-  plan.days.forEach(day => {
-    day.meals.forEach(meal => {
-      meal.ingredients.forEach(ingredient => {
-        allIngredients.push({
-          name: ingredient.name,
+/**
+ * Extract all ingredients from a meal plan
+ */
+function extractIngredientsFromPlan(plan) {
+  const ingredients = [];
+
+  if (!plan.days || !Array.isArray(plan.days)) {
+    return ingredients;
+  }
+
+  for (const day of plan.days) {
+    if (!day.meals || !Array.isArray(day.meals)) continue;
+
+    for (const meal of day.meals) {
+      if (!meal.ingredients || !Array.isArray(meal.ingredients)) continue;
+
+      for (const ingredient of meal.ingredients) {
+        ingredients.push({
+          name: ingredient.name || ingredient.original || "",
           quantity: ingredient.quantity || 1,
-          unit: ingredient.unit || "",
-          recipe: meal.recipeName,
+          unit: ingredient.unit || "unit",
+          recipeName: meal.recipeName,
           mealType: meal.mealType,
         });
-      });
-    });
-  });
-  
-  // Step 2: Group and sum similar ingredients
-  const groupedIngredients = {};
-  
-  allIngredients.forEach(ing => {
-    const key = `${ing.name.toLowerCase()}_${ing.unit}`;
-    
-    if (!groupedIngredients[key]) {
-      groupedIngredients[key] = {
-        name: ing.name,
-        quantity: ing.quantity,
-        unit: ing.unit,
-        recipes: [ing.recipe],
-        categories: [],
-      };
-    } else {
-      groupedIngredients[key].quantity += ing.quantity;
-      if (!groupedIngredients[key].recipes.includes(ing.recipe)) {
-        groupedIngredients[key].recipes.push(ing.recipe);
       }
     }
-  });
-  
-  // Step 3: Categorize ingredients
-  const categorizedItems = Object.values(groupedIngredients).map(item => {
-    // Simple categorization logic
-    const name = item.name.toLowerCase();
-    
-    let category = "Other";
-    let aisle = "Other";
-    
-    if (name.includes("chicken") || name.includes("beef") || name.includes("pork")) {
-      category = "Meat";
-      aisle = "Meat & Poultry";
-    } else if (name.includes("milk") || name.includes("cheese") || name.includes("yogurt")) {
-      category = "Dairy";
-      aisle = "Dairy & Eggs";
-    } else if (name.includes("apple") || name.includes("banana") || name.includes("lettuce")) {
-      category = "Produce";
-      aisle = "Produce";
-    } else if (name.includes("bread") || name.includes("pasta")) {
-      category = "Bakery";
-      aisle = "Bakery";
-    } else if (name.includes("rice") || name.includes("flour") || name.includes("sugar")) {
-      category = "Pantry";
-      aisle = "Grains & Baking";
-    } else if (name.includes("oil") || name.includes("vinegar") || name.includes("spice")) {
-      category = "Condiments";
-      aisle = "Spices & Oils";
-    }
-    
-    return {
-      id: `item_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      name: item.name,
-      quantity: item.quantity,
-      unit: item.unit,
-      category: category,
-      aisle: aisle,
-      checked: false,
-      inPantry: false, // Would check against user's pantry if pantryToggle is true
-      recipes: item.recipes.slice(0, 3), // Show max 3 recipes
-      estimatedPrice: estimatePrice(item.name, item.quantity, item.unit),
-    };
-  });
-  
-  // Step 4: Sort by aisle (grocery store order)
-  const aisleOrder = [
-    "Produce",
-    "Meat & Poultry",
-    "Dairy & Eggs", 
-    "Bakery",
-    "Grains & Baking",
-    "Spices & Oils",
-    "Other"
-  ];
-  
-  categorizedItems.sort((a, b) => {
-    const aIndex = aisleOrder.indexOf(a.aisle);
-    const bIndex = aisleOrder.indexOf(b.aisle);
-    return (aIndex === -1 ? 999 : aIndex) - (bIndex === -1 ? 999 : bIndex);
-  });
-  
-  // Step 5: Calculate totals
-  const totalItems = categorizedItems.length;
-  const estimatedTotal = categorizedItems.reduce((sum, item) => sum + (item.estimatedPrice || 0), 0);
-  
-  return {
-    id: `grocery_${Date.now()}`,
-    planId: plan._id,
-    planTitle: plan.title,
-    items: categorizedItems,
-    summary: {
-      totalItems: totalItems,
-      estimatedTotal: parseFloat(estimatedTotal.toFixed(2)),
-      generatedAt: new Date().toISOString(),
-      durationDays: plan.days.length,
-    },
-    settings: {
-      pantryToggle: pantryToggle,
-      sortByAisle: true,
-      showRecipes: true,
-    },
-  };
+  }
+
+  return ingredients;
 }
 
-// Helper to estimate price (mock for now)
-function estimatePrice(itemName, quantity, unit) {
-  const priceMap = {
-    "chicken": 8.99,
-    "beef": 12.99,
-    "pork": 7.99,
-    "milk": 4.99,
-    "cheese": 6.49,
-    "eggs": 5.99,
-    "bread": 3.49,
-    "rice": 4.99,
-    "pasta": 2.99,
-    "tomato": 3.99,
-    "lettuce": 2.49,
-    "apple": 1.99,
-    "banana": 1.49,
-    "oil": 7.99,
-    "salt": 2.99,
-    "sugar": 3.49,
-  };
-  
-  const basePrice = priceMap[itemName.toLowerCase()] || 3.99;
-  return parseFloat((basePrice * (quantity || 1)).toFixed(2));
+/**
+ * Process ingredients (deduplicate, normalize, subtract pantry)
+ */
+function processIngredients(ingredients, pantryItems, pantryToggle, planDays) {
+  const ingredientMap = new Map();
+
+  // First pass: aggregate same ingredients
+  for (const ing of ingredients) {
+    const normalizedName = normalizeIngredientName(ing.name);
+    const key = `${normalizedName}_${ing.unit}`;
+
+    if (ingredientMap.has(key)) {
+      // Add to existing
+      const existing = ingredientMap.get(key);
+      existing.quantity += ing.quantity;
+      existing.recipeSources.push(`${ing.mealType}: ${ing.recipeName}`);
+    } else {
+      // Create new entry
+      ingredientMap.set(key, {
+        name: ing.name,
+        normalizedName,
+        quantity: ing.quantity,
+        unit: ing.unit,
+        aisle: mapToAisle(normalizedName),
+        category: mapToAisle(normalizedName),
+        recipeSources: [`${ing.mealType}: ${ing.recipeName}`],
+        checked: false,
+      });
+    }
+  }
+
+  // Second pass: subtract pantry items if toggle is enabled
+  if (pantryToggle && pantryItems.length > 0) {
+    for (const pantryItem of pantryItems) {
+      const pantryNormalizedName = normalizeIngredientName(pantryItem.name);
+
+      for (const [key, groceryItem] of ingredientMap.entries()) {
+        const groceryNormalizedName = normalizeIngredientName(groceryItem.name);
+
+        // Check if it's the same ingredient (simple match)
+        if (
+          pantryNormalizedName === groceryNormalizedName ||
+          groceryNormalizedName.includes(pantryNormalizedName) ||
+          pantryNormalizedName.includes(groceryNormalizedName)
+        ) {
+          // Subtract pantry quantity
+          const remaining = groceryItem.quantity - (pantryItem.quantity || 0);
+
+          if (remaining <= 0) {
+            // Remove from list if pantry has enough
+            ingredientMap.delete(key);
+          } else {
+            // Update quantity
+            groceryItem.quantity = remaining;
+            groceryItem.note = `Pantry has ${pantryItem.quantity} ${pantryItem.unit}`;
+          }
+          break;
+        }
+      }
+    }
+  }
+
+  // Convert to array and add estimated price
+  const result = Array.from(ingredientMap.values()).map((item) => ({
+    ...item,
+    estimatedPrice: estimatePrice(
+      item.normalizedName,
+      item.quantity,
+      item.unit
+    ),
+  }));
+
+  return result;
 }
+
+/**
+ * Simple price estimation (you'll replace with real data)
+ */
+function estimatePrice(ingredientName, quantity, unit) {
+  // Base prices per unit (simplified)
+  const priceMap = {
+    chicken: 8.99, // per kg
+    beef: 12.99,
+    rice: 3.99,
+    pasta: 2.99,
+    tomato: 2.49,
+    onion: 1.49,
+    garlic: 0.99,
+    potato: 1.99,
+    carrot: 1.29,
+    broccoli: 2.99,
+    spinach: 3.49,
+    egg: 0.25,
+    milk: 1.29,
+    cheese: 6.99,
+    butter: 4.99,
+    oil: 7.99,
+    salt: 1.99,
+    pepper: 3.99,
+  };
+
+  // Find matching price
+  for (const [key, price] of Object.entries(priceMap)) {
+    if (ingredientName.includes(key)) {
+      // Simple calculation (adjust based on your logic)
+      return parseFloat((price * (quantity || 1) * 0.1).toFixed(2));
+    }
+  }
+
+  // Default price
+  return parseFloat((quantity * 2).toFixed(2));
+}
+
+/**
+ * Calculate estimated total
+ */
+function calculateEstimatedTotal(items) {
+  const total = items.reduce((sum, item) => {
+    return sum + (item.estimatedPrice || 0);
+  }, 0);
+
+  return parseFloat(total.toFixed(2));
+}
+

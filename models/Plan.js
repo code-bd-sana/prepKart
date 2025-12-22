@@ -13,6 +13,7 @@ const planSchema = new mongoose.Schema(
       ref: "User",
       index: true
     },
+    
     // email
     userEmail: {
       type: String,
@@ -26,10 +27,9 @@ const planSchema = new mongoose.Schema(
       default: "free",
     },
 
-    // Source
     source: {
       type: String,
-      enum: ["openai", "edamam"],
+      enum: ["openai", "spoonacular"],
       default: "openai",
     },
 
@@ -53,9 +53,7 @@ const planSchema = new mongoose.Schema(
       default: false
     },
     expiresAt: Date,
-    
-    // Optional: keep guestId for non-logged in users
-    guestId: String,
+    savedAt: Date,
   },
   {
     timestamps: true,
