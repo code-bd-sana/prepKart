@@ -12,6 +12,7 @@ import {
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { useTranslations } from "next-intl";
+import { useParams } from "next/navigation";
 
 export default function GenerateWeeklyPlan({ voiceText }) {
   const [loading, setLoading] = useState(false);
@@ -19,8 +20,26 @@ export default function GenerateWeeklyPlan({ voiceText }) {
   const [error, setError] = useState("");
   const { user } = useSelector((state) => state.auth);
   const [isSwapping, setIsSwapping] = useState(false);
-  const t = useTranslations("generatePlan")
+  const [generatingProgress, setGeneratingProgress] = useState(0);
+  const [freeLimitReached, setFreeLimitReached] = useState(false);
+  const t = useTranslations("generatePlan");
+  const params = useParams();
+  const locale = params.locale;
 
+  // to recheck authentuication token
+  useEffect(() => {
+    const checkAuth = () => {
+      const token =
+        localStorage.getItem("token") || localStorage.getItem("accessToken");
+      if (!token && user) {
+        if (user.token) {
+          localStorage.setItem("token", user.token);
+        }
+      }
+    };
+
+    checkAuth();
+  }, [user]);
   // Form state
   const [form, setForm] = useState({
     province: "Ontario",
@@ -36,6 +55,7 @@ export default function GenerateWeeklyPlan({ voiceText }) {
     skillLevel: "Beginner",
     dietaryPreferences: [],
     allergies: [],
+    days_count: !user || user?.tier === "free" ? 3 : 7,
   });
   useEffect(() => {
     if (!voiceText) return;
@@ -145,11 +165,19 @@ export default function GenerateWeeklyPlan({ voiceText }) {
       ],
     }));
   }, [voiceText]);
-
+  // Generate plan handler
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
+    setGeneratingProgress(0);
+
+    const progressInterval = setInterval(() => {
+      setGeneratingProgress((prev) => {
+        if (prev >= 90) return 90;
+        return prev + 10;
+      });
+    }, 500);
 
     try {
       const token =
@@ -157,11 +185,22 @@ export default function GenerateWeeklyPlan({ voiceText }) {
         localStorage.getItem("accessToken") ||
         (user?.token ? user.token : null);
 
-      // console.log("Frontend token check:", {
-      //   hasToken: !!token,
-      //   tokenLength: token?.length || 0,
-      //   user: user ? { id: user.id, tier: user.tier } : "No user",
-      // });
+      const requestBody = {
+        province: form.province,
+        goal: form.goal,
+        cuisine: form.cuisine,
+        budget_level: form.budgetLevel,
+        portions: form.portions,
+        meals_per_day: form.mealsPerDay,
+        days_count: form.days_count,
+        likes: form.likes,
+        dislikes: form.dislikes,
+        cooking_method: form.cookingMethod,
+        max_cooking_time: form.maxCookingTime,
+        skill_level: form.skillLevel,
+        dietary_preferences: form.dietaryPreferences,
+        allergies: form.allergies,
+      };
 
       const response = await fetch("/api/plans/generate", {
         method: "POST",
@@ -169,33 +208,45 @@ export default function GenerateWeeklyPlan({ voiceText }) {
           "Content-Type": "application/json",
           ...(token && { Authorization: `Bearer ${token}` }),
         },
-        body: JSON.stringify(form),
+        body: JSON.stringify(requestBody),
       });
-
-      // console.log("Response status:", response.status);
 
       const data = await response.json();
 
-      if (!response.ok) {
-        console.error("API Error:", data);
-        throw new Error(data.error || "Failed to generate plan");
+      if (data.success === false) {
+        clearInterval(progressInterval);
+        setLoading(false);
+
+        // Always show the error toast
+        toast.error(data.error || "Unable to generate plan");
+
+        // If it's a limit issue, show the upgrade warning
+        if (data.limitReached) {
+          setFreeLimitReached(true);
+        }
+
+        return; // don't generate anything
       }
 
-      // console.log("Plan received:", {
-      //   tier: data.plan?.tier,
-      //   swapsAllowed: data.plan?.swaps?.allowed,
-      //   userId: data.plan?.userId,
-      // });
+      // If we get here, success must be true
+      setPlan(data.plan);
+      clearInterval(progressInterval);
+      setGeneratingProgress(100);
 
       setPlan(data.plan);
+      clearInterval(progressInterval);
+      setGeneratingProgress(100);
     } catch (err) {
+      clearInterval(progressInterval);
       console.error("Generate error:", err);
+      toast.error(err.message || "Failed to generate plan");
       setError(err.message);
     } finally {
       setLoading(false);
+      setTimeout(() => setGeneratingProgress(0), 1000);
     }
   };
-
+  // Change form handler
   const handleChange = (e) => {
     const { name, value, type } = e.target;
 
@@ -216,8 +267,7 @@ export default function GenerateWeeklyPlan({ voiceText }) {
       }));
     }
   };
-
-  // Save Plan
+  // Save plan
   const savePlan = async () => {
     try {
       if (!plan) {
@@ -233,15 +283,14 @@ export default function GenerateWeeklyPlan({ voiceText }) {
         return;
       }
 
-      // console.log("💾 Saving plan:", {
-      //   planId: plan.id,
-      //   isSaved: plan.isSaved,
-      //   needsUpdate: plan.needsUpdate,
-      //   userId: userId,
-      //   swaps: plan.swaps,
-      // });
+      console.log("💾 Saving plan:", {
+        planId: plan.id,
+        source: plan.source,
+        isSaved: plan.isSaved,
+        userId: userId,
+      });
 
-      // Prepare request body
+      // Prepare request body - INCLUDE SOURCE FIELD
       const requestBody = {
         planData: {
           ...plan,
@@ -250,16 +299,21 @@ export default function GenerateWeeklyPlan({ voiceText }) {
           inputs: plan.inputs || {},
           swaps: plan.swaps || { allowed: 1, used: 0, remaining: 1 },
           tier: plan.tier || "free",
-          source: plan.source || "openai",
+          source: plan.source || "openai", // ← CRITICAL: Include source
           userId: plan.userId || userId,
           userEmail: plan.userEmail || user.email,
+          swapsUsed: plan.swaps?.used || 0,
+          swapsAllowed: plan.swaps?.allowed || 1,
+          // Remove temporary ID if it exists
+          ...(plan.id && plan.id.startsWith("temp_") && { tempId: plan.id }),
         },
         userId: userId,
         userEmail: user.email,
         userTier: user.tier || "free",
+        source: plan.source || "openai", // ← Also include at root level
       };
 
-      // console.log("Sending save request for plan ID:", plan.id);
+      console.log("Sending save request with source:", plan.source);
 
       const response = await fetch(`/api/plans/${plan.id}/save`, {
         method: "POST",
@@ -272,40 +326,53 @@ export default function GenerateWeeklyPlan({ voiceText }) {
       const result = await response.json();
 
       if (response.ok) {
-        // alert(result.message);
-        toast.success(result.message);
-        // Update plan state
+        toast.success(result.message || "Plan saved successfully!");
+
+        // Update plan state with database data
         setPlan({
           ...plan,
-          id: result.plan.id,
-          title: result.plan.title,
+          id: result.plan?.id || plan.id, // Use real MongoDB ID if returned
+          title: result.plan?.title || plan.title,
           isSaved: true,
           needsUpdate: false,
-          expiresAt: result.plan.expiresAt,
+          expiresAt: result.plan?.expiresAt,
           swaps: {
-            allowed: result.plan.swapsAllowed,
-            used: result.plan.swapsUsed,
-            remaining: result.plan.swapsAllowed - result.plan.swapsUsed,
+            allowed: result.plan?.swapsAllowed || plan.swaps?.allowed || 1,
+            used: result.plan?.swapsUsed || plan.swaps?.used || 0,
+            remaining:
+              (result.plan?.swapsAllowed || plan.swaps?.allowed || 1) -
+              (result.plan?.swapsUsed || plan.swaps?.used || 0),
           },
+          // Keep all other data
           days: plan.days,
+          inputs: plan.inputs,
+          tier: plan.tier,
+          source: plan.source, // Preserve the source
         });
 
         return result;
       } else {
         console.error("Save failed:", result);
-        toast.error(result.error || "Failed to save plan");
-        // alert(result.error || "Failed to save plan");
+
+        // More specific error messages
+        if (
+          result.error?.includes("source") ||
+          result.error?.includes("enum")
+        ) {
+          toast.error("Database schema needs update. Please contact support.");
+        } else {
+          toast.error(result.error || "Failed to save plan");
+        }
       }
     } catch (error) {
       console.error("Save error:", error);
       toast.error("Error: " + error.message);
     }
   };
-
+  // Generate another plan
   const generateAnother = () => {
     setPlan(null);
     setError("");
-    // Optionally reset form to default values
     setForm({
       province: "Ontario",
       cuisine: "",
@@ -320,70 +387,184 @@ export default function GenerateWeeklyPlan({ voiceText }) {
       skillLevel: "Beginner",
       dietaryPreferences: [],
       allergies: [],
+      days_count: 7,
     });
   };
-
-  const generateGroceryList = async (planId) => {
+  // Generate grocery list
+  const generateGroceryList = async () => {
     try {
-      const response = await fetch(`/api/grocerylists/generate`, {
+      if (!plan || !plan.id) {
+        toast.error("No plan available to generate grocery list");
+        return;
+      }
+
+      // Check if user is logged in
+      if (!user) {
+        toast.error("Please login to generate grocery lists");
+        return;
+      }
+
+      // Check user tier
+      if (user.tier === "free") {
+        toast.error("Upgrade to Plus or Premium to generate grocery lists");
+        return;
+      }
+
+      // Check if plan is saved 
+      if (!plan.isSaved && plan.id.startsWith("temp_")) {
+        toast.warning(
+          <div>
+            <p className="font-medium">Please save the plan first!</p>
+            <p className="text-sm mt-1">
+              Click Save Plan to save your meal plan, then generate grocery
+              list.
+            </p>
+          </div>,
+          {
+            autoClose: 5000,
+            closeButton: true,
+            closeOnClick: true,
+          }
+        );
+        return;
+      }
+
+      setLoading(true);
+
+      // Get authentication token
+      const token =
+        localStorage.getItem("token") ||
+        localStorage.getItem("accessToken") ||
+        (user?.token ? user.token : null);
+
+      if (!token) {
+        toast.error("Authentication token missing. Please login again.");
+        return;
+      }
+
+      const requestBody = {
+        planId: plan.id,
+      };
+
+      console.log("🛒 Generating basic grocery list with token...");
+      const response = await fetch("/api/groceryLists/generate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ planId }),
+        body: JSON.stringify(requestBody),
       });
+
+      // Check if response is JSON
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        const text = await response.text();
+        console.error("Non-JSON response:", text.substring(0, 200));
+        throw new Error(
+          `Server returned non-JSON: ${response.status} ${response.statusText}`
+        );
+      }
 
       const data = await response.json();
 
       if (response.ok) {
-        toast.success("Grocery list generated!");
-        // You can redirect to grocery list page
-        // window.location.href = `/grocery-list/${data.listId}`;
+        toast.success("Grocery list generated successfully!");
+
+        // Store in localStorage
+        localStorage.setItem(
+          "lastGroceryList",
+          JSON.stringify(data.groceryList)
+        );
+
+        // Open grocery list page
+        window.location.href = `/${locale}/grocery-list/${data.groceryList.id}`;
+
+        return data.groceryList;
       } else {
-        toast.error(data.error || "Failed to generate grocery list");
+        // Handle specific errors
+        if (data.planNotSaved) {
+          toast.error(
+            "Please save the plan first before generating grocery list"
+          );
+        } else if (data.requiresUpgrade) {
+          toast.error("Upgrade required for grocery list feature");
+        } else if (response.status === 401) {
+          toast.error("Authentication failed. Please login again.");
+        } else {
+          toast.error(data.error || "Failed to generate grocery list");
+        }
       }
     } catch (error) {
-      toast.error("Error generating grocery list");
+      console.error("Grocery list error:", error);
+
+      // Better error message
+      if (error.message.includes("non-JSON")) {
+        toast.error("Server error. Please check if the API endpoint exists.");
+      } else {
+        toast.error("Error generating grocery list: " + error.message);
+      }
+    } finally {
+      setLoading(false);
     }
   };
-
-  const orderOnInstacart = async (planId) => {
+  // Update your Instacart function
+  const orderOnInstacart = async () => {
     try {
-      const response = await fetch(`/api/grocerylists/${planId}/instacart`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      if (!plan || !plan.id) {
+        toast.error("No plan available");
+        return;
+      }
 
-      const data = await response.json();
+      if (user.tier === "free") {
+        toast.error(
+          "Instacart integration is only available for Plus and Premium users"
+        );
+        return;
+      }
 
-      if (response.ok && data.instacartLink) {
-        // Open Instacart link in new tab
-        window.open(data.instacartLink, "_blank");
+      // First generate grocery list if not already done
+      const groceryList = await generateGroceryList();
+
+      if (groceryList && groceryList.instacartDeepLink) {
+        // Open Instacart in new tab
+        window.open(groceryList.instacartDeepLink, "_blank");
       } else {
-        toast.error(data.error || "Failed to generate Instacart link");
+        toast.error("Could not generate Instacart link");
       }
     } catch (error) {
-      toast.error("Error connecting to Instacart");
+      toast.error("Error connecting to Instacart: " + error.message);
     }
   };
-
+  // swap meal
   const swapMeal = async (planId, mealIndex, dayIndex) => {
     try {
+      setIsSwapping(true);
+
+      // Check if user is logged in
+      if (!user) {
+        toast.error("Please login to swap meals");
+        return null;
+      }
+
+      // Prepare swap data
+      const swapData = {
+        dayIndex,
+        mealIndex,
+        userId: user?.id || user?._id,
+        userEmail: user?.email,
+        userTier: user?.tier || "free",
+        planData: plan, // Send current plan data
+      };
+
+      console.log("Swapping meal:", { planId, dayIndex, mealIndex });
+
       const response = await fetch(`/api/plans/${planId}/swap`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          dayIndex,
-          mealIndex,
-          planData: plan,
-          userId: user?.id || user?._id,
-          userEmail: user?.email,
-          userTier: user?.tier || "free",
-        }),
+        body: JSON.stringify(swapData),
       });
 
       const data = await response.json();
@@ -394,17 +575,22 @@ export default function GenerateWeeklyPlan({ voiceText }) {
         // Update plan with swapped meal
         setPlan((prev) => {
           const updatedDays = [...prev.days];
+
+          // Update the specific meal
           updatedDays[dayIndex].meals[mealIndex] = data.newMeal;
 
           const updatedPlan = {
             ...prev,
             days: updatedDays,
-            swaps: data.swaps,
-            tier: data.userTier || prev.tier,
-            isSaved: prev.isSaved ? false : prev.isSaved,
+            swaps: data.swaps || prev.swaps,
+            userTier: data.userTier || prev.tier,
+            // If plan was saved, mark as needing update
             needsUpdate: prev.isSaved ? true : false,
+            // Update plan data if it's a saved plan
+            ...(data.updatedPlanData && { ...data.updatedPlanData }),
           };
 
+          console.log("Plan updated after swap:", updatedPlan);
           return updatedPlan;
         });
 
@@ -426,7 +612,7 @@ export default function GenerateWeeklyPlan({ voiceText }) {
     <section className="py-16 md:py-20">
       <div className="container mx-auto px-4 max-w-[1500px]">
         <p className="text-center text-3xl md:text-4xl font-semibold text-gray-900 mb-3">
-          {t('title')}
+          {t("title")}
         </p>
 
         {/* Error Message */}
@@ -437,7 +623,27 @@ export default function GenerateWeeklyPlan({ voiceText }) {
             </div>
           </div>
         )}
-
+        {/* for free users */}
+        {freeLimitReached && (
+          <div className="max-w-6xl mx-auto mb-6">
+            <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+              <p className="text-yellow-800 font-medium">
+                You have reached your free plan limit (1 plan per month).
+              </p>
+              <p className="text-yellow-700 text-sm mt-1">
+                Upgrade to <span className="font-semibold">Plus</span> for 6
+                plans/month, or <span className="font-semibold">Premium</span>{" "}
+                for unlimited plans.
+              </p>
+              <button
+                onClick={() => (window.location.href = "/#pricing")}
+                className="mt-2 bg-[#8cc63c] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#7ab32f] transition"
+              >
+                View Plans & Pricing
+              </button>
+            </div>
+          </div>
+        )}
         {/* Form */}
         {!plan ? (
           <div className="max-w-6xl mx-auto">
@@ -451,12 +657,13 @@ export default function GenerateWeeklyPlan({ voiceText }) {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     {t(`form.province`)}
                   </label>
-                  <select
+                  <div className="relative">
+                    <select
                     name="province"
                     value={form.province}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 "
                   >
                     {PROVINCES.map((province) => (
                       <option key={province} value={province}>
@@ -464,6 +671,7 @@ export default function GenerateWeeklyPlan({ voiceText }) {
                       </option>
                     ))}
                   </select>
+                  </div>
                 </div>
 
                 <div>
@@ -523,7 +731,7 @@ export default function GenerateWeeklyPlan({ voiceText }) {
               </div>
 
               {/* Portions, Meals, Time */}
-              <div className="grid md:grid-cols-3 gap-6">
+              <div className="grid md:grid-cols-4 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     {t(`form.portions`)}
@@ -552,6 +760,55 @@ export default function GenerateWeeklyPlan({ voiceText }) {
                     onChange={handleChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2"
                   />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Number of Days <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    name="days_count"
+                    value={form.days_count}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        days_count: parseInt(e.target.value),
+                      })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-teal-500 focus:border-teal-500"
+                    disabled={loading}
+                  >
+                    {/* Free users: only 3 days */}
+                    {!user || user?.tier === "free" ? (
+                      <>
+                        <option value="3">3 days</option>
+                        {!user && (
+                          <option value="7" disabled className="text-gray-400">
+                            7 days (Weekly) - Login required
+                          </option>
+                        )}
+                      </>
+                    ) : (
+                      /* Paid users: all options */
+                      <>
+                        <option value="3">3 days</option>
+                        <option value="4">4 days</option>
+                        <option value="5">5 days</option>
+                        <option value="6">6 days</option>
+                        <option value="7">7 days (Weekly)</option>
+                      </>
+                    )}
+                  </select>
+
+                  {/* Help text showing user's tier limits */}
+                  <p className="text-xs text-gray-500 mt-1">
+                    {!user
+                      ? "Login to access 7-day plans"
+                      : user?.tier === "free"
+                      ? "Free tier: 3-day plan only"
+                      : `Premium tier: ${
+                          user?.tier === "tier2" ? "Up to 7" : "Up to 7"
+                        } day plans available`}
+                  </p>
                 </div>
 
                 <div>
@@ -691,16 +948,30 @@ export default function GenerateWeeklyPlan({ voiceText }) {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-[#8cc63c] hover:bg-[#7ab32f]  text-white font-semibold py-4 px-6 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                  className="w-full bg-[#8cc63c] hover:bg-[#7ab32f] text-white font-semibold py-4 px-6 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 relative overflow-hidden"
                 >
                   {loading ? (
                     <div className="flex items-center justify-center">
-                      {t('loading')}
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                      Generating {form.days_count}-Day Plan... (
+                      {generatingProgress}%)
                     </div>
                   ) : (
-                    t('generateButton')
+                    t("generateButton")
                   )}
                 </button>
+
+                {/* Estimated Time */}
+                {loading && (
+                  <p className="text-sm text-gray-500 text-center mt-2">
+                    Estimated time:{" "}
+                    {form.days_count <= 3
+                      ? "30-60 seconds"
+                      : form.days_count <= 5
+                      ? "1-2 minutes"
+                      : "2-3 minutes"}
+                  </p>
+                )}
               </div>
             </form>
           </div>
@@ -715,7 +986,7 @@ export default function GenerateWeeklyPlan({ voiceText }) {
                     {plan.title}
                   </h2>
                   <p className="text-gray-600 mt-2">
-                    {t('plan.generatedFor')} {" "}
+                    {plan.days?.length || 7}-Day Plan •{t("plan.generatedFor")}{" "}
                     <span className="font-semibold text-[#8cc63c]">
                       {plan.swaps.remaining} of {plan.swaps.allowed} swaps
                       available
@@ -758,7 +1029,7 @@ export default function GenerateWeeklyPlan({ voiceText }) {
                           key={mealIndex}
                           className="bg-gray-50 rounded-xl md:p-3 p-2 hover:bg-white hover:shadow-md transition flex flex-col md:h-[400px] h-[280px]"
                         >
-                          {/* Compact Header - Mobile optimized */}
+                          {/* Header*/}
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center min-w-0 flex-1">
                               <span
@@ -782,7 +1053,22 @@ export default function GenerateWeeklyPlan({ voiceText }) {
                               {meal.cookingTime} min
                             </div>
                           </div>
+                          {meal.recipeSource === "spoonacular" && (
+                            <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full flex items-center shrink-0 ml-2">
+                              <svg
+                                className="w-3 h-3 mr-1"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                              >
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                              </svg>
+                              Verified
+                            </span>
+                          )}
 
+                          <div className="text-sm text-gray-500 shrink-0 ml-2">
+                            {meal.cookingTime} min
+                          </div>
                           {/* Scrollable Content Area - Mobile optimized */}
                           <div className="flex-1 overflow-y-auto pr-1 meal-scroll">
                             {/* Ingredients - Mobile friendly */}
@@ -913,7 +1199,7 @@ export default function GenerateWeeklyPlan({ voiceText }) {
                         );
                       } else if (plan.tier === "free") {
                         toast.warning(
-                          "Upgrade to Tier 2 or Tier 3 to unlock Instacart integration!"
+                          "Upgrade to Premium to unlock Instacart integration!"
                         );
                       } else {
                         orderOnInstacart(plan.id);

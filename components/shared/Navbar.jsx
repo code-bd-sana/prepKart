@@ -7,7 +7,7 @@ import { FiMenu, FiX } from "react-icons/fi";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "@/store/slices/authSlice";
 import { toast } from "react-toastify";
-import { useTranslations } from "next-intl"; // Add this
+import { useTranslations } from "next-intl";
 
 export default function Navbar() {
   const params = useParams();
@@ -45,6 +45,7 @@ export default function Navbar() {
     // { label: t("recipes"), href: "#recipes" },
     { label: t("partners"), href: "#partners" },
     { label: t("faq"), href: "#faq" },
+    { label: t("blog"), href: `/${locale}/blog` },
   ];
 
   // Handle hash changes (keep this as is)
@@ -169,76 +170,86 @@ export default function Navbar() {
         {/* RIGHT */}
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-3 lg:gap-4 xl:gap-6">
-          {user ? (
-            <>
-              {/* User Info */}
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-teal-100 rounded-full flex items-center justify-center">
-                  <span className="text-teal-800 font-medium text-sm">
-                    {user?.name?.charAt(0) || user?.email?.charAt(0)}
+            {user ? (
+              <>
+                {/* User Info */}
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-teal-100 rounded-full flex items-center justify-center">
+                    <span className="text-teal-800 font-medium text-sm">
+                      {user?.name?.charAt(0) || user?.email?.charAt(0)}
+                    </span>
+                  </div>
+                  <span className="text-sm text-gray-700 hidden md:block">
+                    {user.name || user.email?.split("@")[0]}
                   </span>
                 </div>
-                <span className="text-sm text-gray-700 hidden md:block">
-                  {user.name || user.email?.split("@")[0]}
-                </span>
-              </div>
 
-              {/* Dashboard Button */}
-              <Link
-                href={`/${locale}/dashboard`}
-                onClick={() => setActiveHash("")}
-              >
-                <button className="px-3 lg:px-4 xl:px-5 py-2 lg:py-2.5 text-white font-medium rounded-md bg-[#4a9fd8] hover:bg-[#3b8ec4] transition-colors duration-200 cursor-pointer text-sm lg:text-base whitespace-nowrap">
-                  {t("dashboard")}
-                </button>
-              </Link>
+                {/* Dashboard Button */}
+                {/* <Link
+                  href={`/${locale}/dashboard`}
+                  onClick={() => setActiveHash("")}
+                >
+                  <button className="px-3 lg:px-4 xl:px-5 py-2 lg:py-2.5 text-white font-medium rounded-md bg-[#4a9fd8] hover:bg-[#3b8ec4] transition-colors duration-200 cursor-pointer text-sm lg:text-base whitespace-nowrap">
+                    {t("dashboard")}
+                  </button>
+                </Link> */}
+                {user && (user.tier === "admin") && (
+                  <Link
+                    href={`/${locale}/admin`}
+                    className="px-3 lg:px-4 xl:px-5 py-2 lg:py-2.5 text-white font-medium rounded-md bg-[#4a9fd8] hover:bg-[#3b8ec4] transition-colors duration-200 cursor-pointer text-sm lg:text-base whitespace-nowrap"
+                  >
+                    Admin Dashboard
+                  </Link>
+                )}
 
-              {/* Logout Button */}
-              <button
-                onClick={handleLogout}
-                className="px-3 lg:px-4 xl:px-5 py-2 lg:py-2.5 text-white font-medium rounded-md bg-red-500 hover:bg-red-600 transition-colors duration-200 cursor-pointer text-sm lg:text-base whitespace-nowrap"
-              >
-                {t("logout")}
-              </button>
-            </>
-          ) : (
-            <>
-              {/* Login Button */}
-              <Link href={`/${locale}/login`} onClick={() => setActiveHash("")}>
-                <button className="px-3 lg:px-4 xl:px-5 py-2 lg:py-2.5 text-[#4a9fd8] font-medium rounded-md border-2 border-[#4a9fd8] hover:bg-blue-50 transition-colors duration-200 cursor-pointer text-sm lg:text-base whitespace-nowrap">
-                  {t("login")}
+                {/* Logout Button */}
+                <button
+                  onClick={handleLogout}
+                  className="px-3 lg:px-4 xl:px-5 py-2 lg:py-2.5 text-white font-medium rounded-md bg-red-500 hover:bg-red-600 transition-colors duration-200 cursor-pointer text-sm lg:text-base whitespace-nowrap"
+                >
+                  {t("logout")}
                 </button>
-              </Link>
+              </>
+            ) : (
+              <>
+                {/* Login Button */}
+                <Link
+                  href={`/${locale}/login`}
+                  onClick={() => setActiveHash("")}
+                >
+                  <button className="px-3 lg:px-4 xl:px-5 py-2 lg:py-2.5 text-[#4a9fd8] font-medium rounded-md border-2 border-[#4a9fd8] hover:bg-blue-50 transition-colors duration-200 cursor-pointer text-sm lg:text-base whitespace-nowrap">
+                    {t("login")}
+                  </button>
+                </Link>
 
-              {/* Register Button */}
-              <Link
-                href={`/${locale}/register`}
-                onClick={() => setActiveHash("")}
-              >
-                <button className="px-3 lg:px-4 xl:px-5 py-2 lg:py-2.5 text-white font-medium rounded-md bg-[#8cc63c] hover:bg-[#7ab32f] transition-colors duration-200 cursor-pointer text-sm lg:text-base whitespace-nowrap">
-                  {t("getStarted")}
-                </button>
-              </Link>
-            </>
-          )}
-        </div>
-        <div className="flex gap-x-2">
-          <Link
-            href={createLocalizedPath("en")}
-            className={currentLocale === "en" ? "font-bold" : ""}
-          >
-            EN
-          </Link>
-          <Link
-            href={createLocalizedPath("fr")}
-            className={currentLocale === "fr" ? "font-bold" : ""}
-          >
-            FR
-          </Link>
-        </div>
+                {/* Register Button */}
+                <Link
+                  href={`/${locale}/register`}
+                  onClick={() => setActiveHash("")}
+                >
+                  <button className="px-3 lg:px-4 xl:px-5 py-2 lg:py-2.5 text-white font-medium rounded-md bg-[#8cc63c] hover:bg-[#7ab32f] transition-colors duration-200 cursor-pointer text-sm lg:text-base whitespace-nowrap">
+                    {t("getStarted")}
+                  </button>
+                </Link>
+              </>
+            )}
+          </div>
+          <div className="flex gap-x-2">
+            <Link
+              href={createLocalizedPath("en")}
+              className={currentLocale === "en" ? "font-bold" : ""}
+            >
+              EN
+            </Link>
+            <Link
+              href={createLocalizedPath("fr")}
+              className={currentLocale === "fr" ? "font-bold" : ""}
+            >
+              FR
+            </Link>
+          </div>
         </div>
       </div>
-      
 
       {/* ---------------- MOBILE NAV ---------------- */}
       <div className="lg:hidden px-4 sm:px-6 md:px-8 py-3 flex items-center justify-between">
@@ -314,18 +325,26 @@ export default function Navbar() {
                   </span>
                 </div>
 
-                <Link
+                {/* <Link
                   href={`/${locale}/dashboard`}
                   onClick={() => {
                     setActiveHash("");
                     setOpen(false);
                   }}
                   className="flex-1"
-                >
-                  <button className="w-full px-4 sm:px-5 py-2.5 text-white font-medium rounded-md bg-[#4a9fd8] cursor-pointer text-sm sm:text-base">
+                > */}
+                {/* <button className="w-full px-4 sm:px-5 py-2.5 text-white font-medium rounded-md bg-[#4a9fd8] cursor-pointer text-sm sm:text-base">
                     {t("dashboard")}
-                  </button>
-                </Link>
+                  </button> */}
+                {user && (user.tier === "tier3" || user.tier === "admin") && (
+                  <Link
+                    href={`/${locale}/admin`}
+                    className="w-full text-center px-4 sm:px-5 py-2.5 text-white font-medium rounded-md bg-[#4a9fd8] cursor-pointer text-sm sm:text-base"
+                  >
+                    Admin Dashboard
+                  </Link>
+                )}
+                {/* </Link> */}
                 <button
                   onClick={handleLogout}
                   className="flex-1 px-4 sm:px-5 py-2.5 text-white font-medium rounded-md bg-red-500 cursor-pointer text-sm sm:text-base"
