@@ -3,6 +3,7 @@ import { stripe } from "@/lib/stripe";
 import { connectDB } from "@/lib/db";
 import User from "@/models/User";
 
+
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -10,13 +11,10 @@ export async function GET(request) {
     const userId = searchParams.get("user_id");
     const tier = searchParams.get("tier");
 
-    // Use environment variable
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    const origin = request.nextUrl.origin || "http://localhost:3000";
 
     if (!sessionId || !userId || !tier) {
-      return NextResponse.redirect(
-        `${baseUrl}/#pricing?error=missing`
-      );
+      return NextResponse.redirect(`${origin}/#pricing?error=missing`);
     }
 
     // Verify with Stripe
@@ -24,9 +22,7 @@ export async function GET(request) {
 
     if (session.payment_status !== "paid") {
       console.log("Payment not paid:", session.payment_status);
-      return NextResponse.redirect(
-        `${baseUrl}/#pricing?error=not_paid`
-      );
+      return NextResponse.redirect(`${origin}/#pricing?error=not_paid`);
     }
 
     // Connect to DB
@@ -35,8 +31,8 @@ export async function GET(request) {
     // Calculate swaps
     const swapsAllowed = tier === "tier2" ? 2 : 3;
 
-    // Update database
-    const result = await User.findByIdAndUpdate(
+    // Update database 
+    await User.findByIdAndUpdate(
       userId,
       {
         tier: tier,
@@ -55,13 +51,10 @@ export async function GET(request) {
     const userLocale = "en";
 
     return NextResponse.redirect(
-      `${baseUrl}/${userLocale}/dashboard#pricing?success=true`
+      `${origin}/${userLocale}/dashboard#pricing?success=true`
     );
   } catch (error) {
-    console.error("Confirm error:", error.message);
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-    return NextResponse.redirect(
-      `${baseUrl}/#pricing?error=` + error.message
-    );
+    const origin = request.nextUrl.origin || "http://localhost:3000";
+    return NextResponse.redirect(`${origin}/#pricing?error=${error.message}`);
   }
 }
