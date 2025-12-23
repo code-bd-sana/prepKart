@@ -36,7 +36,6 @@ export async function POST(request) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    console.log("User:", user.email, "Current tier:", user.tier);
 
     // Get price ID
     const priceId =
@@ -90,8 +89,6 @@ export async function POST(request) {
         userEmail: user.email,
       },
     });
-
-    console.log("✅ Checkout created:", session.id);
 
     return NextResponse.json({
       success: true,

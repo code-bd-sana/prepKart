@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import * as React from "react";
 import { toast } from "react-toastify";
-import { IoIosArrowDown } from "react-icons/io";
+import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
+import { FiSearch, FiFilter, FiUsers, FiUserCheck, FiUserPlus, FiDollarSign, FiTrash2, FiUserX, FiUserCheck as FiMakeAdmin } from "react-icons/fi";
+import { TbUser, TbUserStar } from "react-icons/tb";
+import { MdAdminPanelSettings } from "react-icons/md";
 
 export default function UsersPage({ params }) {
   const router = useRouter();
@@ -16,6 +18,7 @@ export default function UsersPage({ params }) {
   const [activeTab, setActiveTab] = useState("all");
   const [selectedTier, setSelectedTier] = useState("all");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [expandedUser, setExpandedUser] = useState(null);
 
   useEffect(() => {
     // Auth check
@@ -137,6 +140,7 @@ export default function UsersPage({ params }) {
       toast.error("Network error. Please try again.");
     }
   };
+
   // Change user tier with confirmation
   const changeUserTier = (userId, userName, currentTier) => {
     toast.info(
@@ -209,11 +213,9 @@ export default function UsersPage({ params }) {
 
   // Filter users based on active tab and selected tier
   const filteredUsers = users.filter((user) => {
-    // First filter by tab
     if (activeTab === "admin" && user.tier !== "admin") return false;
     if (activeTab === "all" && user.tier === "admin") return false;
 
-    // Then filter by selected tier (only for All Users tab)
     if (
       activeTab === "all" &&
       selectedTier !== "all" &&
@@ -222,320 +224,481 @@ export default function UsersPage({ params }) {
       return false;
     }
 
-    // Then filter by search term
     return (
       user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email?.toLowerCase().includes(searchTerm.toLowerCase())
     );
   });
 
+  // Toggle user details expansion
+  const toggleUserExpansion = (userId) => {
+    setExpandedUser(expandedUser === userId ? null : userId);
+  };
+
+  // Tier badge component
+  const TierBadge = ({ tier }) => {
+    const tierStyles = {
+      admin: "bg-purple-100 text-purple-800 border-purple-200",
+      tier3: "bg-red-100 text-red-800 border-red-200",
+      tier2: "bg-green-100 text-green-800 border-green-200",
+      free: "bg-gray-100 text-gray-800 border-gray-200",
+    };
+
+    const tierIcons = {
+      admin: <MdAdminPanelSettings className="w-4 h-4 mr-1" />,
+      tier3: <TbUserStar className="w-4 h-4 mr-1" />,
+      tier2: <FiUserCheck className="w-4 h-4 mr-1" />,
+      free: <TbUser className="w-4 h-4 mr-1" />,
+    };
+
+    const tierNames = {
+      admin: "Admin",
+      tier3: "Tier 3",
+      tier2: "Tier 2",
+      free: "Free",
+    };
+
+    return (
+      <span
+        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${tierStyles[tier] || tierStyles.free}`}
+      >
+        {tierIcons[tier] || tierIcons.free}
+        {tierNames[tier] || "Free"}
+      </span>
+    );
+  };
+
   if (loading) {
     return (
-      <div className="p-6 ml-64">
-        <h1 className="text-2xl font-bold mb-6">Users</h1>
-        <div className="space-y-4">
-          {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="h-16 bg-gray-100 animate-pulse rounded"
-            ></div>
-          ))}
+      <div className="p-4 sm:p-6 min-h-screen bg-gray-50">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/3 mb-6"></div>
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="h-20 bg-gray-200 rounded-lg"
+              ></div>
+            ))}
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 ml-64">
-      {/* Header with Tabs */}
-      <div className="mb-8">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">
-              {activeTab === "all" ? "All Users" : "Admin Users"}
-            </h1>
-            <p className="text-gray-600 mt-2">
-              {filteredUsers.length} users found • {users.length} total
-            </p>
+    <div className="p-4 sm:p-6 min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="mb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+          User Management
+        </h1>
+        <p className="text-gray-600">
+          Manage all users and their access levels
+        </p>
+      </div>
+
+      {/* Stats Cards - Mobile First Grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
+        <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
+          <div className="flex items-center">
+            <div className="p-2 bg-blue-50 rounded-lg mr-3">
+              <FiUsers className="w-5 h-5 text-blue-500" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Total Users</p>
+              <p className="text-xl sm:text-2xl font-bold">{users.length}</p>
+            </div>
           </div>
         </div>
 
-        {/* Tabs and Filters */}
-        <div className="flex flex-col md:flex-row gap-4 mb-6 items-center">
-          {/* Tabs */}
-          <div className="flex bg-gray-100 p-1 rounded-lg w-fit">
+        <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
+          <div className="flex items-center">
+            <div className="p-2 bg-gray-50 rounded-lg mr-3">
+              <TbUser className="w-5 h-5 text-gray-500" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Free Users</p>
+              <p className="text-xl sm:text-2xl font-bold">
+                {users.filter((u) => !u.tier || u.tier === "free").length}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
+          <div className="flex items-center">
+            <div className="p-2 bg-green-50 rounded-lg mr-3">
+              <FiDollarSign className="w-5 h-5 text-green-500" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Paid Users</p>
+              <p className="text-xl sm:text-2xl font-bold">
+                {
+                  users.filter(
+                    (u) => u.tier && u.tier !== "free" && u.tier !== "admin"
+                  ).length
+                }
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
+          <div className="flex items-center">
+            <div className="p-2 bg-purple-50 rounded-lg mr-3">
+              <MdAdminPanelSettings className="w-5 h-5 text-purple-500" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Admins</p>
+              <p className="text-xl sm:text-2xl font-bold">
+                {users.filter((u) => u.tier === "admin").length}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Control Bar */}
+      <div className="bg-white rounded-xl shadow-sm p-4 mb-6 border border-gray-100">
+        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+          {/* Tabs - Mobile scrollable */}
+          <div className="flex space-x-1 overflow-x-auto pb-2 sm:pb-0 w-full sm:w-auto">
             <button
               onClick={() => setActiveTab("all")}
-              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+              className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
                 activeTab === "all"
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-600 hover:text-gray-900"
+                  ? "bg-green-100 text-green-700"
+                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
               }`}
             >
+              <FiUsers className="w-4 h-4 mr-2" />
               All Users
-              <span className="ml-2 px-2 py-0.5 text-xs bg-gray-200 rounded-full">
+              <span className="ml-2 px-2 py-0.5 text-xs bg-white rounded-full">
                 {users.filter((u) => u.tier !== "admin").length}
               </span>
             </button>
             <button
               onClick={() => setActiveTab("admin")}
-              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+              className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
                 activeTab === "admin"
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-600 hover:text-gray-900"
+                  ? "bg-purple-100 text-purple-700"
+                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
               }`}
             >
+              <MdAdminPanelSettings className="w-4 h-4 mr-2" />
               Admin Users
-              <span className="ml-2 px-2 py-0.5 text-xs bg-gray-200 rounded-full">
+              <span className="ml-2 px-2 py-0.5 text-xs bg-white rounded-full">
                 {users.filter((u) => u.tier === "admin").length}
               </span>
             </button>
           </div>
 
-          {/* Search Bar */}
-          <div className="flex-1">
-            <div className="relative max-w-md">
-              <input
-                type="text"
-                placeholder={
-                  activeTab === "all"
-                    ? "Search by name or email..."
-                    : "Search admins..."
-                }
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full py-2 pl-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none"
-              />
-            </div>
-          </div>
-          {/* Tier Filter Dropdown (only for All Users tab) */}
-          {activeTab === "all" && (
-            <div className="relative inline-block text-left mb-6 filter-dropdown">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600">Filter by tier:</span>
-                <button
-                  onClick={() => setIsFilterOpen(!isFilterOpen)}
-                  className="inline-flex justify-between items-center w-40 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                >
-                  <span>
-                    {selectedTier === "all"
-                      ? "All Tiers"
-                      : selectedTier === "free"
-                      ? "Free Users"
-                      : selectedTier === "tier2"
-                      ? "Tier 2 Users"
-                      : selectedTier === "tier3"
-                      ? "Tier 3 Users"
-                      : "Select Tier"}
-                  </span>
-                  <IoIosArrowDown />
-                </button>
-
-                {/* Clear Filter Button */}
-                {selectedTier !== "all" && (
-                  <button
-                    onClick={() => {
-                      setSelectedTier("all");
-                      setIsFilterOpen(false);
-                    }}
-                    className="px-3 py-2 text-sm text-gray-600 hover:text-gray-900"
-                  >
-                    Clear
-                  </button>
-                )}
+          {/* Search and Filter */}
+          <div className="flex-1 w-full sm:w-auto">
+            <div className="flex flex-col sm:flex-row gap-3">
+              {/* Search Bar */}
+              <div className="relative flex-1">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FiSearch className="h-4 w-4 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  placeholder={
+                    activeTab === "all"
+                      ? "Search users by name or email..."
+                      : "Search admin users..."
+                  }
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
+                />
               </div>
 
-              {/* Dropdown Menu */}
-              {isFilterOpen && (
-                <div className="absolute left-0 mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-                  <div className="py-1">
-                    <button
-                      onClick={() => {
-                        setSelectedTier("all");
-                        setIsFilterOpen(false);
-                      }}
-                      className={`flex items-center justify-between w-full px-4 py-2 text-sm text-left hover:bg-gray-100 ${
-                        selectedTier === "all"
-                          ? "bg-gray-50 text-gray-900"
-                          : "text-gray-700"
-                      }`}
-                    >
-                      <span>All Tiers</span>
-                      <span className="text-xs text-gray-500 px-2 py-0.5 bg-gray-200 rounded">
-                        {users.filter((u) => u.tier !== "admin").length}
+              {/* Tier Filter Dropdown (only for All Users tab) */}
+              {activeTab === "all" && (
+                <div className="relative filter-dropdown">
+                  <button
+                    onClick={() => setIsFilterOpen(!isFilterOpen)}
+                    className="inline-flex items-center justify-between w-full sm:w-40 px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500"
+                  >
+                    <div className="flex items-center">
+                      <FiFilter className="w-4 h-4 mr-2" />
+                      <span className="truncate">
+                        {selectedTier === "all"
+                          ? "All Tiers"
+                          : selectedTier === "free"
+                          ? "Free Users"
+                          : selectedTier === "tier2"
+                          ? "Tier 2"
+                          : selectedTier === "tier3"
+                          ? "Tier 3"
+                          : "Filter"}
                       </span>
-                    </button>
+                    </div>
+                    {isFilterOpen ? (
+                      <IoIosArrowUp className="ml-2" />
+                    ) : (
+                      <IoIosArrowDown className="ml-2" />
+                    )}
+                  </button>
 
-                    {["free", "tier2", "tier3"].map((tier) => {
-                      const count = users.filter((u) => u.tier === tier).length;
-                      const tierColors = {
-                        free: "bg-gray-100 text-gray-700",
-                        tier2: "bg-green-100 text-green-700",
-                        tier3: "bg-red-100 text-red-700",
-                      };
-
-                      return (
+                  {/* Dropdown Menu */}
+                  {isFilterOpen && (
+                    <div className="absolute left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                      <div className="py-2">
                         <button
-                          key={tier}
                           onClick={() => {
-                            setSelectedTier(tier);
+                            setSelectedTier("all");
                             setIsFilterOpen(false);
                           }}
-                          className={`flex items-center justify-between w-full px-4 py-2 text-sm text-left hover:bg-gray-100 ${
-                            selectedTier === tier
+                          className={`flex items-center justify-between w-full px-4 py-2 text-sm text-left hover:bg-gray-50 ${
+                            selectedTier === "all"
                               ? "bg-gray-50 text-gray-900"
                               : "text-gray-700"
                           }`}
                         >
-                          <div className="flex items-center">                           
-                            <span>
-                              {tier === "free"
-                                ? "Free Users"
-                                : tier === "tier2"
-                                ? "Tier 2 Users"
-                                : "Tier 3 Users"}
-                            </span>
-                          </div>
-                          <span className="text-xs text-gray-500 px-2 py-0.5 bg-gray-200 rounded">
-                            {count}
+                          <span>All Tiers</span>
+                          <span className="text-xs px-2 py-0.5 bg-gray-100 rounded">
+                            {users.filter((u) => u.tier !== "admin").length}
                           </span>
                         </button>
-                      );
-                    })}
-                  </div>
+
+                        {["free", "tier2", "tier3"].map((tier) => {
+                          const count = users.filter((u) => u.tier === tier).length;
+                          return (
+                            <button
+                              key={tier}
+                              onClick={() => {
+                                setSelectedTier(tier);
+                                setIsFilterOpen(false);
+                              }}
+                              className={`flex items-center justify-between w-full px-4 py-2 text-sm text-left hover:bg-gray-50 ${
+                                selectedTier === tier
+                                  ? "bg-gray-50 text-gray-900"
+                                  : "text-gray-700"
+                              }`}
+                            >
+                              <div className="flex items-center">
+                                {tier === "free" && <TbUser className="w-4 h-4 mr-2" />}
+                                {tier === "tier2" && <FiUserCheck className="w-4 h-4 mr-2" />}
+                                {tier === "tier3" && <TbUserStar className="w-4 h-4 mr-2" />}
+                                <span>
+                                  {tier === "free"
+                                    ? "Free Users"
+                                    : tier === "tier2"
+                                    ? "Tier 2 Users"
+                                    : "Tier 3 Users"}
+                                </span>
+                              </div>
+                              <span className="text-xs px-2 py-0.5 bg-gray-100 rounded">
+                                {count}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
-          )}
+          </div>
         </div>
       </div>
 
-      {/* Users Table */}
+      {/* Users List - Mobile Cards / Desktop Table */}
       {filteredUsers.length === 0 ? (
-        <div className="bg-white rounded-xl shadow p-8 text-center">
-          <p className="text-gray-500 mb-4">
+        <div className="bg-white rounded-xl shadow-sm p-8 text-center border border-gray-100">
+          <div className="text-gray-400 mb-4">
+            <FiUserX className="w-16 h-16 mx-auto" />
+          </div>
+          <p className="text-gray-500 mb-2">
             {activeTab === "all" ? "No users found" : "No admin users found"}
+          </p>
+          <p className="text-sm text-gray-400">
+            {searchTerm ? "Try a different search term" : "Add your first user"}
           </p>
         </div>
       ) : (
-        <div className="bg-white rounded-xl shadow overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Name
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Email
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Tier
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Province
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Plans
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {filteredUsers.map((user) => (
-                <tr key={user._id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4">
-                    <div className="font-medium">{user.name || "No Name"}</div>
-                    <div className="text-xs text-gray-500">
-                      Joined: {new Date(user.createdAt).toLocaleDateString()}
+        <>
+          {/* Mobile View - Cards */}
+          <div className="sm:hidden space-y-3">
+            {filteredUsers.map((user) => (
+              <div
+                key={user._id}
+                className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
+              >
+                <div className="p-4">
+                  {/* Header */}
+                  <div className="flex justify-between items-start mb-3">
+                    <div>
+                      <h3 className="font-semibold text-gray-900">
+                        {user.name || "No Name"}
+                      </h3>
+                      <p className="text-sm text-gray-600">{user.email}</p>
                     </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm">{user.email}</div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="space-y-1">
-                      <span
-                        className={`px-2 py-1 rounded text-xs ${
-                          user.tier === "admin"
-                            ? "bg-purple-100 text-purple-800"
-                            : user.tier === "tier3"
-                            ? "bg-red-100 text-red-800"
-                            : user.tier === "tier2"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-gray-100 text-gray-800"
-                        }`}
-                      >
-                        {user.tier || "free"}
-                      </span>
-                      {user.subscription?.tier && (
-                        <div className="text-xs text-gray-500">
-                          Subscription: {user.subscription.tier}
+                    <TierBadge tier={user.tier} />
+                  </div>
+
+                  {/* Stats Row */}
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <p className="text-xs text-gray-500">Province</p>
+                      <p className="text-sm font-medium">{user.province || "-"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500">Plans</p>
+                      <p className="text-sm font-medium">
+                        Monthly: {user.monthly_plan_count || 0}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Expandable Details */}
+                  {expandedUser === user._id && (
+                    <div className="mt-4 pt-4 border-t border-gray-100">
+                      <div className="space-y-2">
+                        <div>
+                          <p className="text-xs text-gray-500">Joined</p>
+                          <p className="text-sm">
+                            {new Date(user.createdAt).toLocaleDateString()}
+                          </p>
                         </div>
-                      )}
+                        {user.subscription?.tier && (
+                          <div>
+                            <p className="text-xs text-gray-500">Subscription</p>
+                            <p className="text-sm font-medium">{user.subscription.tier}</p>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </td>
-                  <td className="px-6 py-4 text-sm">{user.province || "-"}</td>
-                  <td className="px-6 py-4 text-sm">
-                    <div>Monthly: {user.monthly_plan_count || 0}</div>
-                    <div>Weekly: {user.weekly_plan_count || 0}</div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex flex-col space-y-2">
+                  )}
+
+                  {/* Action Buttons */}
+                  <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-100">
+                    <button
+                      onClick={() => toggleUserExpansion(user._id)}
+                      className="text-sm text-gray-600 hover:text-gray-900"
+                    >
+                      {expandedUser === user._id ? "Show Less" : "More Info"}
+                    </button>
+                    <div className="flex space-x-3">
                       {activeTab === "all" && user.tier !== "admin" && (
                         <button
-                          onClick={() =>
-                            changeUserTier(user._id, user.name, user.tier)
-                          }
-                          className="text-green-600 hover:text-green-800 text-sm text-left font-medium transition-colors"
+                          onClick={() => changeUserTier(user._id, user.name, user.tier)}
+                          className="text-green-600 hover:text-green-800 text-sm font-medium flex items-center"
+                          title="Make Admin"
                         >
-                          Make Admin
+                          <FiMakeAdmin className="w-4 h-4 mr-1" />
+                          <span className="hidden sm:inline">Admin</span>
                         </button>
                       )}
                       <button
                         onClick={() => deleteUser(user._id, user.name)}
-                        className="text-red-600 hover:text-red-800 text-sm text-left transition-colors"
+                        className="text-red-600 hover:text-red-800 text-sm flex items-center"
+                        title="Delete User"
                       >
-                        Delete User
+                        <FiTrash2 className="w-4 h-4 mr-1" />
+                        <span className="hidden sm:inline">Delete</span>
                       </button>
                     </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop View - Table */}
+          <div className="hidden sm:block bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      User
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Tier
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Province
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Plans
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Joined
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {filteredUsers.map((user) => (
+                    <tr key={user._id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4">
+                        <div>
+                          <div className="font-medium text-gray-900">{user.name || "No Name"}</div>
+                          <div className="text-sm text-gray-600">{user.email}</div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="space-y-1">
+                          <TierBadge tier={user.tier} />
+                          {user.subscription?.tier && (
+                            <div className="text-xs text-gray-500">
+                              Sub: {user.subscription.tier}
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-sm">{user.province || "-"}</td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm">
+                          <div>Monthly: {user.monthly_plan_count || 0}</div>
+                          <div>Weekly: {user.weekly_plan_count || 0}</div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-sm">
+                        {new Date(user.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex space-x-3">
+                          {activeTab === "all" && user.tier !== "admin" && (
+                            <button
+                              onClick={() => changeUserTier(user._id, user.name, user.tier)}
+                              className="inline-flex items-center px-3 py-1.5 bg-green-50 text-green-700 text-sm font-medium rounded-lg hover:bg-green-100 transition-colors"
+                            >
+                              <FiMakeAdmin className="w-4 h-4 mr-1.5" />
+                              Make Admin
+                            </button>
+                          )}
+                          <button
+                            onClick={() => deleteUser(user._id, user.name)}
+                            className="inline-flex items-center px-3 py-1.5 bg-red-50 text-red-700 text-sm font-medium rounded-lg hover:bg-red-100 transition-colors"
+                          >
+                            <FiTrash2 className="w-4 h-4 mr-1.5" />
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
       )}
 
-      {/* Quick Stats */}
-      <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-lg shadow p-4">
-          <div className="text-sm text-gray-500">Total Users</div>
-          <div className="text-2xl font-bold">{users.length}</div>
-        </div>
-        <div className="bg-white rounded-lg shadow p-4">
-          <div className="text-sm text-gray-500">Free Users</div>
-          <div className="text-2xl font-bold">
-            {users.filter((u) => !u.tier || u.tier === "free").length}
-          </div>
-        </div>
-        <div className="bg-white rounded-lg shadow p-4">
-          <div className="text-sm text-gray-500">Paid Users</div>
-          <div className="text-2xl font-bold">
-            {
-              users.filter(
-                (u) => u.tier && u.tier !== "free" && u.tier !== "admin"
-              ).length
-            }
-          </div>
-        </div>
-        <div className="bg-white rounded-lg shadow p-4">
-          <div className="text-sm text-gray-500">Admins</div>
-          <div className="text-2xl font-bold">
-            {users.filter((u) => u.tier === "admin").length}
-          </div>
-        </div>
+      {/* Results Count */}
+      <div className="mt-6 text-center sm:text-left">
+        <p className="text-sm text-gray-500">
+          Showing {filteredUsers.length} of {users.length} users
+          {searchTerm && ` • Searching for: "${searchTerm}"`}
+        </p>
       </div>
     </div>
   );

@@ -11,5 +11,5 @@ export default function AuthLoader() {
     }
   }, []);
 
-  return null; // Doesn't render anything
+  return null; 
 }

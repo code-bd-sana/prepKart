@@ -6,24 +6,24 @@ const groceryItemSchema = new mongoose.Schema({
     required: true,
     trim: true,
   },
-  
+
   normalizedName: {
     type: String,
     lowercase: true,
     trim: true,
   },
-  
+
   quantity: {
     type: Number,
     required: true,
     min: 0.1,
   },
-  
+
   unit: {
     type: String,
     default: "unit",
   },
-  
+
   category: {
     type: String,
     enum: [
@@ -39,28 +39,29 @@ const groceryItemSchema = new mongoose.Schema({
       "Spices",
       "Canned Goods",
       "Condiments",
+      "Proteins",
       "Other",
     ],
     default: "Other",
   },
-  
+
   aisle: {
     type: String,
     default: "Other",
   },
-  
+
   checked: {
     type: Boolean,
     default: false,
   },
-  
+
   note: String,
-  
+
   estimatedPrice: Number,
-  
+
   instacartProductId: String,
-  
-  recipeSources: [String], // Which recipes use this ingredient
+
+  recipeSources: [String], 
 });
 
 const groceryListSchema = new mongoose.Schema(
@@ -71,59 +72,59 @@ const groceryListSchema = new mongoose.Schema(
       required: true,
       index: true,
     },
-    
+
     planId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "MealPlan",
       index: true,
     },
-    
+
     planTitle: String,
-    
+
     title: {
       type: String,
       default: "Grocery List",
     },
-    
+
     items: [groceryItemSchema],
-    
+
     // Settings
     pantryToggle: {
       type: Boolean,
       default: false,
     },
-    
+
     // Summary
     totalItems: {
       type: Number,
       default: 0,
     },
-    
+
     checkedItems: {
       type: Number,
       default: 0,
     },
-    
+
     estimatedTotal: Number,
-    
+
     currency: {
       type: String,
       default: "CAD",
     },
-    
+
     // Instacart integration
     instacartDeepLink: String,
     instacartCartId: String,
-    
+
     // Metadata
     storePreference: String,
     shoppingDate: Date,
-    
+
     isActive: {
       type: Boolean,
       default: true,
     },
-    
+
     expiresAt: {
       type: Date,
       default: () => new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
@@ -138,6 +139,8 @@ const groceryListSchema = new mongoose.Schema(
 groceryListSchema.index({ userId: 1, isActive: 1 });
 groceryListSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
-const GroceryList = mongoose.models.GroceryList || mongoose.model("GroceryList", groceryListSchema);
+const GroceryList =
+  mongoose.models.GroceryList ||
+  mongoose.model("GroceryList", groceryListSchema);
 
 export default GroceryList;

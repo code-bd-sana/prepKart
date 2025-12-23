@@ -26,8 +26,6 @@ export async function POST(request) {
 
   await connectDB();
 
-  console.log(`Stripe webhook received: ${event.type}`);
-
   try {
     switch (event.type) {
       case 'checkout.session.completed': {
@@ -37,7 +35,7 @@ export async function POST(request) {
         const customerId = session.customer;
         const subscriptionId = session.subscription;
         
-        console.log(`💳 Payment completed for user ${userId}, tier: ${tier}`);
+        // console.log(` Payment completed for user ${userId}, tier: ${tier}`);
         
         if (userId) {
           const updates = {
@@ -65,8 +63,8 @@ export async function POST(request) {
             { new: true }
           );
           
-          console.log(`User ${userId} updated to ${tier} tier`);
-          console.log('Updated swapsAllowed:', updatedUser?.swapsAllowed);
+          // console.log(`User ${userId} updated to ${tier} tier`);
+          // console.log('Updated swapsAllowed:', updatedUser?.swapsAllowed);
         }
         break;
       }
@@ -76,7 +74,7 @@ export async function POST(request) {
         const customerId = subscription.customer;
         const status = subscription.status;
         
-        console.log(`📝 Subscription updated: ${subscription.id}, status: ${status}`);
+        // console.log(` Subscription updated: ${subscription.id}, status: ${status}`);
         
         if (customerId) {
           const user = await User.findOne({ 
@@ -96,7 +94,6 @@ export async function POST(request) {
             if (status !== 'active') {
               updates.tier = 'free';
               updates.swapsAllowed = 1;
-              console.log(`User ${user._id} downgraded to free tier`);
             }
             
             await User.findByIdAndUpdate(user._id, { $set: updates });
@@ -109,7 +106,6 @@ export async function POST(request) {
         const subscription = event.data.object;
         const customerId = subscription.customer;
         
-        console.log(`🗑️ Subscription deleted: ${subscription.id}`);
         
         if (customerId) {
           await User.findOneAndUpdate(
@@ -123,7 +119,6 @@ export async function POST(request) {
               }
             }
           );
-          console.log(`📉 User with customer ${customerId} downgraded to free`);
         }
         break;
       }

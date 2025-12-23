@@ -144,7 +144,7 @@ export async function PATCH(request, { params }) {
     const checkedItems = cleanedItems.filter((item) => item.checked === true);
     const newInstacartLink = generateInstacartLink(checkedItems, userTier, impactId);
 
-    // Update the grocery list WITH NEW INSTACART LINK
+    // Update the grocery list
     const updatedList = await GroceryList.findByIdAndUpdate(
       id,
       {

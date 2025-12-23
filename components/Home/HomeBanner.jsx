@@ -34,7 +34,7 @@ export default function HomeBanner({ locale }) {
           const currentTranscript = event.results[0][0].transcript;
           setTranscript(currentTranscript);
           setInputText(currentTranscript);
-          console.log("Voice input:", currentTranscript);
+          // console.log("Voice input:", currentTranscript);
         };
 
         recognitionInstance.onerror = (event) => {
@@ -71,7 +71,7 @@ export default function HomeBanner({ locale }) {
       try {
         recognitionRef.current.start();
         setIsListening(true);
-        console.log("Starting voice input...");
+        // console.log("Starting voice input...");
       } catch (error) {
         console.error("Failed to start speech recognition:", error);
         setIsListening(false);
@@ -79,7 +79,7 @@ export default function HomeBanner({ locale }) {
     } else {
       recognitionRef.current.stop();
       setIsListening(false);
-      console.log("Stopping voice input...");
+      // console.log("Stopping voice input...");
     }
   };
 

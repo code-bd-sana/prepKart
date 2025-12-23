@@ -21,7 +21,6 @@ async function connectDB() {
 
 // GET all published blogs
 export async function GET(request) {
-  console.log('📝 GET /api/blog - Fetching published blogs');
   
   try {
     // Connect to DB
