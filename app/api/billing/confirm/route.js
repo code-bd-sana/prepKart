@@ -10,20 +10,22 @@ export async function GET(request) {
     const userId = searchParams.get("user_id");
     const tier = searchParams.get("tier");
 
+    // Use environment variable
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+
     if (!sessionId || !userId || !tier) {
       return NextResponse.redirect(
-        "http://localhost:3000/#pricing?error=missing"
+        `${baseUrl}/#pricing?error=missing`
       );
     }
 
     // Verify with Stripe
     const session = await stripe.checkout.sessions.retrieve(sessionId);
-    // console.log("Stripe session status:", session.payment_status);
 
     if (session.payment_status !== "paid") {
       console.log("Payment not paid:", session.payment_status);
       return NextResponse.redirect(
-        "http://localhost:3000/#pricing?error=not_paid"
+        `${baseUrl}/#pricing?error=not_paid`
       );
     }
 
@@ -53,12 +55,13 @@ export async function GET(request) {
     const userLocale = "en";
 
     return NextResponse.redirect(
-      `http://localhost:3000/${userLocale}/dashboard#pricing?success=true`
+      `${baseUrl}/${userLocale}/dashboard#pricing?success=true`
     );
   } catch (error) {
     console.error("Confirm error:", error.message);
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
     return NextResponse.redirect(
-      "http://localhost:3000/#pricing?error=" + error.message
+      `${baseUrl}/#pricing?error=` + error.message
     );
   }
 }
