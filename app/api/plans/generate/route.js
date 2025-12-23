@@ -66,13 +66,10 @@ async function getUserActualTier(userId) {
     // Validate tier
     const validTiers = ["free", "tier2", "tier3"];
     if (tier && validTiers.includes(tier)) {
-      console.log(`Valid tier found for user ${userId}: ${tier}`);
+      // console.log(`Valid tier found for user ${userId}: ${tier}`);
       return tier;
     }
 
-    console.log(
-      ` Invalid or missing tier for user ${userId}, defaulting to free`
-    );
     return "free";
   } catch (error) {
     console.error("Error getting user tier:", error);
@@ -191,11 +188,11 @@ export async function POST(request) {
 
     // Determine user tier
     const userTier = await getUserActualTier(userId);
-    console.log(`User ID: ${userId}, Tier: ${userTier}`);
+    // console.log(`User ID: ${userId}, Tier: ${userTier}`);
 
     // Get tier config
     const config = TIER_CONFIG[userTier] || TIER_CONFIG.free;
-    console.log(`Config for ${userTier}:`, config);
+    // console.log(`Config for ${userTier}:`, config);
 
     // Free user monthly limit check
     if (userId && userTier === "free") {
@@ -271,10 +268,6 @@ export async function POST(request) {
       );
     }
 
-    console.log(
-      `User allowed to generate. Tier: ${userTier}, Source: ${config.source}`
-    );
-
     // Generate plan based on tier
     let planData;
     let sourceUsed = config.source;
@@ -284,12 +277,9 @@ export async function POST(request) {
       (userTier === "tier2" || userTier === "tier3")
     ) {
       try {
-        console.log(`Using Spoonacular ONLY for ${userTier} user`);
+        // console.log(`Using Spoonacular ONLY for ${userTier} user`);
         planData = await generateSpoonacularMealPlan(inputs, userTier);
-        sourceUsed = "spoonacular";
-        console.log(
-          `Spoonacular generated ${planData?.days?.length || 0} days`
-        );
+        sourceUsed = "spoonacular";;
       } catch (spoonacularError) {
         console.error("Spoonacular failed:", spoonacularError.message);
         return NextResponse.json(
@@ -303,11 +293,11 @@ export async function POST(request) {
       }
     } else {
       // Free users use OpenAI
-      console.log(`Using OpenAI for ${userTier} user`);
+      // console.log(`Using OpenAI for ${userTier} user`);
       try {
         planData = await generateMealPlan(inputs, userTier);
         sourceUsed = "openai";
-        console.log(`OpenAI generated ${planData?.days?.length || 0} days`);
+        // console.log(`OpenAI generated ${planData?.days?.length || 0} days`);
       } catch (openaiError) {
         console.error("OpenAI error:", openaiError);
         return NextResponse.json(

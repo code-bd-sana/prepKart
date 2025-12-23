@@ -35,7 +35,6 @@ export default function LoginPage() {
       }, 1000); // 1 second delay
     } catch (error) {
       toast.error("Login Failed");
-      console.log("Login failed");
     }
   };
 

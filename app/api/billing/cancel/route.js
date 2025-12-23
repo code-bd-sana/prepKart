@@ -34,7 +34,7 @@ export async function POST(request) {
       }, { status: 400 });
     }
 
-    console.log(`Cancelling subscription for ${user.email}, tier: ${user.tier}`);
+    // console.log(`Cancelling subscription for ${user.email}, tier: ${user.tier}`);
 
     let stripeResponse = null;
     
@@ -47,7 +47,6 @@ export async function POST(request) {
           prorate: true, 
         }
       );
-      console.log('✅ Stripe subscription cancelled:', stripeResponse.id);
     } catch (stripeError) {
       console.error('Stripe cancellation error:', stripeError.message);
       
@@ -72,7 +71,6 @@ export async function POST(request) {
       { new: true }
     );
 
-    console.log(`✅ User downgraded to free: ${updatedUser.email}`);
 
     return NextResponse.json({
       success: true,

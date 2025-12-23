@@ -39,7 +39,7 @@ export default function Navbar() {
 
   // Update navItems to use translations
   const navItems = [
-    { label: t("home"), href: `/${locale}` }, // Add locale to home
+    { label: t("home"), href: `/${locale}` }, 
     { label: t("howItWorks"), href: "#howitworks" },
     { label: t("pricing"), href: "#pricing" },
     // { label: t("recipes"), href: "#recipes" },

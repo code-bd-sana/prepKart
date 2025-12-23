@@ -25,7 +25,7 @@ export async function POST(request) {
     // Get request body
     const body = await request.json();
     
-    // FIXED: Check if body exists first
+    // Check if body exists first
     if (!body) {
       return NextResponse.json(
         { error: 'No data received' },
@@ -41,8 +41,7 @@ export async function POST(request) {
     const tags = body.tags || [];
     const featuredImage = body.featuredImage || '';
     const published = body.published !== undefined ? body.published : true;
-    
-    console.log('Extracted fields:', { title, category, published, hasImage: !!featuredImage });
+  
     
     // Validate required fields
     if (!title.trim() || !content.trim()) {

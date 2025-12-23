@@ -18,8 +18,10 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
-import { useRouter } from "next/navigation"; // Changed from next/router
-import Navbar from "@/components/shared/Navbar";
+import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import Link from "next/link";
+import { trackInstacartClick } from "@/lib/instacart";
 
 // Aisle order for sorting
 const aisleOrder = [
@@ -38,7 +40,8 @@ const aisleOrder = [
 export default function GroceryListPage({ params }) {
   const unwrappedParams = use(params);
   const { id } = unwrappedParams;
-
+  const locale = unwrappedParams.locale;
+  const t = useTranslations("register");
   const { user } = useSelector((state) => state.auth);
   const router = useRouter();
 
@@ -71,7 +74,39 @@ export default function GroceryListPage({ params }) {
   });
   const [userPantry, setUserPantry] = useState([]);
   const [expandedAisles, setExpandedAisles] = useState({});
+  const [isAllSelected, setIsAllSelected] = useState(false);
 
+  const categorizeItem = (itemName) => {
+    const name = itemName.toLowerCase();
+
+    if (name.includes("sausage")) return "Meat";
+    if (name.includes("ricotta")) return "Dairy";
+    if (
+      name.includes("salt") ||
+      name.includes("oregano") ||
+      name.includes("nutmeg") ||
+      name.includes("seasoning")
+    )
+      return "Spices";
+    if (
+      name.includes("honey") ||
+      name.includes("broth") ||
+      name.includes("flour") ||
+      name.includes("lasagna") ||
+      name.includes("noodle")
+    )
+      return "Pantry";
+    if (
+      name.includes("garlic") ||
+      name.includes("broccolini") ||
+      name.includes("basil") ||
+      name.includes("parsley")
+    )
+      return "Produce";
+    // if (name.includes("oil")) return "Pantry";
+
+    return "Other";
+  };
   // Initialize all aisles as expanded by default
   useEffect(() => {
     const initialExpanded = {};
@@ -98,6 +133,57 @@ export default function GroceryListPage({ params }) {
     }));
   };
 
+  // Calculate if all visible items are checked
+  useEffect(() => {
+    if (!groceryList?.items) return;
+
+    const visibleItems = hidePantry
+      ? groceryList.items.filter((item) => !item.inPantry)
+      : groceryList.items;
+
+    const allChecked =
+      visibleItems.length > 0 && visibleItems.every((item) => item.checked);
+    setIsAllSelected(allChecked);
+  }, [groceryList, hidePantry]);
+
+  // Toggle select all function
+  const toggleSelectAll = async () => {
+    if (!groceryList) return;
+
+    const visibleItems = hidePantry
+      ? groceryList.items.filter((item) => !item.inPantry)
+      : groceryList.items;
+
+    const shouldSelectAll = !isAllSelected;
+    const updatedItems = groceryList.items.map((item) => {
+      // Only update items that are currently visible
+      const isVisible = hidePantry ? !item.inPantry : true;
+      if (isVisible) {
+        return { ...item, checked: shouldSelectAll };
+      }
+      return item;
+    });
+
+    // Update local state
+    setGroceryList({
+      ...groceryList,
+      items: updatedItems,
+      checkedItems: updatedItems.filter((item) => item.checked).length,
+    });
+
+    // Save to database
+    try {
+      await fetchWithAuth(`/api/groceryLists/${groceryList._id}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          items: updatedItems,
+          checkedItems: updatedItems.filter((item) => item.checked).length,
+        }),
+      });
+    } catch (error) {
+      toast.error("Failed to update selection");
+    }
+  };
   // Define markPantryItems function
   const markPantryItems = useCallback(
     async (groceryItems) => {
@@ -152,9 +238,9 @@ export default function GroceryListPage({ params }) {
       return groceryItems.map((item) => ({ ...item, inPantry: false }));
     },
     [user]
-  ); // Add user as dependency
+  );
 
-  // Fetch grocery list - now includes markPantryItems as dependency
+  // Fetch grocery list
   const fetchGroceryList = useCallback(
     async (listId) => {
       try {
@@ -243,9 +329,15 @@ export default function GroceryListPage({ params }) {
       ? groceryList.items.filter((item) => !item.inPantry)
       : groceryList.items;
 
+    const itemsWithFixedAisles = itemsToDisplay.map((item) => ({
+      ...item,
+      displayAisle:
+        item.aisle === "Other" ? categorizeItem(item.name) : item.aisle,
+    }));
+
     const grouped = {};
-    itemsToDisplay.forEach((item) => {
-      const aisle = item.aisle || item.category || "Other";
+    itemsWithFixedAisles.forEach((item) => {
+      const aisle = item.displayAisle || item.aisle || item.category || "Other";
       if (!grouped[aisle]) {
         grouped[aisle] = [];
       }
@@ -283,6 +375,8 @@ export default function GroceryListPage({ params }) {
   const visibleProgressItemsCount = progressItems.length || 0;
   const pantryItemsCount =
     groceryList?.items?.filter((item) => item.inPantry).length || 0;
+  const checkedItemsCount =
+    groceryList?.items?.filter((item) => item.checked).length || 0;
 
   const estimatedTotal =
     groceryList?.items?.reduce(
@@ -292,41 +386,45 @@ export default function GroceryListPage({ params }) {
 
   // toggleItemChecked function
   const toggleItemChecked = async (itemId) => {
-  if (!groceryList) return;
+    if (!groceryList) return;
 
-  const updatedItems = groceryList.items.map((item) =>
-    item._id === itemId ? { ...item, checked: !item.checked } : item
-  );
+    const updatedItems = groceryList.items.map((item) =>
+      item._id === itemId ? { ...item, checked: !item.checked } : item
+    );
 
-  const updatedList = {
-    ...groceryList,
-    items: updatedItems,
-    checkedItems: updatedItems.filter((item) => item.checked).length,
-  };
+    const updatedList = {
+      ...groceryList,
+      items: updatedItems,
+      checkedItems: updatedItems.filter((item) => item.checked).length,
+    };
 
-  setGroceryList(updatedList);
+    setGroceryList(updatedList);
 
-  // Save to database
-  try {
-    const response = await fetchWithAuth(`/api/groceryLists/${groceryList._id}`, {
-      method: "PATCH",
-      body: JSON.stringify({
-        items: updatedItems,
-        checkedItems: updatedList.checkedItems,
-      }),
-    });
+    // Save to database AND update Instacart link
+    try {
+      const response = await fetchWithAuth(
+        `/api/groceryLists/${groceryList._id}`,
+        {
+          method: "PATCH",
+          body: JSON.stringify({
+            items: updatedItems,
+            checkedItems: updatedList.checkedItems,
+          }),
+        }
+      );
 
-    if (response.ok) {
-      const data = await response.json();
-  
-      if (data.success && data.groceryList) {
-        setGroceryList(data.groceryList);
+      if (response.ok) {
+        const data = await response.json();
+
+        if (data.success && data.groceryList) {
+          // Update with new Instacart link
+          setGroceryList(data.groceryList);
+        }
       }
+    } catch (error) {
+      toast.error("Failed to update item");
     }
-  } catch (error) {
-    toast.error("Failed to update item");
-  }
-};
+  };
 
   // updateQuantity function
   const updateQuantity = async (itemId, newQuantity) => {
@@ -628,17 +726,17 @@ export default function GroceryListPage({ params }) {
 
   return (
     <section>
-      <Navbar />
+      {/* <Navbar /> */}
       <div className="container mx-auto px-4 max-w-[1200px] py-8 md:py-16 min-h-screen">
         {/* Header with back button */}
         <div className="mb-8">
-          <button
-            onClick={() => router.back()}
-            className="flex items-center text-green-600 hover:text-green-800 mb-4"
+          <Link
+            href={`/${locale}`}
+            className="inline-flex items-center text-sm text-gray-600 hover:text-gray-800 transition"
           >
-            <ArrowLeft className="h-5 w-5 mr-2" />
-            Back
-          </button>
+            <ArrowLeft />
+            {t("backToHome")}
+          </Link>
         </div>
 
         <div className="rounded-xl mx-auto max-w-[1200px] bg-white shadow-lg">
@@ -682,6 +780,13 @@ export default function GroceryListPage({ params }) {
                       Edit List
                     </>
                   )}
+                </button>
+                <button
+                  onClick={toggleSelectAll}
+                  className="h-9 px-4 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors text-sm font-medium text-gray-700 flex items-center gap-2"
+                >
+                  <Check className="h-4 w-4" />
+                  {isAllSelected ? "Deselect All" : "Select All"}
                 </button>
 
                 {user?.tier !== "free" && (
@@ -887,9 +992,20 @@ export default function GroceryListPage({ params }) {
                             {aisle}
                           </h3>
                         </div>
-                        <span className="text-sm text-gray-600">
-                          ({groupedItems[aisle].length} items)
-                        </span>
+                        <div className="flex items-center gap-4">
+                          <span className="text-sm text-gray-600">
+                            $
+                            {groupedItems[aisle]
+                              .reduce(
+                                (sum, item) => sum + (item.estimatedPrice || 0),
+                                0
+                              )
+                              .toFixed(2)}
+                          </span>
+                          <span className="text-sm text-gray-600">
+                            ({groupedItems[aisle].length} items)
+                          </span>
+                        </div>
                       </button>
 
                       {expandedAisles[aisle] && (
@@ -918,7 +1034,7 @@ export default function GroceryListPage({ params }) {
                                 )}
                               </button>
 
-                              <div className="flex-1 flex items-center">
+                              <div className=" flex-1 flex items-center">
                                 <span
                                   className={`font-medium ${
                                     item.checked
@@ -934,7 +1050,9 @@ export default function GroceryListPage({ params }) {
                                   </span>
                                 )}
                               </div>
-
+                              <span className="text-gray-600 text-sm font-medium min-w-[60px] text-right">
+                                ${(item.estimatedPrice || 0).toFixed(2)}
+                              </span>
                               {isEditing ? (
                                 <div className="flex items-center gap-2">
                                   <button
@@ -1050,42 +1168,16 @@ export default function GroceryListPage({ params }) {
           </div>
         </div>
 
-        {/* Instacart CTA - Always show but with different behavior based on tier */}
+        {/* Instacart CTA - FIXED LOGIC */}
         <div className="mt-8 bg-linear-to-r from-[#5a9e3a] to-[#4a9fd8] rounded-2xl p-8 text-center text-white">
           <h3 className="text-2xl font-bold mb-3">Ready to shop?</h3>
           <p className="mb-6 opacity-90">
             Order all ingredients with one click on Instacart
           </p>
 
-          {user?.tier === "tier3" && groceryList.instacartDeepLink ? (
-            <>
-              <button
-                onClick={() => {
-                  if (user?.tier === "tier3" && groceryList.instacartDeepLink) {
-                    window.open(groceryList.instacartDeepLink, "_blank");
-                  } else {
-                    toast.info(
-                      "Upgrade to Premium to access Instacart integration"
-                    );
-                  }
-                }}
-                className={`py-3 px-8 rounded-lg font-bold flex items-center mx-auto ${
-                  user?.tier === "tier3" && groceryList.instacartDeepLink
-                    ? "bg-white text-[#5a9e3a] hover:bg-green-50"
-                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                }`}
-                disabled={
-                  user?.tier !== "tier3" || !groceryList.instacartDeepLink
-                }
-              >
-                <ShoppingCart className="h-5 w-5 mr-2" />
-                Order on Instacart
-              </button>
-              <p className="text-sm mt-3 opacity-90">
-                Your cart loads automatically with all items
-              </p>
-            </>
-          ) : (
+          {/* Check user tier first */}
+          {user?.tier !== "tier3" ? (
+            // User is NOT tier3 - Show upgrade message
             <>
               <button
                 onClick={() => {
@@ -1100,6 +1192,75 @@ export default function GroceryListPage({ params }) {
               </button>
               <p className="text-sm mt-3 opacity-90">
                 Upgrade to Premium for Instacart integration
+              </p>
+            </>
+          ) : // User IS tier3 - Check for selected items
+          visibleCheckedCount === 0 ? (
+            // Tier3 user with NO items selected
+            <>
+              <button
+                onClick={() => {
+                  toast.info(
+                    "Please select at least one item to add to your Instacart cart"
+                  );
+                }}
+                className="bg-white text-[#5a9e3a] py-3 px-8 rounded-lg font-bold hover:bg-green-50 flex items-center mx-auto"
+              >
+                <ShoppingCart className="h-5 w-5 mr-2" />
+                Select Items First
+              </button>
+              <p className="text-sm mt-3 opacity-90">
+                Please select items to add to your Instacart cart
+              </p>
+            </>
+          ) : // Tier3 user WITH items selected
+          !groceryList?.instacartDeepLink ? (
+            <>
+              <button
+                onClick={() => {
+                  toast.error(
+                    "Instacart link not available. Please try refreshing the page."
+                  );
+                }}
+                className="bg-gray-300 text-gray-500 py-3 px-8 rounded-lg font-bold flex items-center mx-auto cursor-not-allowed"
+                disabled
+              >
+                <ShoppingCart className="h-5 w-5 mr-2" />
+                Link Unavailable
+              </button>
+              <p className="text-sm mt-3 opacity-90">
+                Could not generate shopping link. Please refresh.
+              </p>
+            </>
+          ) : (
+            // Tier3 user, has items selected, AND link exists
+            <>
+              <button
+                onClick={() => {
+                  if (visibleCheckedCount === 0) {
+                    toast.info("Please select items first");
+                    return;
+                  }
+
+                  // Track click
+                  trackInstacartClick({
+                    groceryListId: id,
+                    userId: user?.id,
+                    userTier: user?.tier,
+                    checkedItemsCount: visibleCheckedCount,
+                  });
+
+                  // Open link
+                  window.open(groceryList.instacartDeepLink, "_blank");
+                }}
+                className="bg-white text-[#5a9e3a] py-3 px-8 rounded-lg font-bold hover:bg-green-50 flex items-center mx-auto cursor-pointer"
+              >
+                <ShoppingCart className="h-5 w-5 mr-2" />
+                Order {visibleCheckedCount} items on Instacart
+              </button>
+              <p className="text-sm mt-3 opacity-90">
+                {visibleCheckedCount} selected items will be searched on
+                Instacart
               </p>
             </>
           )}

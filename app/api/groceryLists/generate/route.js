@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import Plan from "@/models/Plan";
@@ -10,6 +11,7 @@ import {
   normalizeIngredientName,
   sortByAisle,
 } from "@/lib/aisleMapper";
+import { generateInstacartLink } from "@/lib/instacart";
 
 export async function POST(request) {
   try {
@@ -66,13 +68,9 @@ export async function POST(request) {
         { status: 403 }
       );
     }
-
-    // console.log(`Generating grocery list for plan: ${planId}`);
-    // console.log(`User tier: ${userTier}, Pantry toggle: ${pantryToggle}`);
-
     // Extract all ingredients from plan
     const allIngredients = extractIngredientsFromPlan(plan);
-    console.log(`Total ingredients: ${allIngredients.length}`);
+    // console.log(`Total ingredients: ${allIngredients.length}`);
 
     // Get user's pantry if toggle is enabled
     let pantryItems = [];
@@ -80,7 +78,7 @@ export async function POST(request) {
       const pantry = await Pantry.findOne({ userId });
       if (pantry) {
         pantryItems = pantry.items || [];
-        console.log(`Pantry items: ${pantryItems.length}`);
+        // console.log(`Pantry items: ${pantryItems.length}`);
       }
     }
 
@@ -92,7 +90,7 @@ export async function POST(request) {
       plan.days
     );
 
-    console.log(`Processed items: ${groceryItems.length}`);
+    // console.log(`Processed items: ${groceryItems.length}`);
 
     // Sort items by aisle
     const sortedItems = sortByAisle(groceryItems);
@@ -126,7 +124,7 @@ export async function POST(request) {
       instacartDeepLink: instacartLink,
     });
 
-    console.log(`Grocery list created: ${groceryList._id}`);
+    // console.log(`Grocery list created: ${groceryList._id}`);
 
     return NextResponse.json({
       success: true,
@@ -179,128 +177,168 @@ function extractIngredientsFromPlan(plan) {
 
   return ingredients;
 }
-
 /**
  * Process ingredients (deduplicate, normalize, subtract pantry)
  */
 function processIngredients(ingredients, pantryItems, pantryToggle, planDays) {
   const ingredientMap = new Map();
 
-  // First pass: aggregate same ingredients
+  // Normalize and aggregate ingredients
   for (const ing of ingredients) {
     const normalizedName = normalizeIngredientName(ing.name);
-    const key = `${normalizedName}_${ing.unit}`;
+    const key = normalizedName; // Just use normalized name as key
 
     if (ingredientMap.has(key)) {
       // Add to existing
       const existing = ingredientMap.get(key);
-      existing.quantity += ing.quantity;
-      existing.recipeSources.push(`${ing.mealType}: ${ing.recipeName}`);
+      existing.quantity += ing.quantity || 0;
+
+      // Merge units if same ingredient
+      if (existing.unit === ing.unit) {
+        existing.quantity += ing.quantity;
+      } else {
+        // Keep track of different units
+        existing.alternativeUnits = existing.alternativeUnits || [];
+        existing.alternativeUnits.push({
+          quantity: ing.quantity,
+          unit: ing.unit,
+        });
+      }
+
+      // Add recipe source if not already present
+      const source = `${ing.mealType}: ${ing.recipeName}`;
+      if (source && !existing.recipeSources.includes(source)) {
+        existing.recipeSources.push(source);
+      }
     } else {
-      // Create new entry
+      // Create new entry with standardized unit
+      const standardUnit = standardizeUnit(ing.unit || "unit");
+
       ingredientMap.set(key, {
         name: ing.name,
         normalizedName,
-        quantity: ing.quantity,
-        unit: ing.unit,
+        quantity: ing.quantity || 1,
+        unit: standardUnit,
         aisle: mapToAisle(normalizedName),
         category: mapToAisle(normalizedName),
-        recipeSources: [`${ing.mealType}: ${ing.recipeName}`],
+        recipeSources: ing.recipeName
+          ? [`${ing.mealType}: ${ing.recipeName}`]
+          : [],
         checked: false,
       });
     }
   }
 
-  // Second pass: subtract pantry items if toggle is enabled
-  if (pantryToggle && pantryItems.length > 0) {
-    for (const pantryItem of pantryItems) {
-      const pantryNormalizedName = normalizeIngredientName(pantryItem.name);
+  // Convert to array and estimate prices
+  const result = Array.from(ingredientMap.values()).map((item) => {
+    // Clean up the name for display
+    const displayName = cleanDisplayName(item.name);
 
-      for (const [key, groceryItem] of ingredientMap.entries()) {
-        const groceryNormalizedName = normalizeIngredientName(groceryItem.name);
-
-        // Check if it's the same ingredient (simple match)
-        if (
-          pantryNormalizedName === groceryNormalizedName ||
-          groceryNormalizedName.includes(pantryNormalizedName) ||
-          pantryNormalizedName.includes(groceryNormalizedName)
-        ) {
-          // Subtract pantry quantity
-          const remaining = groceryItem.quantity - (pantryItem.quantity || 0);
-
-          if (remaining <= 0) {
-            // Remove from list if pantry has enough
-            ingredientMap.delete(key);
-          } else {
-            // Update quantity
-            groceryItem.quantity = remaining;
-            groceryItem.note = `Pantry has ${pantryItem.quantity} ${pantryItem.unit}`;
-          }
-          break;
-        }
-      }
-    }
-  }
-
-  // Convert to array and add estimated price
-  const result = Array.from(ingredientMap.values()).map((item) => ({
-    ...item,
-    estimatedPrice: estimatePrice(
-      item.normalizedName,
-      item.quantity,
-      item.unit
-    ),
-  }));
+    return {
+      ...item,
+      name: displayName,
+      estimatedPrice: calculateItemPrice(
+        item.normalizedName,
+        item.quantity,
+        item.unit
+      ),
+      _id: new mongoose.Types.ObjectId(), 
+    };
+  });
 
   return result;
 }
 
-/**
- * Simple price estimation (you'll replace with real data)
- */
-function estimatePrice(ingredientName, quantity, unit) {
-  // Base prices per unit (simplified)
-  const priceMap = {
-    chicken: 8.99, // per kg
-    beef: 12.99,
-    rice: 3.99,
-    pasta: 2.99,
-    tomato: 2.49,
-    onion: 1.49,
-    garlic: 0.99,
-    potato: 1.99,
-    carrot: 1.29,
-    broccoli: 2.99,
-    spinach: 3.49,
-    egg: 0.25,
-    milk: 1.29,
-    cheese: 6.99,
-    butter: 4.99,
-    oil: 7.99,
-    salt: 1.99,
-    pepper: 3.99,
+function standardizeUnit(unit) {
+  const unitMap = {
+    tb: "tbsp",
+    tablespoon: "tbsp",
+    tablespoons: "tbsp",
+    teaspoon: "tsp",
+    teaspoons: "tsp",
+    gram: "g",
+    grams: "g",
+    kilogram: "kg",
+    kilograms: "kg",
+    milliliter: "ml",
+    milliliters: "ml",
+    liter: "l",
+    liters: "l",
+    serving: "unit",
+    servings: "unit",
+    pinch: "tsp", 
+    pinches: "tsp",
+    dash: "tsp", 
+    clove: "unit",
+    cloves: "unit",
+    leaf: "unit",
+    leaves: "unit",
+    sprig: "unit",
+    sprigs: "unit",
+    bunch: "unit",
+    bunches: "unit",
   };
 
-  // Find matching price
-  for (const [key, price] of Object.entries(priceMap)) {
-    if (ingredientName.includes(key)) {
-      // Simple calculation (adjust based on your logic)
-      return parseFloat((price * (quantity || 1) * 0.1).toFixed(2));
-    }
-  }
-
-  // Default price
-  return parseFloat((quantity * 2).toFixed(2));
+  const lowerUnit = unit.toLowerCase();
+  return unitMap[lowerUnit] || unit;
 }
 
+function cleanDisplayName(name) {
+  // Remove quantities and measurements from display name
+  let cleaned = name.replace(/\s*\d+\s*(?:\.\d+)?\s*/g, " ");
+  cleaned = cleaned.replace(/\s*\d+\s*\/\s*\d+\s*/g, " ");
+  cleaned = cleaned.replace(
+    /\s*(?:cup|tbsp|tsp|oz|lb|g|kg|ml|l|clove|serving|pinch|dash)s?\b/gi,
+    ""
+  );
+  cleaned = cleaned.replace(/\s+/g, " ").trim();
+
+  // Capitalize first letter
+  return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+}
 /**
  * Calculate estimated total
  */
+const calculateItemPrice = (name, quantity, unit) => {
+  const itemName = name.toLowerCase();
+  let basePrice = 0;
+
+  // Realistic base prices
+  if (itemName.includes("sausage")) basePrice = 6.99;
+  else if (itemName.includes("broth")) basePrice = 2.99;
+  else if (itemName.includes("ricotta")) basePrice = 5.99;
+  else if (itemName.includes("garlic")) basePrice = 2.99;
+  else if (itemName.includes("olive oil")) basePrice = 12.99;
+  else if (itemName.includes("flour")) basePrice = 6.99;
+  else if (itemName.includes("salt")) basePrice = 1.99;
+  else if (itemName.includes("oregano")) basePrice = 3.99;
+  else if (itemName.includes("basil")) basePrice = 2.99;
+  else if (itemName.includes("parsley")) basePrice = 1.99;
+  else if (itemName.includes("nutmeg")) basePrice = 4.99;
+  else if (itemName.includes("honey")) basePrice = 8.99;
+  else if (itemName.includes("lasagna")) basePrice = 3.49;
+  else if (itemName.includes("broccolini")) basePrice = 3.99;
+  else if (itemName.includes("seasoning")) basePrice = 3.99;
+  else basePrice = 2.99; // Default
+
+  // Apply quantity (but cap it)
+  let estimated = basePrice * Math.min(quantity || 1, 10);
+
+  // Cap at $50 max per item
+  estimated = Math.min(estimated, 50);
+
+  return parseFloat(estimated.toFixed(2));
+};
+
+// ADD THIS NEW FUNCTION for calculating total:
 function calculateEstimatedTotal(items) {
+  if (!items || !Array.isArray(items)) {
+    return 0;
+  }
+
   const total = items.reduce((sum, item) => {
     return sum + (item.estimatedPrice || 0);
   }, 0);
 
   return parseFloat(total.toFixed(2));
 }
-

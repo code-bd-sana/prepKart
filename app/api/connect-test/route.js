@@ -11,7 +11,6 @@ export async function GET() {
       }, { status: 500 });
     }
     
-    console.log('🔄 Connecting to:', MONGODB_URI.replace(/\/\/([^:]+):([^@]+)@/, '//***:***@'));
     
     // Try to connect
     await mongoose.connect(MONGODB_URI);
