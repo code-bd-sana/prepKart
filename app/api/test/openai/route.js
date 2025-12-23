@@ -3,8 +3,6 @@ import { generateMealPlan } from "@/lib/openai";
 
 export async function GET() {
   try {
-    console.log("🧪 Testing OpenAI connection...");
-    
     // Test with minimal inputs
     const testInputs = {
       province: "Ontario",
@@ -32,7 +30,7 @@ export async function GET() {
     });
     
   } catch (error) {
-    console.error("❌ OpenAI test error:", error);
+    console.error("OpenAI test error:", error);
     
     return NextResponse.json({
       success: false,

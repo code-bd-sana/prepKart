@@ -5,8 +5,14 @@ import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import Link from "next/link";
 import Navbar from "@/components/shared/Navbar";
+import { ArrowLeft } from "lucide-react";
+import { useParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 export default function PantryPage() {
+  const params = useParams();
+  const locale = params.locale;
+  const t = useTranslations("register");
   const { user } = useSelector((state) => state.auth);
   const [pantry, setPantry] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -51,8 +57,8 @@ export default function PantryPage() {
     };
 
     loadPantry();
-  }, [user]); 
-  
+  }, [user]);
+
   const getAuthToken = () => {
     return (
       localStorage.getItem("token") || localStorage.getItem("accessToken") || ""
@@ -150,9 +156,19 @@ export default function PantryPage() {
   }
 
   return (
-    <div >
+    <div>
       <Navbar />
       <div className="bg-white rounded-xl shadow-lg mb-6 max-w-[1500px] mx-auto p-4 mt-6">
+        {/* Header with back button */}
+        <div className="mb-8">
+          <Link
+            href={`/${locale}`}
+            className="inline-flex items-center text-sm text-gray-600 hover:text-gray-800 transition"
+          >
+            <ArrowLeft />
+            {t("backToHome")}
+          </Link>
+        </div>
         <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
           My Pantry
         </h1>

@@ -33,20 +33,14 @@ export async function GET(request) {
     // GET FRESH USER DATA FROM DATABASE
     const user = await User.findById(userId).select("tier subscription");
     const userTier = user?.subscription?.tier || user?.tier || "free";
-    
-    console.log("Authenticated user:", { 
-      userId, 
-      tokenTier: auth.userTier, // From JWT
-      freshTier: userTier, // From database
-      match: auth.userTier === userTier 
-    });
+
     
     // Use the fresh tier from database
     const allowedTiers = ['tier2', 'tier3', 'plus', 'premium'];
     const isFreeUser = !userTier || userTier.toLowerCase() === 'free' || userTier.toLowerCase() === 'tier1';
     
     if (isFreeUser) {
-      console.log(`User with tier ${userTier} rejected from pantry`);
+      // console.log(`User with tier ${userTier} rejected from pantry`);
       return NextResponse.json(
         { 
           error: "Pantry feature is only available for Plus and Premium users",
@@ -56,13 +50,13 @@ export async function GET(request) {
       );
     }
     
-    console.log(`User with fresh tier ${userTier} allowed pantry access`);
+    // console.log(`User with fresh tier ${userTier} allowed pantry access`);
 
     // Find or create pantry
     let pantry = await Pantry.findOne({ userId });
 
     if (!pantry) {
-      console.log("Creating new pantry for user:", userId);
+      // console.log("Creating new pantry for user:", userId);
       pantry = await Pantry.create({
         userId,
         items: [],
@@ -114,7 +108,6 @@ export async function POST(request) {
     const user = await User.findById(userId).select("tier subscription");
     const userTier = user?.subscription?.tier || user?.tier || "free";
     
-    console.log("Fresh user tier:", userTier);
 
     // Check tier access using fresh data
     const allowedTiers = ['tier2', 'tier3', 'plus', 'premium', 'pro'];

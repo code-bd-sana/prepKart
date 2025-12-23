@@ -283,13 +283,6 @@ export default function GenerateWeeklyPlan({ voiceText }) {
         return;
       }
 
-      console.log("💾 Saving plan:", {
-        planId: plan.id,
-        source: plan.source,
-        isSaved: plan.isSaved,
-        userId: userId,
-      });
-
       // Prepare request body - INCLUDE SOURCE FIELD
       const requestBody = {
         planData: {
@@ -310,10 +303,8 @@ export default function GenerateWeeklyPlan({ voiceText }) {
         userId: userId,
         userEmail: user.email,
         userTier: user.tier || "free",
-        source: plan.source || "openai", // ← Also include at root level
+        source: plan.source || "openai", 
       };
-
-      console.log("Sending save request with source:", plan.source);
 
       const response = await fetch(`/api/plans/${plan.id}/save`, {
         method: "POST",
@@ -445,8 +436,6 @@ export default function GenerateWeeklyPlan({ voiceText }) {
       const requestBody = {
         planId: plan.id,
       };
-
-      console.log("🛒 Generating basic grocery list with token...");
       const response = await fetch("/api/groceryLists/generate", {
         method: "POST",
         headers: {
@@ -557,7 +546,6 @@ export default function GenerateWeeklyPlan({ voiceText }) {
         planData: plan, // Send current plan data
       };
 
-      console.log("Swapping meal:", { planId, dayIndex, mealIndex });
 
       const response = await fetch(`/api/plans/${planId}/swap`, {
         method: "POST",
@@ -590,7 +578,7 @@ export default function GenerateWeeklyPlan({ voiceText }) {
             ...(data.updatedPlanData && { ...data.updatedPlanData }),
           };
 
-          console.log("Plan updated after swap:", updatedPlan);
+          // console.log("Plan updated after swap:", updatedPlan);
           return updatedPlan;
         });
 
@@ -1187,27 +1175,9 @@ export default function GenerateWeeklyPlan({ voiceText }) {
                         generateGroceryList(plan.id);
                       }
                     }}
-                    className="flex-1 bg-gray-100 text-gray-800 font-semibold py-4 rounded-xl hover:bg-gray-200 transition flex items-center justify-center"
+                    className="flex-1 bg-green-600  text-white font-semibold py-4 rounded-xl hover:bg-green-400 hover:text-black transition flex items-center justify-center"
                   >
                     Generate Grocery List
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (plan.requiresAccount) {
-                        toast.warning(
-                          "Please create an account to use Instacart!"
-                        );
-                      } else if (plan.tier === "free") {
-                        toast.warning(
-                          "Upgrade to Premium to unlock Instacart integration!"
-                        );
-                      } else {
-                        orderOnInstacart(plan.id);
-                      }
-                    }}
-                    className="flex-1 bg-green-500 text-white font-semibold py-4 rounded-xl hover:bg-green-700 transition flex items-center justify-center"
-                  >
-                    Order on Instacart
                   </button>
                 </div>
               </div>

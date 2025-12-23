@@ -17,7 +17,7 @@ export async function POST(request, { params }) {
     let body;
     try {
       body = await request.json();
-      console.log("Save request body:", JSON.stringify(body).substring(0, 200));
+      // console.log("Save request body:", JSON.stringify(body).substring(0, 200));
     } catch (parseError) {
       console.error("Failed to parse request body:", parseError.message);
       return NextResponse.json(
@@ -111,16 +111,16 @@ export async function POST(request, { params }) {
     // Save to database
     await savedPlan.save();
 
-    console.log("Plan saved successfully:", {
-      planId: savedPlan._id,
-      isNew: isNewPlan,
-      userId: savedPlan.userId,
-      source: savedPlan.source,
-      tier: savedPlan.tier,
-      swapsAllowed: savedPlan.swapsAllowed,
-      swapsUsed: savedPlan.swapsUsed,
-      daysCount: savedPlan.days?.length,
-    });
+    // console.log("Plan saved successfully:", {
+    //   planId: savedPlan._id,
+    //   isNew: isNewPlan,
+    //   userId: savedPlan.userId,
+    //   source: savedPlan.source,
+    //   tier: savedPlan.tier,
+    //   swapsAllowed: savedPlan.swapsAllowed,
+    //   swapsUsed: savedPlan.swapsUsed,
+    //   daysCount: savedPlan.days?.length,
+    // });
 
     return NextResponse.json({
       success: true,

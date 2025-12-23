@@ -10,10 +10,7 @@ export async function GET(request) {
     const userId = searchParams.get("user_id");
     const tier = searchParams.get("tier");
 
-    console.log("✅ Confirm endpoint hit:", { sessionId, userId, tier });
-
     if (!sessionId || !userId || !tier) {
-      console.log(" Missing params");
       return NextResponse.redirect(
         "http://localhost:3000/#pricing?error=missing"
       );
@@ -21,7 +18,7 @@ export async function GET(request) {
 
     // Verify with Stripe
     const session = await stripe.checkout.sessions.retrieve(sessionId);
-    console.log("Stripe session status:", session.payment_status);
+    // console.log("Stripe session status:", session.payment_status);
 
     if (session.payment_status !== "paid") {
       console.log("Payment not paid:", session.payment_status);
@@ -32,7 +29,6 @@ export async function GET(request) {
 
     // Connect to DB
     await connectDB();
-    console.log("✅ DB connected");
 
     // Calculate swaps
     const swapsAllowed = tier === "tier2" ? 2 : 3;
@@ -52,12 +48,6 @@ export async function GET(request) {
       },
       { new: true }
     );
-
-    console.log("✅ Database updated:", {
-      email: result.email,
-      tier: result.tier,
-      swapsAllowed: result.swapsAllowed,
-    });
 
     // Redirect to dashboard
     const userLocale = "en";

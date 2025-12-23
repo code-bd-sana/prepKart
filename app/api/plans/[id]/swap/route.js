@@ -22,7 +22,6 @@ async function withTimeout(promise, timeoutMs = 15000) {
 
 export async function POST(request, { params }) {
   try {
-    console.log("Swap endpoint called");
     await connectDB();
 
     const { id } = await params;
