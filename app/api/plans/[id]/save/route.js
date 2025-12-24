@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import Plan from "@/models/Plan";
 import User from "@/models/User";
+import { authenticate } from "@/middleware/auth";
 
 const SWAPS_PER_PLAN = {
   free: 1,
@@ -110,17 +111,6 @@ export async function POST(request, { params }) {
 
     // Save to database
     await savedPlan.save();
-
-    // console.log("Plan saved successfully:", {
-    //   planId: savedPlan._id,
-    //   isNew: isNewPlan,
-    //   userId: savedPlan.userId,
-    //   source: savedPlan.source,
-    //   tier: savedPlan.tier,
-    //   swapsAllowed: savedPlan.swapsAllowed,
-    //   swapsUsed: savedPlan.swapsUsed,
-    //   daysCount: savedPlan.days?.length,
-    // });
 
     return NextResponse.json({
       success: true,

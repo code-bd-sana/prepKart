@@ -5,7 +5,7 @@ import HomeBanner from "@/components/Home/HomeBanner";
 import HowItWorks from "@/components/Home/HowItWorks";
 import QuickPlans from "@/components/Home/QuickPlans";
 import MealPlanning from "@/components/Home/MealPlanning";
-import GroceryListDemo from "@/components/Home/GroceryListDemo";
+// import GroceryListDemo from "@/components/Home/GroceryListDemo";
 import PricingSection from "@/components/Home/PricingSection";
 import Testimonials from "@/components/Home/Testimonials";
 import Subscribe from "@/components/Home/Subscribe";
@@ -25,7 +25,7 @@ export default function HomePage({ params }) {
       <QuickPlans locale={locale} />
       <MealPlanning locale={locale} />
       <PricingSection locale={locale} />
-      <GroceryListDemo locale={locale} />
+      {/* <GroceryListDemo locale={locale} /> */}
       <Testimonials locale={locale} />
       <FAQSection locale={locale} />
       <Subscribe locale={locale} />
