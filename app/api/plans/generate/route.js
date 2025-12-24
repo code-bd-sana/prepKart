@@ -5,6 +5,7 @@ import { generateMealPlan } from "@/lib/openai";
 import { generateSpoonacularMealPlan } from "@/lib/spoonacular";
 import { authenticate } from "@/middleware/auth";
 
+
 // TIER CONFIGURATION
 const TIER_CONFIG = {
   free: {

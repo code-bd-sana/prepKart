@@ -9,6 +9,16 @@ import User from "@/models/User";
 export async function GET(request, { params }) {
   try {
     await connectDB();
+
+    // AUTHENTICATION CHECK HERE
+    const authResult = await authenticate(request);
+    if (!authResult.success) {
+      return NextResponse.json(
+        { error: authResult.error, message: authResult.message },
+        { status: authResult.status || 401 }
+      );
+    }
+
     const { id } = await params;
     if (!id) {
       return NextResponse.json(
@@ -27,6 +37,20 @@ export async function GET(request, { params }) {
           error: "Grocery list not found",
         },
         { status: 404 }
+      );
+    }
+
+    // AUTHORIZATION CHECK - User must own this grocery list
+    if (
+      groceryList.userId &&
+      groceryList.userId.toString() !== authResult.userId.toString()
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "You don't have permission to view this grocery list",
+        },
+        { status: 403 }
       );
     }
 
@@ -116,8 +140,11 @@ export async function PATCH(request, { params }) {
     // IF ITEMS ARE BEING UPDATED:
     const cleanedItems = body.items.map((item) => {
       let itemId;
-      
-      if (item._id && (item._id.startsWith("temp_") || item._id.startsWith("new_"))) {
+
+      if (
+        item._id &&
+        (item._id.startsWith("temp_") || item._id.startsWith("new_"))
+      ) {
         itemId = new mongoose.Types.ObjectId();
       } else if (item._id && mongoose.Types.ObjectId.isValid(item._id)) {
         itemId = new mongoose.Types.ObjectId(item._id);
@@ -142,7 +169,11 @@ export async function PATCH(request, { params }) {
 
     // Filter ONLY checked items for Instacart link
     const checkedItems = cleanedItems.filter((item) => item.checked === true);
-    const newInstacartLink = generateInstacartLink(checkedItems, userTier, impactId);
+    const newInstacartLink = generateInstacartLink(
+      checkedItems,
+      userTier,
+      impactId
+    );
 
     // Update the grocery list
     const updatedList = await GroceryList.findByIdAndUpdate(
@@ -153,13 +184,12 @@ export async function PATCH(request, { params }) {
           totalItems: body.totalItems || cleanedItems.length,
           checkedItems: body.checkedItems || checkedItems.length,
           estimatedTotal: body.estimatedTotal || 0,
-          instacartDeepLink: newInstacartLink, 
+          instacartDeepLink: newInstacartLink,
           updatedAt: new Date(),
         },
       },
       { new: true, runValidators: true }
     );
-
 
     return NextResponse.json({
       success: true,

@@ -76,6 +76,11 @@ export default function GroceryListPage({ params }) {
   const [expandedAisles, setExpandedAisles] = useState({});
   const [isAllSelected, setIsAllSelected] = useState(false);
 
+  useEffect(() => {
+    if (!user) {
+      router.push(`/${locale}/login`);
+    }
+  }, [user, locale, router]);
   const categorizeItem = (itemName) => {
     const name = itemName.toLowerCase();
 
@@ -400,6 +405,22 @@ export default function GroceryListPage({ params }) {
 
     setGroceryList(updatedList);
 
+    const visibleItems = hidePantry
+      ? updatedItems.filter((item) => !item.inPantry)
+      : updatedItems;
+    const visibleCheckedCount = visibleItems.filter(
+      (item) => item.checked
+    ).length;
+
+    localStorage.setItem(
+      "prepcart_cart",
+      JSON.stringify({
+        checkedCount: visibleCheckedCount,
+        listId: groceryList._id,
+        instacartLink: groceryList.instacartDeepLink,
+        timestamp: Date.now(),
+      })
+    );
     // Save to database AND update Instacart link
     try {
       const response = await fetchWithAuth(

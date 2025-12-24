@@ -229,22 +229,24 @@ function processIngredients(ingredients, pantryItems, pantryToggle, planDays) {
     }
   }
 
-  // Convert to array and estimate prices
-  const result = Array.from(ingredientMap.values()).map((item) => {
-    // Clean up the name for display
-    const displayName = cleanDisplayName(item.name);
+  // Convert to array and estimate prices -
+  const result = Array.from(ingredientMap.values())
+    .map((item) => {
+      // Clean up the name for display
+      const displayName = cleanDisplayName(item.name);
 
-    return {
-      ...item,
-      name: displayName,
-      estimatedPrice: calculateItemPrice(
-        item.normalizedName,
-        item.quantity,
-        item.unit
-      ),
-      _id: new mongoose.Types.ObjectId(), 
-    };
-  });
+      return {
+        ...item,
+        name: displayName,
+        estimatedPrice: calculateItemPrice(
+          item.normalizedName,
+          item.quantity,
+          item.unit
+        ),
+        _id: new mongoose.Types.ObjectId(),
+      };
+    })
+    .filter((item) => item.name && item.name.trim().length > 0);
 
   return result;
 }
@@ -266,9 +268,9 @@ function standardizeUnit(unit) {
     liters: "l",
     serving: "unit",
     servings: "unit",
-    pinch: "tsp", 
+    pinch: "tsp",
     pinches: "tsp",
-    dash: "tsp", 
+    dash: "tsp",
     clove: "unit",
     cloves: "unit",
     leaf: "unit",

@@ -51,7 +51,7 @@ export async function GET(request) {
     const userLocale = "en";
 
     return NextResponse.redirect(
-      `${origin}/${userLocale}/dashboard#pricing?success=true`
+      `${origin}/${userLocale}`
     );
   } catch (error) {
     const origin = request.nextUrl.origin || "http://localhost:3000";

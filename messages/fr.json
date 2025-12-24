@@ -8,7 +8,7 @@
     "voiceInput": "Entrée vocale :",
     "clearButton": "Effacer",
     "generateButton": "Générer Mon Plan Hebdomadaire",
-    "quickStartButton": "Commencez avec un plan rapide",
+    "quickStartButton": "Tableau de bord",
     "badges": {
       "trusted": "De Confiance par les Canadiens",
       "budget": "Options économiques",
@@ -242,6 +242,19 @@
       }
     ]
   },
+  "quickPlanModal": {
+  "title": "Votre plan rapide",
+  "subtitle": "Généré pour l’offre {tier}",
+  "generating": "Création de votre plan de repas intelligent...",
+  "retry": "Réessayer",
+  "yourQuickPlan": "Voici votre plan sur 3 jours",
+  "upgradeTitle": "Passez à une offre supérieure",
+  "upgradeDescription": "Obtenez des plans sur 7 jours, des listes de courses et des recettes premium",
+  "upgradeButton": "Mettre à niveau",
+  "fullPlanTitle": "Vous voulez plus de précision ?",
+  "fullPlanDescription": "Générez un plan complet sur 7 jours avec toutes vos préférences",
+  "fullPlanButton": "Générer le plan complet"
+},
    "mealPlanning": {
     "title": "Planification des Repas, Réinventée",
     "subtitle": "Création intelligente de repas, suivi des macronutriments, échange de recettes et livraison des courses en un clic.",

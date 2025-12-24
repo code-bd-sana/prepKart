@@ -1,13 +1,16 @@
 "use client";
+
 import Image from "next/image";
-import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { FiArrowRight, FiMic } from "react-icons/fi";
 import { FaCanadianMapleLeaf, FaWallet, FaCalendarTimes } from "react-icons/fa";
 import PlanModal from "./PlanModal";
 import { useTranslations } from "next-intl";
+import DashboardModal from "../Dashboard/DashboardModal";
+import { useSelector } from "react-redux";
 
 export default function HomeBanner({ locale }) {
+  const { user } = useSelector((state) => state.auth);
   const t = useTranslations("homeBanner");
 
   const [isListening, setIsListening] = useState(false);
@@ -15,6 +18,9 @@ export default function HomeBanner({ locale }) {
   const [inputText, setInputText] = useState("");
   const recognitionRef = useRef(null);
   const [showModal, setShowModal] = useState(false);
+  const [showDashboardModal, setShowDashboardModal] = useState(false);
+
+  const isAdmin = user?.tier === "admin" || user?.role === "admin";
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -29,7 +35,6 @@ export default function HomeBanner({ locale }) {
         // Set language based on locale
         recognitionInstance.lang = locale === "fr" ? "fr-CA" : "en-CA";
 
-        // ... rest of your speech recognition code
         recognitionInstance.onresult = (event) => {
           const currentTranscript = event.results[0][0].transcript;
           setTranscript(currentTranscript);
@@ -71,7 +76,6 @@ export default function HomeBanner({ locale }) {
       try {
         recognitionRef.current.start();
         setIsListening(true);
-        // console.log("Starting voice input...");
       } catch (error) {
         console.error("Failed to start speech recognition:", error);
         setIsListening(false);
@@ -79,7 +83,6 @@ export default function HomeBanner({ locale }) {
     } else {
       recognitionRef.current.stop();
       setIsListening(false);
-      // console.log("Stopping voice input...");
     }
   };
 
@@ -251,24 +254,23 @@ export default function HomeBanner({ locale }) {
                   {t("generateButton")} <FiArrowRight />
                 </button>
 
-                <Link href={`/${locale}/services`}>
-                  {" "}
-                  {/* ← ADD LOCALE TO LINK */}
+                {!isAdmin && (
                   <button
+                    onClick={() => setShowDashboardModal(true)}
                     className="
-              p-3 text-[14px] font-medium 
-              text-[#4a9fd8] hover:text-white
-              rounded-[10px] border-2 border-[#E5E5E5]
-              bg-white hover:bg-[#4a9fd8]
-              transition-colors
-              shadow-[0px_3px_10px_rgba(0,0,0,0.08)]
-              w-full sm:w-auto
-              flex items-center justify-center gap-2
-            "
+          p-3 text-[14px] font-medium 
+          text-[#4a9fd8] hover:text-white
+          rounded-[10px] border-2 border-[#E5E5E5]
+          bg-white hover:bg-[#4a9fd8]
+          transition-colors
+          shadow-[0px_3px_10px_rgba(0,0,0,0.08)]
+          w-full sm:w-auto
+          flex items-center justify-center gap-2
+        "
                   >
-                    {t("quickStartButton")} <FiArrowRight />{" "}
+                    {t("quickStartButton")} <FiArrowRight />
                   </button>
-                </Link>
+                )}
               </div>
 
               {/* Badges */}
@@ -319,6 +321,12 @@ export default function HomeBanner({ locale }) {
       <PlanModal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
+        voiceText={inputText}
+        locale={locale}
+      />
+      <DashboardModal
+        isOpen={showDashboardModal}
+        onClose={() => setShowDashboardModal(false)}
         voiceText={inputText}
         locale={locale}
       />

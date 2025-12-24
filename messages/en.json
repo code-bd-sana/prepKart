@@ -8,7 +8,7 @@
     "voiceInput": "Voice input:",
     "clearButton": "Clear",
     "generateButton": "Generate my weekly plan",
-    "quickStartButton": "Start with a quick plan",
+    "quickStartButton": "Go to Dashboard",
     "badges": {
       "trusted": "Trusted by Canadians",
       "budget": "Budget-friendly options",
@@ -241,6 +241,19 @@
         "premium": false
       }
     ]
+  },
+  "quickPlanModal": {
+    "title": "Your Quick Plan",
+    "subtitle": "Generated for {tier} tier",
+    "generating": "Creating your smart meal plan...",
+    "retry": "Try again",
+    "yourQuickPlan": "Here's your 3-day plan",
+    "upgradeTitle": "Upgrade for More Features",
+    "upgradeDescription": "Get full 7-day plans, grocery lists, and premium recipes",
+    "upgradeButton": "Upgrade Now",
+    "fullPlanTitle": "Want More Accuracy?",
+    "fullPlanDescription": "Generate a full 7-day plan with all your preferences",
+    "fullPlanButton": "Generate Full Plan"
   },
   "mealPlanning": {
     "title": "Meal Planning, Reinvented",
