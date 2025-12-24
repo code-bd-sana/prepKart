@@ -33,12 +33,12 @@ const clearAuthData = () => {
   }
 };
 
-// Initial state 
+// Initial state
 const initialState = {
   user: null,
   loading: false,
   error: null,
-  _hasHydrated: false, 
+  _hasHydrated: false,
 };
 
 // Async actions
@@ -58,6 +58,9 @@ export const register = createAsyncThunk("auth/register", async (userData) => {
 });
 
 export const logout = createAsyncThunk("auth/logout", async () => {
+  if (typeof window !== "undefined") {
+    localStorage.removeItem("prepcart_cart");
+  }
   clearAuthData();
 });
 
@@ -66,6 +69,7 @@ export const getCurrentUser = createAsyncThunk("auth/me", async () => {
   saveAuthData(response.data.user, localStorage.getItem("token"));
   return response.data.user;
 });
+
 export const fetchUserData = createAsyncThunk(
   "auth/fetchUserData",
   async (_, { rejectWithValue }) => {
@@ -81,7 +85,27 @@ export const fetchUserData = createAsyncThunk(
       if (!response.ok) throw new Error("Failed to fetch");
 
       const data = await response.json();
-      return data.user; 
+
+      // Return the complete user object
+      return {
+        id: data.user._id || data.user.id,
+        email: data.user.email,
+        name: data.user.name,
+        province: data.user.province,
+        tier: data.user.tier,
+        monthly_plan_count: data.user.monthly_plan_count || 0,
+        weekly_plan_count: data.user.weekly_plan_count || 0,
+        planGenerationCount: data.user.planGenerationCount || 0,
+        swapsAllowed: data.user.swapsAllowed || 3,
+        swapsUsed: data.user.swapsUsed || 0,
+        preferences: data.user.preferences || {},
+        lastLogin: data.user.lastLogin,
+        createdAt: data.user.createdAt,
+        updatedAt: data.user.updatedAt,
+        subscription: data.user.subscription || {},
+        ageVerified: data.user.ageVerified || false,
+        emailVerified: data.user.emailVerified || false,
+      };
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -104,7 +128,28 @@ const authSlice = createSlice({
           const userStr = localStorage.getItem("user");
 
           if (token && userStr) {
-            state.user = JSON.parse(userStr);
+            const parsedUser = JSON.parse(userStr);
+
+            // Make sure we have all required fields
+            state.user = {
+              id: parsedUser.id || parsedUser._id,
+              email: parsedUser.email,
+              name: parsedUser.name,
+              province: parsedUser.province,
+              tier: parsedUser.tier,
+              monthly_plan_count: parsedUser.monthly_plan_count || 0,
+              weekly_plan_count: parsedUser.weekly_plan_count || 0,
+              planGenerationCount: parsedUser.planGenerationCount || 0,
+              swapsAllowed: parsedUser.swapsAllowed || 3,
+              swapsUsed: parsedUser.swapsUsed || 0,
+              preferences: parsedUser.preferences || {},
+              lastLogin: parsedUser.lastLogin,
+              createdAt: parsedUser.createdAt,
+              updatedAt: parsedUser.updatedAt,
+              subscription: parsedUser.subscription || {},
+              ageVerified: parsedUser.ageVerified || false,
+              emailVerified: parsedUser.emailVerified || false,
+            };
           }
         } catch (error) {
           console.error("Error restoring auth state:", error);
@@ -131,12 +176,34 @@ const authSlice = createSlice({
       })
       .addCase(login.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload.user;
+
+        // Store the complete user object from backend
+        state.user = {
+          id: action.payload.user._id || action.payload.user.id,
+          email: action.payload.user.email,
+          name: action.payload.user.name,
+          province: action.payload.user.province,
+          tier: action.payload.user.tier,
+          // Add these fields:
+          monthly_plan_count: action.payload.user.monthly_plan_count || 0,
+          weekly_plan_count: action.payload.user.weekly_plan_count || 0,
+          planGenerationCount: action.payload.user.planGenerationCount || 0,
+          swapsAllowed: action.payload.user.swapsAllowed || 3,
+          swapsUsed: action.payload.user.swapsUsed || 0,
+          preferences: action.payload.user.preferences || {},
+          lastLogin: action.payload.user.lastLogin,
+          createdAt: action.payload.user.createdAt,
+          updatedAt: action.payload.user.updatedAt,
+          subscription: action.payload.user.subscription || {},
+          ageVerified: action.payload.user.ageVerified || false,
+          emailVerified: action.payload.user.emailVerified || false,
+        };
 
         const token = action.payload.tokens?.accessToken;
         if (token && typeof window !== "undefined") {
           localStorage.setItem("token", token);
-          localStorage.setItem("user", JSON.stringify(action.payload.user));
+          // Store the complete user object
+          localStorage.setItem("user", JSON.stringify(state.user));
         }
       })
       .addCase(login.rejected, (state, action) => {
@@ -152,7 +219,27 @@ const authSlice = createSlice({
       })
       .addCase(register.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload.user;
+
+        // Store the complete user object
+        state.user = {
+          id: action.payload.user._id || action.payload.user.id,
+          email: action.payload.user.email,
+          name: action.payload.user.name,
+          province: action.payload.user.province,
+          tier: action.payload.user.tier,
+          monthly_plan_count: action.payload.user.monthly_plan_count || 0,
+          weekly_plan_count: action.payload.user.weekly_plan_count || 0,
+          planGenerationCount: action.payload.user.planGenerationCount || 0,
+          swapsAllowed: action.payload.user.swapsAllowed || 3,
+          swapsUsed: action.payload.user.swapsUsed || 0,
+          preferences: action.payload.user.preferences || {},
+          lastLogin: action.payload.user.lastLogin,
+          createdAt: action.payload.user.createdAt,
+          updatedAt: action.payload.user.updatedAt,
+          subscription: action.payload.user.subscription || {},
+          ageVerified: action.payload.user.ageVerified || false,
+          emailVerified: action.payload.user.emailVerified || false,
+        };
 
         if (typeof window !== "undefined") {
           localStorage.setItem("token", action.payload.tokens.accessToken);
@@ -160,7 +247,7 @@ const authSlice = createSlice({
             "refreshToken",
             action.payload.tokens.refreshToken
           );
-          localStorage.setItem("user", JSON.stringify(action.payload.user));
+          localStorage.setItem("user", JSON.stringify(state.user));
         }
       })
       .addCase(register.rejected, (state, action) => {
@@ -186,14 +273,40 @@ const authSlice = createSlice({
       })
       .addCase(getCurrentUser.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload;
+
+        // Store the complete user object
+        state.user = {
+          id: action.payload._id || action.payload.id,
+          email: action.payload.email,
+          name: action.payload.name,
+          province: action.payload.province,
+          tier: action.payload.tier,
+          // Add these fields:
+          monthly_plan_count: action.payload.monthly_plan_count || 0,
+          weekly_plan_count: action.payload.weekly_plan_count || 0,
+          planGenerationCount: action.payload.planGenerationCount || 0,
+          swapsAllowed: action.payload.swapsAllowed || 3,
+          swapsUsed: action.payload.swapsUsed || 0,
+          preferences: action.payload.preferences || {},
+          lastLogin: action.payload.lastLogin,
+          createdAt: action.payload.createdAt,
+          updatedAt: action.payload.updatedAt,
+          subscription: action.payload.subscription || {},
+          ageVerified: action.payload.ageVerified || false,
+          emailVerified: action.payload.emailVerified || false,
+        };
+
+        // Also update localStorage
+        if (typeof window !== "undefined") {
+          localStorage.setItem("user", JSON.stringify(state.user));
+        }
       })
       .addCase(getCurrentUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
         state.user = null;
       });
-      // Fetch user in payment and cancel part
+    // Fetch user in payment and cancel part
     builder
       .addCase(fetchUserData.pending, (state) => {
         state.loading = true;
@@ -201,6 +314,11 @@ const authSlice = createSlice({
       .addCase(fetchUserData.fulfilled, (state, action) => {
         state.user = action.payload;
         state.loading = false;
+
+        // Update localStorage
+        if (typeof window !== "undefined") {
+          localStorage.setItem("user", JSON.stringify(action.payload));
+        }
       })
       .addCase(fetchUserData.rejected, (state, action) => {
         state.error = action.payload;

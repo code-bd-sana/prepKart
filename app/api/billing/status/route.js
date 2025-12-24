@@ -1,37 +1,37 @@
-import { NextResponse } from 'next/server';
-import { connectDB } from '@/lib/db';
-import User from '@/models/User';
-import { verifyAccessToken } from '@/lib/jwt';
+import { NextResponse } from "next/server";
+import { connectDB } from "@/lib/db";
+import User from "@/models/User";
+import { verifyAccessToken } from "@/lib/jwt";
 
 export async function GET(request) {
   try {
     // Get and verify token from headers
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    const authHeader = request.headers.get("authorization");
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return NextResponse.json(
-        { success: false, error: 'No token provided' },
+        { success: false, error: "No token provided" },
         { status: 401 }
       );
     }
 
-    const token = authHeader.split(' ')[1];
+    const token = authHeader.split(" ")[1];
     const decoded = verifyAccessToken(token);
-    
+
     if (!decoded?.userId) {
       return NextResponse.json(
-        { success: false, error: 'Invalid token' },
+        { success: false, error: "Invalid token" },
         { status: 401 }
       );
     }
 
     await connectDB();
-    
+
     // Get user
     const user = await User.findById(decoded.userId);
-    
+
     if (!user) {
       return NextResponse.json(
-        { success: false, error: 'User not found' },
+        { success: false, error: "User not found" },
         { status: 404 }
       );
     }
@@ -39,22 +39,32 @@ export async function GET(request) {
     // Tier configuration
     const TIER_CONFIG = {
       free: {
-        name: 'Free',
+        name: "Free",
         price: 0,
         swapsAllowed: 1,
-        features: ['Generate meal plans', '1 swap per plan', 'Basic recipes'],
+        features: ["Generate meal plans", "1 swap per plan", "Basic recipes"],
       },
       tier2: {
-        name: 'Plus',
+        name: "Plus",
         price: 4.99,
         swapsAllowed: 2,
-        features: ['2 swaps per plan', 'Edamam recipes', 'Save plans', 'Grocery lists'],
+        features: [
+          "2 swaps per plan",
+          "Edamam recipes",
+          "Save plans",
+          "Grocery lists",
+        ],
       },
       tier3: {
-        name: 'Premium',
+        name: "Premium",
         price: 9.99,
         swapsAllowed: 3,
-        features: ['3 swaps per plan', 'Premium recipes', 'Advanced nutrition', 'Priority support'],
+        features: [
+          "3 swaps per plan",
+          "Premium recipes",
+          "Advanced nutrition",
+          "Priority support",
+        ],
       },
     };
 
@@ -71,7 +81,7 @@ export async function GET(request) {
         tier: user.tier,
       },
       subscription: {
-        status: user.subscription?.status || 'free',
+        status: user.subscription?.status || "free",
         currentPeriodEnd: user.subscription?.currentPeriodEnd,
         cancelAtPeriodEnd: user.subscription?.cancelAtPeriodEnd || false,
         stripeSubscriptionId: user.subscription?.stripeSubscriptionId,
@@ -87,14 +97,13 @@ export async function GET(request) {
         price: tierConfig.price,
       },
     });
-
   } catch (error) {
-    console.error('Billing status error:', error);
+    console.error("Billing status error:", error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Failed to get billing status',
-        details: error.message 
+      {
+        success: false,
+        error: "Failed to get billing status",
+        details: error.message,
       },
       { status: 500 }
     );

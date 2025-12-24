@@ -3,6 +3,7 @@ import { connectDB } from "@/lib/db";
 import Plan from "@/models/Plan";
 import User from "@/models/User";
 import { generateAlternativeMeal } from "@/lib/openai";
+import { authenticate } from "@/middleware/auth";
 
 const SWAPS_PER_PLAN = {
   free: 0,

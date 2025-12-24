@@ -13,6 +13,7 @@ import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { useTranslations } from "next-intl";
 import { useParams } from "next/navigation";
+import { IoIosArrowDown } from "react-icons/io";
 
 export default function GenerateWeeklyPlan({ voiceText }) {
   const [loading, setLoading] = useState(false);
@@ -303,7 +304,7 @@ export default function GenerateWeeklyPlan({ voiceText }) {
         userId: userId,
         userEmail: user.email,
         userTier: user.tier || "free",
-        source: plan.source || "openai", 
+        source: plan.source || "openai",
       };
 
       const response = await fetch(`/api/plans/${plan.id}/save`, {
@@ -401,7 +402,7 @@ export default function GenerateWeeklyPlan({ voiceText }) {
         return;
       }
 
-      // Check if plan is saved 
+      // Check if plan is saved
       if (!plan.isSaved && plan.id.startsWith("temp_")) {
         toast.warning(
           <div>
@@ -546,7 +547,6 @@ export default function GenerateWeeklyPlan({ voiceText }) {
         planData: plan, // Send current plan data
       };
 
-
       const response = await fetch(`/api/plans/${planId}/swap`, {
         method: "POST",
         headers: {
@@ -645,20 +645,25 @@ export default function GenerateWeeklyPlan({ voiceText }) {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     {t(`form.province`)}
                   </label>
+
                   <div className="relative">
                     <select
-                    name="province"
-                    value={form.province}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 "
-                  >
-                    {PROVINCES.map((province) => (
-                      <option key={province} value={province}>
-                        {province}
-                      </option>
-                    ))}
-                  </select>
+                      name="province"
+                      value={form.province}
+                      onChange={handleChange}
+                      required
+                      className="w-full appearance-none px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2"
+                    >
+                      {PROVINCES.map((province) => (
+                        <option key={province} value={province}>
+                          {province}
+                        </option>
+                      ))}
+                    </select>
+
+                    <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
+                      <IoIosArrowDown />
+                    </span>
                   </div>
                 </div>
 
@@ -666,20 +671,25 @@ export default function GenerateWeeklyPlan({ voiceText }) {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     {t(`form.goal`)}
                   </label>
-                  <select
-                    name="goal"
-                    value={form.goal}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2"
-                  >
-                    <option value="">{t(`form.selectGoal`)}</option>
-                    {GOALS.map((goal) => (
-                      <option key={goal} value={goal}>
-                        {goal}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="relative">
+                    <select
+                      name="goal"
+                      value={form.goal}
+                      onChange={handleChange}
+                      required
+                      className="w-full appearance-none px-4 py-3 border border-gray-300 rounded-lg focus:ring-2"
+                    >
+                      <option value="">{t(`form.selectGoal`)}</option>
+                      {GOALS.map((goal) => (
+                        <option key={goal} value={goal}>
+                          {goal}
+                        </option>
+                      ))}
+                    </select>
+                    <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
+                      <IoIosArrowDown />
+                    </span>
+                  </div>
                 </div>
               </div>
 
@@ -698,23 +708,50 @@ export default function GenerateWeeklyPlan({ voiceText }) {
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2"
                   />
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     {t(`form.budgetLevel`)}
                   </label>
-                  <select
-                    name="budgetLevel"
-                    value={form.budgetLevel}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2"
-                  >
-                    {BUDGET_LEVELS.map((level) => (
-                      <option key={level} value={level}>
-                        {level}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="relative">
+                    <select
+                      name="budgetLevel"
+                      value={form.budgetLevel}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (
+                          value === "High" &&
+                          (!user || user?.tier === "free")
+                        ) {
+                          toast.error(
+                            "High budget is a Premium feature. Upgrade to access."
+                          );
+                          return;
+                        }
+                        handleChange(e);
+                      }}
+                      className="w-full appearance-none px-4 py-3 border border-gray-300 rounded-lg focus:ring-2"
+                    >
+                      {BUDGET_LEVELS.map((level) => {
+                        const isPremium = level === "High";
+                        const isDisabled =
+                          isPremium && (!user || user?.tier === "free");
+
+                        return (
+                          <option
+                            key={level}
+                            value={level}
+                            disabled={isDisabled}
+                            className={isDisabled ? "text-gray-400" : ""}
+                          >
+                            {level} {isDisabled && "🔒 Premium"}
+                          </option>
+                        );
+                      })}
+                    </select>
+                    <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
+                      <IoIosArrowDown />
+                    </span>
+                  </div>
                 </div>
               </div>
 
@@ -753,50 +790,71 @@ export default function GenerateWeeklyPlan({ voiceText }) {
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Number of Days <span className="text-red-500">*</span>
                   </label>
-                  <select
-                    name="days_count"
-                    value={form.days_count}
-                    onChange={(e) =>
-                      setForm({
-                        ...form,
-                        days_count: parseInt(e.target.value),
-                      })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-teal-500 focus:border-teal-500"
-                    disabled={loading}
-                  >
-                    {/* Free users: only 3 days */}
-                    {!user || user?.tier === "free" ? (
-                      <>
-                        <option value="3">3 days</option>
-                        {!user && (
-                          <option value="7" disabled className="text-gray-400">
-                            7 days (Weekly) - Login required
-                          </option>
-                        )}
-                      </>
-                    ) : (
-                      /* Paid users: all options */
-                      <>
-                        <option value="3">3 days</option>
-                        <option value="4">4 days</option>
-                        <option value="5">5 days</option>
-                        <option value="6">6 days</option>
-                        <option value="7">7 days (Weekly)</option>
-                      </>
-                    )}
-                  </select>
+                  <div className="relative">
+                    <select
+                      name="days_count"
+                      value={form.days_count}
+                      onChange={(e) => {
+                        const value = parseInt(e.target.value);
+                        // Prevent selecting disabled options
+                        if (value > 3 && (!user || user?.tier === "free")) {
+                          toast.error("Upgrade to Premium for 7-day plans");
+                          return;
+                        }
+                        setForm({
+                          ...form,
+                          days_count: value,
+                        });
+                      }}
+                      className="w-full appearance-none px-3 py-2 border border-gray-300 rounded-md focus:ring-teal-500 focus:border-teal-500"
+                      disabled={loading}
+                    >
+                      {/* Always available - 3 days */}
+                      <option value="3">3 days</option>
 
-                  {/* Help text showing user's tier limits */}
-                  <p className="text-xs text-gray-500 mt-1">
-                    {!user
-                      ? "Login to access 7-day plans"
-                      : user?.tier === "free"
-                      ? "Free tier: 3-day plan only"
-                      : `Premium tier: ${
-                          user?.tier === "tier2" ? "Up to 7" : "Up to 7"
-                        } day plans available`}
-                  </p>
+                      {/* 4-7 days: Show with premium icons for guest/free users */}
+                      {[4, 5, 6, 7].map((days) => {
+                        const isRestricted = !user || user?.tier === "free";
+
+                        return (
+                          <option
+                            key={days}
+                            value={days}
+                            disabled={isRestricted}
+                            className={
+                              isRestricted ? "text-gray-400 bg-gray-50" : ""
+                            }
+                          >
+                            {days} days {isRestricted && "🔒 Premium"}
+                          </option>
+                        );
+                      })}
+                    </select>
+                    <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
+                      <IoIosArrowDown />
+                    </span>
+                  </div>
+
+                  {/* Help text with upgrade link */}
+                  <div className="flex items-center justify-between mt-1">
+                    <p className="text-xs text-gray-500">
+                      {!user
+                        ? "Login to access 7-day plans"
+                        : user?.tier === "free"
+                        ? "Free tier: 3-day limit"
+                        : "Premium: Up to 7-day plans"}
+                    </p>
+
+                    {(!user || user?.tier === "free") && (
+                      <button
+                        type="button"
+                        onClick={() => (window.location.href = "/#pricing")}
+                        className="text-xs text-[#8cc63c] hover:text-[#7ab32f] font-medium"
+                      >
+                        Upgrade →
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 <div>
@@ -866,18 +924,46 @@ export default function GenerateWeeklyPlan({ voiceText }) {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     {t(`form.skillLevel`)}
                   </label>
-                  <select
-                    name="skillLevel"
-                    value={form.skillLevel}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2"
-                  >
-                    {SKILL_LEVELS.map((level) => (
-                      <option key={level} value={level}>
-                        {level}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="relative">
+                    <select
+                      name="skillLevel"
+                      value={form.skillLevel}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (
+                          value === "Advanced" &&
+                          (!user || user?.tier === "free")
+                        ) {
+                          toast.error(
+                            "Advanced skill level is a Premium feature."
+                          );
+                          return;
+                        }
+                        handleChange(e);
+                      }}
+                      className="w-full appearance-none px-4 py-3 border border-gray-300 rounded-lg focus:ring-2"
+                    >
+                      {SKILL_LEVELS.map((level) => {
+                        const isPremium = level === "Advanced";
+                        const isDisabled =
+                          isPremium && (!user || user?.tier === "free");
+
+                        return (
+                          <option
+                            key={level}
+                            value={level}
+                            disabled={isDisabled}
+                            className={isDisabled ? "text-gray-400" : ""}
+                          >
+                            {level} {isDisabled && "🔒 Premium"}
+                          </option>
+                        );
+                      })}
+                    </select>
+                    <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
+                      <IoIosArrowDown />
+                    </span>
+                  </div>
                 </div>
               </div>
 
@@ -885,24 +971,63 @@ export default function GenerateWeeklyPlan({ voiceText }) {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-3">
                   {t(`form.dietaryPreferences`)}
+                  {(!user || user?.tier === "free") && (
+                    <span className="text-xs text-gray-500 ml-2">
+                      (Premium options locked 🔒)
+                    </span>
+                  )}
                 </label>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                  {DIETARY_PREFERENCES.map((pref) => (
-                    <label
-                      key={pref}
-                      className="flex items-center space-x-2 bg-gray-50 px-3 py-2 rounded-lg hover:bg-gray-100"
-                    >
-                      <input
-                        type="checkbox"
-                        name="dietaryPreferences"
-                        value={pref}
-                        checked={form.dietaryPreferences.includes(pref)}
-                        onChange={handleChange}
-                        className="h-4 w-4 text-blue-600 rounded"
-                      />
-                      <span className="text-sm text-gray-700">{pref}</span>
-                    </label>
-                  ))}
+                  {DIETARY_PREFERENCES.map((pref) => {
+                    const isPremium = [
+                      "Keto",
+                      "Paleo",
+                      "Mediterranean",
+                      "Halal",
+                    ].includes(pref);
+                    const isDisabled =
+                      isPremium && (!user || user?.tier === "free");
+
+                    return (
+                      <label
+                        key={pref}
+                        className={`flex items-center space-x-2 px-3 py-2 rounded-lg ${
+                          isDisabled
+                            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                            : "bg-gray-50 hover:bg-gray-100"
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          name="dietaryPreferences"
+                          value={pref}
+                          checked={form.dietaryPreferences.includes(pref)}
+                          onChange={(e) => {
+                            if (isDisabled) {
+                              toast.error(
+                                `"${pref}" is a Premium feature. Upgrade to access.`
+                              );
+                              return;
+                            }
+                            handleChange(e);
+                          }}
+                          disabled={isDisabled}
+                          className={`h-4 w-4 rounded ${
+                            isDisabled
+                              ? "cursor-not-allowed opacity-50"
+                              : "text-blue-600"
+                          }`}
+                        />
+                        <span
+                          className={`text-sm ${
+                            isDisabled ? "text-gray-400" : "text-gray-700"
+                          }`}
+                        >
+                          {pref} {isDisabled && "🔒"}
+                        </span>
+                      </label>
+                    );
+                  })}
                 </div>
               </div>
 

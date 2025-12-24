@@ -152,7 +152,7 @@ export default function PricingSection() {
         return;
       }
 
-      window.location.href =`/${locale}/dashboard`;
+      window.location.href =`/${locale}`;
       return;
     }
 
