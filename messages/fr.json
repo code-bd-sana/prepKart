@@ -8,7 +8,8 @@
     "voiceInput": "Entrée vocale :",
     "clearButton": "Effacer",
     "generateButton": "Générer Mon Plan Hebdomadaire",
-    "quickStartButton": "Tableau de bord",
+    "dashboardButton": "Tableau de bord",
+    "quickStartButton": "Commencez par un plan rapide",
     "badges": {
       "trusted": "De Confiance par les Canadiens",
       "budget": "Options économiques",
@@ -178,70 +179,79 @@
     ]
   },
   "quickPlans": {
-    "title": "Repas Rapides et Curatés Que Vous Adorerez",
-    "subtitle": "Manquez de temps ? Obtenez des repas sains et curatés conçus pour votre style de vie et votre budget — cuisine sans effort, chaque jour.",
-    "ctaTitle": "Débloquez les Collections de Recettes Premium",
-    "ctaSubtitle": "Abonnez-vous pour tous les plans premium, générations IA illimitées et recettes exclusives",
-    "ctaButton": "Essayer 7 Jours Gratuit",
-    "premium": "Premium",
-    "viewPlan": "Voir le Plan",
-    "plans": [
-      {
-        "title": "Kéto",
-        "description": "Repas faibles en glucides, riches en graisses",
-        "icon": "🥑",
-        "premium": true
-      },
-      {
-        "title": "Végan",
-        "description": "100% végétalien",
-        "icon": "🌱",
-        "premium": false
-      },
-      {
-        "title": "Végétarien",
-        "description": "Sans viande, riche en protéines",
-        "icon": "🍆",
-        "premium": false
-      },
-      {
-        "title": "Halal",
-        "description": "Certifié halal",
-        "icon": "👨‍👩‍👧‍👦",
-        "premium": true
-      },
-      {
-        "title": "Sans Gluten",
-        "description": "Pas de gluten, plein de saveur",
-        "icon": "🌾",
-        "premium": false
-      },
-      {
-        "title": "Riche en Protéines",
-        "description": "Repas pour développer les muscles",
-        "icon": "💪",
-        "premium": true
-      },
-      {
-        "title": "Faible en Glucides",
-        "description": "Glucides réduits",
-        "icon": "🍓",
-        "premium": false
-      },
-      {
-        "title": "Adapté aux Familles",
-        "description": "Approuvé par les enfants",
-        "icon": "👨‍👩‍👧",
-        "premium": true
-      },
-      {
-        "title": "Économique",
-        "description": "Moins de 75 $/semaine",
-        "icon": "💰",
-        "premium": false
-      }
-    ]
-  },
+  "title": "Repas Rapides et Curatés Que Vous Adorerez",
+  "subtitle": "Manquez de temps ? Obtenez des repas sains et curatés conçus pour votre style de vie et votre budget — cuisine sans effort, chaque jour.",
+  "ctaTitle": "Débloquez les Collections de Recettes Premium",
+  "ctaSubtitle": "Abonnez-vous pour tous les plans premium, générations IA illimitées et recettes exclusives",
+  "ctaButton": "Essayer 7 Jours Gratuit",
+  "premium": "Premium",
+  "viewPlan": "Voir le Plan",
+  "plans": [
+    {
+      "key": "keto", 
+      "title": "Kéto",
+      "description": "Repas faibles en glucides, riches en graisses",
+      "icon": "🥑",
+      "premium": true
+    },
+    {
+      "key": "vegan",  
+      "title": "Végan",
+      "description": "100% végétalien",
+      "icon": "🌱",
+      "premium": false
+    },
+    {
+      "key": "vegetarian", 
+      "title": "Végétarien",
+      "description": "Sans viande, riche en protéines",
+      "icon": "🍆",
+      "premium": false
+    },
+    {
+      "key": "halal", 
+      "title": "Halal",
+      "description": "Certifié halal",
+      "icon": "👨‍👩‍👧‍👦",
+      "premium": true
+    },
+    {
+      "key": "glutenFree", 
+      "title": "Sans Gluten",
+      "description": "Pas de gluten, plein de saveur",
+      "icon": "🌾",
+      "premium": false
+    },
+    {
+      "key": "highProtein", 
+      "title": "Riche en Protéines",
+      "description": "Repas pour développer les muscles",
+      "icon": "💪",
+      "premium": true
+    },
+    {
+      "key": "lowCarb",  
+      "title": "Faible en Glucides",
+      "description": "Glucides réduits",
+      "icon": "🍓",
+      "premium": false
+    },
+    {
+      "key": "familyFriendly", 
+      "title": "Adapté aux Familles",
+      "description": "Approuvé par les enfants",
+      "icon": "👨‍👩‍👧",
+      "premium": true
+    },
+    {
+      "key": "budgetFriendly", 
+      "title": "Économique",
+      "description": "Moins de 75 $/semaine",
+      "icon": "💰",
+      "premium": false
+    }
+  ]
+},
   "quickPlanModal": {
   "title": "Votre plan rapide",
   "subtitle": "Généré pour l’offre {tier}",
@@ -252,7 +262,7 @@
   "upgradeDescription": "Obtenez des plans sur 7 jours, des listes de courses et des recettes premium",
   "upgradeButton": "Mettre à niveau",
   "fullPlanTitle": "Vous voulez plus de précision ?",
-  "fullPlanDescription": "Générez un plan complet sur 7 jours avec toutes vos préférences",
+  "fullPlanDescription": "Générez un plan complet avec toutes vos préférences et enregistrez-le!",
   "fullPlanButton": "Générer le plan complet"
 },
    "mealPlanning": {

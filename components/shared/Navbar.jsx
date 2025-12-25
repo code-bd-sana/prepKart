@@ -43,7 +43,7 @@ export default function Navbar() {
     { label: t("howItWorks"), href: "#howitworks" },
     { label: t("pricing"), href: "#pricing" },
     // { label: t("recipes"), href: "#recipes" },
-    { label: t("partners"), href: "#partners" },
+    { label: t("quickplans"), href: "#quickplans" },
     { label: t("faq"), href: "#faq" },
     { label: t("blog"), href: `/${locale}/blog` },
   ];
@@ -77,7 +77,7 @@ export default function Navbar() {
     dispatch(logout());
     setOpen(false);
     toast.success(t("loggedOut"));
-    router.push(`/${locale}`); // Add locale to redirect
+    router.push(`/${locale}`); 
   };
 
   // to determine if an item is active
@@ -183,16 +183,6 @@ export default function Navbar() {
                     {user.name || user.email?.split("@")[0]}
                   </span>
                 </div>
-
-                {/* Dashboard Button */}
-                {/* <Link
-                  href={`/${locale}/dashboard`}
-                  onClick={() => setActiveHash("")}
-                >
-                  <button className="px-3 lg:px-4 xl:px-5 py-2 lg:py-2.5 text-white font-medium rounded-md bg-[#4a9fd8] hover:bg-[#3b8ec4] transition-colors duration-200 cursor-pointer text-sm lg:text-base whitespace-nowrap">
-                    {t("dashboard")}
-                  </button>
-                </Link> */}
                 {user && (user.tier === "admin") && (
                   <Link
                     href={`/${locale}/admin`}
@@ -324,18 +314,6 @@ export default function Navbar() {
                     {user.name || user.email?.split("@")[0]}
                   </span>
                 </div>
-
-                {/* <Link
-                  href={`/${locale}/dashboard`}
-                  onClick={() => {
-                    setActiveHash("");
-                    setOpen(false);
-                  }}
-                  className="flex-1"
-                > */}
-                {/* <button className="w-full px-4 sm:px-5 py-2.5 text-white font-medium rounded-md bg-[#4a9fd8] cursor-pointer text-sm sm:text-base">
-                    {t("dashboard")}
-                  </button> */}
                 {user && (user.tier === "tier3" || user.tier === "admin") && (
                   <Link
                     href={`/${locale}/admin`}

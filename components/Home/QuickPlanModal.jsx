@@ -1,11 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { FiX, FiLoader, FiCheck } from "react-icons/fi";
 import { useSelector } from "react-redux";
+import { useTranslations } from "next-intl";
 
 export default function QuickPlanModal({ isOpen, onClose, planType, locale }) {
   const { user } = useSelector((state) => state.auth);
+  const t = useTranslations("quickPlanModal");
+  const modalRef = useRef(null);
 
   const [isLoading, setIsLoading] = useState(false);
   const [planData, setPlanData] = useState(null);
@@ -15,24 +18,9 @@ export default function QuickPlanModal({ isOpen, onClose, planType, locale }) {
   const userTier = user?.tier || "free";
   const isFreeUser = userTier === "free";
 
-  // Translations
-  const t = {
-    title: "Your Quick Plan",
-    subtitle: `Generated for ${userTier} tier`,
-    generating: "Creating your smart meal plan...",
-    retry: "Try again",
-    yourQuickPlan: "Here's your 3-day plan",
-    upgradeTitle: "Upgrade for More Features",
-    upgradeDescription:
-      "Get full 7-day plans, grocery lists, and premium recipes",
-    upgradeButton: "Upgrade Now",
-    fullPlanTitle: "Want More Accuracy?",
-    fullPlanDescription: "Generate a full 7-day plan with all your preferences",
-    fullPlanButton: "Generate Full Plan",
-  };
+  const generateQuickPlan = useCallback(async () => {
+    if (!planType) return;
 
-  // Define generateQuickPlan function
-  const generateQuickPlan = async () => {
     setIsLoading(true);
     setError(null);
     try {
@@ -41,7 +29,6 @@ export default function QuickPlanModal({ isOpen, onClose, planType, locale }) {
         userTier,
         locale,
       };
-
       const response = await fetch("/api/generate-quick-plan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -58,12 +45,41 @@ export default function QuickPlanModal({ isOpen, onClose, planType, locale }) {
 
       setPlanData(data);
     } catch (err) {
-      console.error(" Quick plan error:", err);
+      console.error("Quick plan error:", err);
       setError(`Error: ${err.message}. Please try again.`);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [planType, userTier, locale]);
+
+  // handle click outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+
+    const handleEscapeKey = (event) => {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("keydown", handleEscapeKey);
+      // Prevent body scroll when modal is open
+      document.body.style.overflow = "hidden";
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscapeKey);
+      // Restore body scroll when modal is closed
+      document.body.style.overflow = "auto";
+    };
+  }, [isOpen, onClose]);
 
   useEffect(() => {
     if (isOpen && planType) {
@@ -72,7 +88,7 @@ export default function QuickPlanModal({ isOpen, onClose, planType, locale }) {
       setPlanData(null);
       setError(null);
     }
-  }, [isOpen, planType]);
+  }, [isOpen, planType, generateQuickPlan, userTier]);
 
   if (!isOpen) return null;
 
@@ -82,8 +98,10 @@ export default function QuickPlanModal({ isOpen, onClose, planType, locale }) {
         {/* Header */}
         <div className="sticky top-0 bg-white border-b p-6 flex justify-between items-center">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">{t.title}</h2>
-            <p className="text-gray-600 mt-1">{t.subtitle}</p>
+            <h2 className="text-2xl font-bold text-gray-900">{t("title")}</h2>
+            <p className="text-gray-600 mt-1">
+              {t("subtitle", { tier: userTier })}
+            </p>
           </div>
           <button
             onClick={onClose}
@@ -98,9 +116,12 @@ export default function QuickPlanModal({ isOpen, onClose, planType, locale }) {
           {isLoading && (
             <div className="flex flex-col items-center justify-center py-12">
               <FiLoader className="w-12 h-12 text-primary animate-spin mb-4" />
-              <p className="text-gray-600">{t.generating}</p>
+              <p className="text-gray-600">{t("generating")}</p>
               <p className="text-sm text-gray-500 mt-2">
-                Generating {planType} plan for {userTier} tier...
+                Generating {planType} plan for {userTier} user...
+              </p>
+              <p className="text-sm text-gray-500 text-center mt-2">
+                Estimated time: 30-60 seconds
               </p>
             </div>
           )}
@@ -111,15 +132,12 @@ export default function QuickPlanModal({ isOpen, onClose, planType, locale }) {
                 Error Generating Plan
               </h4>
               <p className="text-red-700 mb-2">{error}</p>
-              <p className="text-sm text-red-600 mb-4">
-                Check browser console for details (F12 → Console)
-              </p>
               <div className="flex gap-3">
                 <button
                   onClick={generateQuickPlan}
                   className="bg-red-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-700"
                 >
-                  {t.retry}
+                  {t("retry")}
                 </button>
                 <button
                   onClick={onClose}
@@ -134,9 +152,6 @@ export default function QuickPlanModal({ isOpen, onClose, planType, locale }) {
           {!isLoading && !error && !planData && (
             <div className="text-center py-12">
               <p className="text-gray-600 mb-2">Plan not generated yet</p>
-              <p className="text-sm text-gray-500 mb-4">
-                Click below to generate your {planType} plan
-              </p>
               <button
                 onClick={generateQuickPlan}
                 className="bg-primary text-white px-6 py-2 rounded-lg font-medium hover:bg-primary-dark"
@@ -151,7 +166,7 @@ export default function QuickPlanModal({ isOpen, onClose, planType, locale }) {
               {/* Plan Preview */}
               <div className="mb-8">
                 <h3 className="text-lg font-semibold mb-4">
-                  {t.yourQuickPlan}
+                  {t("yourQuickPlan")}
                 </h3>
 
                 {planData.days && planData.days.length > 0 ? (
@@ -209,39 +224,46 @@ export default function QuickPlanModal({ isOpen, onClose, planType, locale }) {
 
               {/* Upgrade Prompt */}
               {isFreeUser && (
-                <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-6">
-                  <h4 className="font-semibold text-blue-900 mb-2">
-                    {t.upgradeTitle}
-                  </h4>
-                  <p className="text-blue-800 mb-4">{t.upgradeDescription}</p>
+                <div className="flex justify-between bg-blue-50 border border-green-200 rounded-xl p-3 mb-3">
+                  <div className="flex flex-col">
+                    <h4 className="font-semibold text-green-900 mb-2">
+                      {t("upgradeTitle")}
+                    </h4>
+                    <p className="text-green-800 mb-4">
+                      {t("upgradeDescription")}
+                    </p>
+                  </div>
                   <button
                     onClick={() => {
                       onClose();
                       // Navigate to pricing
                       window.location.href = "/#pricing";
                     }}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700"
+                    className="bg-green-600 text-white px-2 py-1 rounded-lg font-medium hover:bg-green-700"
                   >
-                    {t.upgradeButton}
+                    {t("upgradeButton")}
                   </button>
                 </div>
               )}
 
               {/* Full Plan CTA */}
-              <div className="bg-gray-50 rounded-xl p-6">
-                <h4 className="font-semibold text-gray-900 mb-2">
-                  {t.fullPlanTitle}
-                </h4>
-                <p className="text-gray-600 mb-4">{t.fullPlanDescription}</p>
+              <div className="flex items-center justify-between bg-gray-50 rounded-xl p-6">
+                <div className="flex flex-col">
+                  <h4 className="font-semibold text-gray-900 mb-2">
+                    {t("fullPlanTitle")}
+                  </h4>
+                  <p className="text-gray-600 mb-4">
+                    {t("fullPlanDescription")}
+                  </p>
+                </div>
                 <button
                   onClick={() => {
                     onClose();
-                    // Open full plan modal
-                    // You'll need to pass this to parent
+                    window.location.href = "/";
                   }}
-                  className="bg-primary text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-dark flex items-center gap-2"
+                  className="cursor-pointer text-green-600 bg-primary px-4 py-2 rounded-lg font-medium hover:bg-primary-dark flex items-center gap-2"
                 >
-                  {t.fullPlanButton}
+                  {t("fullPlanButton")}
                   <FiCheck className="w-4 h-4" />
                 </button>
               </div>

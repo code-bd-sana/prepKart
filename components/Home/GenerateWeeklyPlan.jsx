@@ -293,7 +293,7 @@ export default function GenerateWeeklyPlan({ voiceText }) {
           inputs: plan.inputs || {},
           swaps: plan.swaps || { allowed: 1, used: 0, remaining: 1 },
           tier: plan.tier || "free",
-          source: plan.source || "openai", // ← CRITICAL: Include source
+          source: plan.source || "openai",
           userId: plan.userId || userId,
           userEmail: plan.userEmail || user.email,
           swapsUsed: plan.swaps?.used || 0,
@@ -675,16 +675,42 @@ export default function GenerateWeeklyPlan({ voiceText }) {
                     <select
                       name="goal"
                       value={form.goal}
-                      onChange={handleChange}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        // Check if it's a premium goal
+                        if (
+                          value === "Family Friendly" &&
+                          (!user || user?.tier === "free")
+                        ) {
+                          toast.error(
+                            "Upgrade to Premium for Family Friendly plans"
+                          );
+                          return;
+                        }
+                        handleChange(e);
+                      }}
                       required
                       className="w-full appearance-none px-4 py-3 border border-gray-300 rounded-lg focus:ring-2"
                     >
                       <option value="">{t(`form.selectGoal`)}</option>
-                      {GOALS.map((goal) => (
-                        <option key={goal} value={goal}>
-                          {goal}
-                        </option>
-                      ))}
+                      {GOALS.map((goal) => {
+                        const isPremiumGoal = goal === "Family Friendly";
+                        const isRestricted =
+                          isPremiumGoal && (!user || user?.tier === "free");
+
+                        return (
+                          <option
+                            key={goal}
+                            value={goal}
+                            disabled={isRestricted}
+                            className={
+                              isRestricted ? "text-gray-400 bg-gray-50" : ""
+                            }
+                          >
+                            {goal} {isRestricted && "🔒"}
+                          </option>
+                        );
+                      })}
                     </select>
                     <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
                       <IoIosArrowDown />

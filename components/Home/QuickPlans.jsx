@@ -3,8 +3,20 @@
 import { FiArrowRight, FiLock } from "react-icons/fi";
 import { LuCrown } from "react-icons/lu";
 import Link from "next/link";
-import { FaAppleAlt, FaLeaf, FaDollarSign, FaBolt, FaHome, FaStar } from "react-icons/fa";
-import { GiMeal, GiChickenOven, GiFruitBowl, GiBowlOfRice } from "react-icons/gi";
+import {
+  FaAppleAlt,
+  FaLeaf,
+  FaDollarSign,
+  FaBolt,
+  FaHome,
+  FaStar,
+} from "react-icons/fa";
+import {
+  GiMeal,
+  GiChickenOven,
+  GiFruitBowl,
+  GiBowlOfRice,
+} from "react-icons/gi";
 import { MdDinnerDining, MdLocalDining, MdFreeBreakfast } from "react-icons/md";
 import { SiCodechef } from "react-icons/si";
 import Image from "next/image";
@@ -13,12 +25,13 @@ import QuickPlanModal from "./QuickPlanModal";
 import { useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { toast } from "react-toastify";
 
 export default function QuickPlans({ locale }) {
   const { user } = useSelector((state) => state.auth);
   const router = useRouter();
   const t = useTranslations("quickPlans");
-  
+
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [showQuickPlanModal, setShowQuickPlanModal] = useState(false);
 
@@ -39,17 +52,25 @@ export default function QuickPlans({ locale }) {
     dining: MdLocalDining,
     breakfast: MdFreeBreakfast,
     chef: SiCodechef,
-    
-    // Add more as needed
   };
 
   // Get plans from translations
   const quickPlans = t.raw("plans");
 
-  const handlePlanClick = (planKey) => {
+  const handlePlanClick = (planKey, isPremiumPlan) => {
     if (!user) {
-      // Redirect to login
-      router.push("/login?redirect=/quick-meals");
+      toast.warning("Login to View Plan");
+      router.push(`/${locale}/login`);
+      return;
+    }
+
+    // Check if free user is trying to access premium plan
+    const userTier = user?.tier || "free";
+    const isFreeUser = userTier === "free";
+
+    if (isPremiumPlan && isFreeUser) {
+      toast.warning("Upgrade to Premium to access this plan");
+      router.push(`/${locale}/#pricing`);
       return;
     }
 
@@ -84,16 +105,14 @@ export default function QuickPlans({ locale }) {
 
   return (
     <>
-      <section className="py-16 md:py-24">
+      <section className="py-16 md:py-24" id="quickplans">
         <div className="container mx-auto px-4 max-w-[1200px]">
           {/* Header */}
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-semibold text-[#1E1E1E]">
               {t("title")}
             </h2>
-            <p className="text-base text-[#666666] mt-2">
-              {t("subtitle")}
-            </p>
+            <p className="text-base text-[#666666] mt-2">{t("subtitle")}</p>
           </div>
 
           {/* Cards Grid */}
@@ -132,13 +151,24 @@ export default function QuickPlans({ locale }) {
                 {/* BUTTONS */}
                 <div className="mt-auto">
                   {plan.premium && (!user || user.tier !== "tier3") ? (
-                    <button className="w-full hover:bg-[#8cc63c] hover:text-white border border-[#E2E2E2] text-[#1E1E1E] text-sm py-2.5 rounded-lg font-medium flex items-center justify-center gap-2">
+                    <button
+                      onClick={() => {
+                        if (!user) {
+                          toast.warning("Login to View Plan");
+                          router.push(`/${locale}/login`);
+                          return;
+                        }
+                        toast.warning("Upgrade to Premium to access this plan");
+                        router.push(`/${locale}/#pricing`);
+                      }}
+                      className="w-full hover:bg-[#8cc63c] hover:text-white border border-[#E2E2E2] text-[#1E1E1E] text-sm py-2.5 rounded-lg font-medium flex items-center justify-center gap-2"
+                    >
                       <FiLock className="h-4 w-4" />
                       {t("premium")}
                     </button>
                   ) : (
                     <button
-                      onClick={() => handlePlanClick(plan.key)}
+                      onClick={() => handlePlanClick(plan.key, plan.premium)}
                       className="w-full bg-white border border-[#E2E2E2] text-[#1E1E1E] text-sm py-2.5 rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-[#8cc63c] hover:text-white transition"
                     >
                       {t("viewPlan")}
