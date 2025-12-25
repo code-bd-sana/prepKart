@@ -92,7 +92,7 @@ export default function GenerateWeeklyPlan({ voiceText }) {
       // Goal
       goal: text.includes("lose")
         ? "Weigth Loss"
-        : text.includes("weigth")
+        : text.includes("weight")
         ? "Weigth Loss"
         : text.includes("muscle")
         ? "Muscle Gain"
