@@ -398,6 +398,15 @@
     "postalPlaceholder": "Postal Code (e.g. M5H 2N2)",
     "buttonText": "Subscribe Now"
   },
+"contactUs": {
+  "title": "Contact Us",
+  "subtitle": "Have questions or need assistance? We're here to help!",
+  "emailTitle": "Email Support",
+  "emailDescription": "Send us an email and we'll respond within 24 hours",
+  "phoneTitle": "Phone Support",
+  "phoneDescription": "Call us during business hours (9 AM - 5 PM EST)",
+  "availabilityNote": "Monday - Friday, 9AM - 6PM EST"
+},
   "footer": {
     "tagline": "\"Made for real Canadian households🍁\"",
     "company": "Company",

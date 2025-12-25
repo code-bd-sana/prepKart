@@ -110,7 +110,7 @@ export default function RegisterPage() {
     // Check checkboxes
     if (!formData.ageVerified) return false;
     if (!formData.agreeTerms) return false;
-    if (!formData.marketing_consent) return false;
+    // if (!formData.marketing_consent) return false;
 
     return true;
   };
@@ -267,7 +267,11 @@ export default function RegisterPage() {
     dispatch(clearError());
 
     try {
-      await dispatch(register(formData)).unwrap();
+      await dispatch(register({
+      ...formData,
+      marketing_consent: formData.marketing_consent 
+    })).unwrap();
+      // await dispatch(register(formData)).unwrap();
       toast.success("Registered Successfully!");
       router.push("/");
     } catch (error) {
@@ -537,154 +541,8 @@ export default function RegisterPage() {
                   </div>
                 )}
               </div>
-
-              {/* <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">
-                    Foods You Like
-                  </label>
-                  <input
-                    type="text"
-                    value={likesText}
-                    onChange={(e) => setLikesText(e.target.value)}
-                    onBlur={handleLikesBlur}
-                    placeholder="chicken, quinoa, broccoli..."
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-[#4a9fd8] focus:border-[#4a9fd8] outline-none"
-                  />
-                  <p className="text-xs text-gray-400 mt-1">
-                    Separate with commas
-                  </p>
-                  {formData.likes.length > 0 && (
-                    <div className="mt-2 flex flex-wrap gap-1">
-                      {formData.likes.map((like, index) => (
-                        <span
-                          key={index}
-                          className="inline-flex items-center px-2 py-1 rounded text-xs bg-gray-100 text-gray-700"
-                        >
-                          {like}
-                          <button
-                            type="button"
-                            onClick={() => removeLike(index)}
-                            className="ml-1 text-gray-500 hover:text-gray-700"
-                          >
-                            ×
-                          </button>
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">
-                    Foods You Dislike
-                  </label>
-                  <input
-                    type="text"
-                    value={dislikesText}
-                    onChange={(e) => setDislikesText(e.target.value)}
-                    onBlur={handleDislikesBlur}
-                    placeholder="mushrooms, olives, spicy food..."
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-[#4a9fd8] focus:border-[#4a9fd8] outline-none"
-                  />
-                  <p className="text-xs text-gray-400 mt-1">
-                    Separate with commas
-                  </p>
-                  {formData.dislikes.length > 0 && (
-                    <div className="mt-2 flex flex-wrap gap-1">
-                      {formData.dislikes.map((dislike, index) => (
-                        <span
-                          key={index}
-                          className="inline-flex items-center px-2 py-1 rounded text-xs bg-gray-100 text-gray-700"
-                        >
-                          {dislike}
-                          <button
-                            type="button"
-                            onClick={() => removeDislike(index)}
-                            className="ml-1 text-gray-500 hover:text-gray-700"
-                          >
-                            ×
-                          </button>
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div> */}
+           
             </div>
-
-            {/* Section 3: Cooking Preferences */}
-            {/* <div className="space-y-4">
-              <h2 className="text-base font-semibold text-gray-700 pb-2 border-b">Cooking Preferences</h2>
-              
-              <div className="grid md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Skill Level</label>
-                  <select
-                    name="skillLevel"
-                    value={formData.skillLevel}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-[#4a9fd8] focus:border-[#4a9fd8] outline-none bg-white"
-                  >
-                    <option value="beginner">Beginner</option>
-                    <option value="intermediate">Intermediate</option>
-                    <option value="advanced">Advanced</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Max Cooking Time</label>
-                  <select
-                    name="maxCookingTime"
-                    value={formData.maxCookingTime}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-[#4a9fd8] focus:border-[#4a9fd8] outline-none bg-white"
-                  >
-                    <option value="15">15 mins</option>
-                    <option value="30">30 mins</option>
-                    <option value="45">45 mins</option>
-                    <option value="60">60 mins</option>
-                    <option value="90">90+ mins</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Goal</label>
-                  <select
-                    name="goal"
-                    value={formData.goal}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-[#4a9fd8] focus:border-[#4a9fd8] outline-none bg-white"
-                  >
-                    <option value="weight_loss">Weight Loss</option>
-                    <option value="muscle_gain">Muscle Gain</option>
-                    <option value="general_health">General Health</option>
-                    <option value="maintenance">Maintenance</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-2">Budget Level</label>
-                <div className="flex gap-3">
-                  {['low', 'medium', 'high'].map(level => (
-                    <label key={level} className="flex-1">
-                      <input
-                        type="radio"
-                        name="budgetLevel"
-                        value={level}
-                        checked={formData.budgetLevel === level}
-                        onChange={handleChange}
-                        className="sr-only peer"
-                      />
-                      <div className="px-4 py-2 border border-gray-300 rounded text-center text-sm capitalize cursor-pointer peer-checked:border-[#4a9fd8] peer-checked:bg-blue-50 peer-checked:text-[#4a9fd8] hover:border-gray-400">
-                        {level}
-                      </div>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            </div> */}
 
             <div className="space-y-3">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-3">
