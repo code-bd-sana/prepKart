@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Calendar, Clock, Search, Tag, Eye, ArrowRight, BookOpen } from 'lucide-react';
+import { Calendar, Clock, Search, Eye, ArrowRight, BookOpen } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 
@@ -290,7 +290,7 @@ export default function Blog() {
       </main>
 
       {/* Minimal Footer */}
-      <footer className="bg-white border-t mt-20">
+      {/* <footer className="bg-white border-t mt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Stay Updated</h2>
@@ -312,7 +312,7 @@ export default function Blog() {
             </p>
           </div>
         </div>
-      </footer>
+      </footer> */}
     </div>
   );
 }
