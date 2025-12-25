@@ -28,7 +28,7 @@ const Footer = () => {
     ],
     help: [
       { name: t('links.support'), href: "/support" },
-      { name: t('links.contact'), href: "/contact" },
+      { name: t('links.contact'), href: "/#contact" },
     ],
   };
 

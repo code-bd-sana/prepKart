@@ -62,7 +62,7 @@
     "howItWorks": "Comment Ça Marche",
     "pricing": "Tarifs",
     "recipes": "Recettes",
-    "partners": "Partenaires",
+    "quickplans": "Plan rapide",
     "faq": "FAQ",
     "blog": "Blog",
     "dashboard": "Tableau de Bord",
@@ -398,6 +398,16 @@
     "postalPlaceholder": "Code Postal (ex. M5H 2N2)",
     "buttonText": "S'abonner Maintenant"
   },
+  
+"contactUs": {
+  "title": "Contactez-nous",
+  "subtitle": "Des questions ou besoin d'aide ? Nous sommes là pour vous aider !",
+  "emailTitle": "Support par Email",
+  "emailDescription": "Envoyez-nous un email et nous répondrons dans les 24 heures",
+  "phoneTitle": "Support Téléphonique",
+  "phoneDescription": "Appelez-nous pendant les heures de bureau (9h - 17h HNE)",
+  "availabilityNote": "Lundi - Vendredi, 9h - 18h HNE"
+},
   "footer": {
     "tagline": "\"Fait pour les vraies familles canadiennes🍁\"",
     "company": "Entreprise",

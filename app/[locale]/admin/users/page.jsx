@@ -5,7 +5,17 @@ import { useRouter } from "next/navigation";
 import * as React from "react";
 import { toast } from "react-toastify";
 import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
-import { FiSearch, FiFilter, FiUsers, FiUserCheck, FiUserPlus, FiDollarSign, FiTrash2, FiUserX, FiUserCheck as FiMakeAdmin } from "react-icons/fi";
+import {
+  FiSearch,
+  FiFilter,
+  FiUsers,
+  FiUserCheck,
+  FiUserPlus,
+  FiDollarSign,
+  FiTrash2,
+  FiUserX,
+  FiUserCheck as FiMakeAdmin,
+} from "react-icons/fi";
 import { TbUser, TbUserStar } from "react-icons/tb";
 import { MdAdminPanelSettings } from "react-icons/md";
 
@@ -260,7 +270,9 @@ export default function UsersPage({ params }) {
 
     return (
       <span
-        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${tierStyles[tier] || tierStyles.free}`}
+        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${
+          tierStyles[tier] || tierStyles.free
+        }`}
       >
         {tierIcons[tier] || tierIcons.free}
         {tierNames[tier] || "Free"}
@@ -275,10 +287,7 @@ export default function UsersPage({ params }) {
           <div className="h-8 bg-gray-200 rounded w-1/3 mb-6"></div>
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="h-20 bg-gray-200 rounded-lg"
-              ></div>
+              <div key={i} className="h-20 bg-gray-200 rounded-lg"></div>
             ))}
           </div>
         </div>
@@ -465,7 +474,9 @@ export default function UsersPage({ params }) {
                         </button>
 
                         {["free", "tier2", "tier3"].map((tier) => {
-                          const count = users.filter((u) => u.tier === tier).length;
+                          const count = users.filter(
+                            (u) => u.tier === tier
+                          ).length;
                           return (
                             <button
                               key={tier}
@@ -480,9 +491,15 @@ export default function UsersPage({ params }) {
                               }`}
                             >
                               <div className="flex items-center">
-                                {tier === "free" && <TbUser className="w-4 h-4 mr-2" />}
-                                {tier === "tier2" && <FiUserCheck className="w-4 h-4 mr-2" />}
-                                {tier === "tier3" && <TbUserStar className="w-4 h-4 mr-2" />}
+                                {tier === "free" && (
+                                  <TbUser className="w-4 h-4 mr-2" />
+                                )}
+                                {tier === "tier2" && (
+                                  <FiUserCheck className="w-4 h-4 mr-2" />
+                                )}
+                                {tier === "tier3" && (
+                                  <TbUserStar className="w-4 h-4 mr-2" />
+                                )}
                                 <span>
                                   {tier === "free"
                                     ? "Free Users"
@@ -545,7 +562,9 @@ export default function UsersPage({ params }) {
                   <div className="grid grid-cols-2 gap-4 mb-4">
                     <div>
                       <p className="text-xs text-gray-500">Province</p>
-                      <p className="text-sm font-medium">{user.province || "-"}</p>
+                      <p className="text-sm font-medium">
+                        {user.province || "-"}
+                      </p>
                     </div>
                     <div>
                       <p className="text-xs text-gray-500">Plans</p>
@@ -556,6 +575,7 @@ export default function UsersPage({ params }) {
                   </div>
 
                   {/* Expandable Details */}
+                  {/* Expandable Details */}
                   {expandedUser === user._id && (
                     <div className="mt-4 pt-4 border-t border-gray-100">
                       <div className="space-y-2">
@@ -565,10 +585,33 @@ export default function UsersPage({ params }) {
                             {new Date(user.createdAt).toLocaleDateString()}
                           </p>
                         </div>
+                        {/* ADD MARKETING CONSENT HERE */}
+                        <div>
+                          <p className="text-xs text-gray-500">
+                            Marketing Consent
+                          </p>
+                          <p className="text-sm font-medium">
+                            <span
+                              className={`inline-flex items-center px-2 py-0.5 rounded text-xs ${
+                                user.marketing_consent
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-gray-100 text-gray-800"
+                              }`}
+                            >
+                              {user.marketing_consent
+                                ? "✓ Approved"
+                                : "✗ Not Approved"}
+                            </span>
+                          </p>
+                        </div>
                         {user.subscription?.tier && (
                           <div>
-                            <p className="text-xs text-gray-500">Subscription</p>
-                            <p className="text-sm font-medium">{user.subscription.tier}</p>
+                            <p className="text-xs text-gray-500">
+                              Subscription
+                            </p>
+                            <p className="text-sm font-medium">
+                              {user.subscription.tier}
+                            </p>
                           </div>
                         )}
                       </div>
@@ -586,7 +629,9 @@ export default function UsersPage({ params }) {
                     <div className="flex space-x-3">
                       {activeTab === "all" && user.tier !== "admin" && (
                         <button
-                          onClick={() => changeUserTier(user._id, user.name, user.tier)}
+                          onClick={() =>
+                            changeUserTier(user._id, user.name, user.tier)
+                          }
                           className="text-green-600 hover:text-green-800 text-sm font-medium flex items-center"
                           title="Make Admin"
                         >
@@ -625,6 +670,9 @@ export default function UsersPage({ params }) {
                       Province
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Marketing Consent {/* ADD THIS COLUMN */}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Plans
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -640,8 +688,12 @@ export default function UsersPage({ params }) {
                     <tr key={user._id} className="hover:bg-gray-50">
                       <td className="px-6 py-4">
                         <div>
-                          <div className="font-medium text-gray-900">{user.name || "No Name"}</div>
-                          <div className="text-sm text-gray-600">{user.email}</div>
+                          <div className="font-medium text-gray-900">
+                            {user.name || "No Name"}
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            {user.email}
+                          </div>
                         </div>
                       </td>
                       <td className="px-6 py-4">
@@ -654,7 +706,24 @@ export default function UsersPage({ params }) {
                           )}
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-sm">{user.province || "-"}</td>
+                      <td className="px-6 py-4 text-sm">
+                        {user.province || "-"}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            user.marketing_consent
+                              ? "bg-green-100 text-green-800"
+                              : "bg-gray-100 text-gray-800"
+                          }`}
+                        >
+                          {user.marketing_consent ? (
+                            <>Approved</>
+                          ) : (
+                            <>Not Approved</>
+                          )}
+                        </span>
+                      </td>
                       <td className="px-6 py-4">
                         <div className="text-sm">
                           <div>Monthly: {user.monthly_plan_count || 0}</div>
@@ -668,7 +737,9 @@ export default function UsersPage({ params }) {
                         <div className="flex space-x-3">
                           {activeTab === "all" && user.tier !== "admin" && (
                             <button
-                              onClick={() => changeUserTier(user._id, user.name, user.tier)}
+                              onClick={() =>
+                                changeUserTier(user._id, user.name, user.tier)
+                              }
                               className="inline-flex items-center px-3 py-1.5 bg-green-50 text-green-700 text-sm font-medium rounded-lg hover:bg-green-100 transition-colors"
                             >
                               <FiMakeAdmin className="w-4 h-4 mr-1.5" />
