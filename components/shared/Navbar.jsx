@@ -39,12 +39,11 @@ export default function Navbar() {
 
   // Update navItems to use translations
   const navItems = [
-    { label: t("home"), href: `/${locale}` }, 
+    { label: t("home"), href: `/${locale}` },
     { label: t("howItWorks"), href: `/${locale}/#howitworks` },
-    { label: t("pricing"), href: "#pricing" },
-    // { label: t("recipes"), href: "#recipes" },
-    { label: t("quickplans"), href: "#quickplans" },
-    { label: t("faq"), href: "#faq" },
+    { label: t("pricing"), href: `/${locale}/#pricing` },
+    { label: t("quickplans"), href: `/${locale}/#quickplans` },
+    { label: t("faq"), href: `/${locale}/#faq` },
     { label: t("blog"), href: `/${locale}/blog` },
   ];
 
@@ -77,33 +76,46 @@ export default function Navbar() {
     dispatch(logout());
     setOpen(false);
     toast.success(t("loggedOut"));
-    router.push(`/${locale}`); 
+    router.push(`/${locale}`);
   };
 
   // to determine if an item is active
   const isItemActive = (itemHref) => {
-    // For Home page - check with locale
-    if (itemHref === `/${locale}`) {
-      return pathname === `/${locale}` && !activeHash;
+    if (itemHref === `/${locale}` || itemHref === `/${locale}/`) {
+      const isHomePage =
+        pathname === `/${locale}` || pathname === `/${locale}/`;
+      const hasHash = activeHash !== "";
+      return isHomePage && !hasHash;
     }
 
-    // For hash links
-    if (itemHref.startsWith("#")) {
-      return activeHash === itemHref;
+    if (itemHref.includes("#")) {
+      const hashFromHref = itemHref.split("#")[1];
+      const currentHash = activeHash.replace("#", "");
+      return currentHash === hashFromHref;
     }
 
-    // For regular paths
-    return pathname === itemHref;
+    // For regular pages (blog) - Remove trailing slash
+    const cleanPathname = pathname.replace(/\/$/, "");
+    const cleanItemHref = itemHref.replace(/\/$/, "");
+
+    return cleanPathname === cleanItemHref;
   };
 
   // Handle nav item clicks for hash links
   const handleNavClick = (href) => {
-    if (href.startsWith("#")) {
-      setActiveHash(href);
-      setOpen(false);
+    setOpen(false);
+
+    if (href.includes("#")) {
+      const hash = href.split("#")[1];
+      setActiveHash(`#${hash}`);
+      setTimeout(() => {
+        const element = document.getElementById(hash);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth" });
+        }
+      }, 100);
     } else {
       setActiveHash("");
-      setOpen(false);
     }
   };
 
@@ -183,7 +195,7 @@ export default function Navbar() {
                     {user.name || user.email?.split("@")[0]}
                   </span>
                 </div>
-                {user && (user.tier === "admin") && (
+                {user && user.tier === "admin" && (
                   <Link
                     href={`/${locale}/admin`}
                     className="px-3 lg:px-4 xl:px-5 py-2 lg:py-2.5 text-white font-medium rounded-md bg-[#4a9fd8] hover:bg-[#3b8ec4] transition-colors duration-200 cursor-pointer text-sm lg:text-base whitespace-nowrap"

@@ -141,7 +141,7 @@ export default function Blog() {
   return (
     <div className="min-h-screen max-w-[1600px] mx-auto bg-linear-to-b from-white to-gray-50">
       {/* Header */}
-      <header className="bg-white border-b sticky top-0 z-50">
+      <header className="bg-white sticky top-0 z-50">
         <div className=" px-4 md:px-6 py-5">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             <div className="text-center md:text-left">
