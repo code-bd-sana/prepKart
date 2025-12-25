@@ -49,7 +49,7 @@ export default function AdminLayout({ children }) {
     { icon: LayoutDashboard, label: "Dashboard", href: `/${locale}/admin`, active: pathname === `/${locale}/admin` },
     { icon: FileText, label: "Blog Posts", href: `/${locale}/admin/blog`, active: pathname.includes('/admin/blog') },
     { icon: Users, label: "Users", href: `/${locale}/admin/users`, active: pathname.includes('/admin/users') },
-    { icon: CreditCard, label: "Subscriptions", href: `/${locale}/admin/subscriptions`, active: pathname.includes('/admin/subscriptions') },
+    // { icon: CreditCard, label: "Subscriptions", href: `/${locale}/admin/subscriptions`, active: pathname.includes('/admin/subscriptions') },
     { icon: ShoppingCart, label: "Instacart Analytics", href: `/${locale}/admin/instacart`, active: pathname.includes('/admin/instacart') },
   ];
 
