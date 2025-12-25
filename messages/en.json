@@ -8,7 +8,8 @@
     "voiceInput": "Voice input:",
     "clearButton": "Clear",
     "generateButton": "Generate my weekly plan",
-    "quickStartButton": "Go to Dashboard",
+    "dashboardButton": "Go to dashboard",
+    "quickStartButton": "Start with a quick plan",
     "badges": {
       "trusted": "Trusted by Canadians",
       "budget": "Budget-friendly options",
@@ -60,7 +61,7 @@
     "howItWorks": "How It Works",
     "pricing": "Pricing",
     "recipes": "Recipes",
-    "partners": "Partners",
+    "quickplans": "Quick Plans",
     "faq": "FAQ",
     "blog": "Blog",
     "dashboard": "Dashboard",
@@ -177,71 +178,80 @@
     ]
   },
   "quickPlans": {
-    "title": "Quick, Curated Meals You'll Love",
-    "subtitle": "Short on time? Get healthy, curated meals designed for your lifestyle and budget — effortless cooking, every day.",
-    "ctaTitle": "Unlock Premium Recipe Collections",
-    "ctaSubtitle": "Subscribe for the premium plans, unlimited and exclusive recipes",
-    "ctaButton": "Try 7 days free",
-    "premium": "Premium",
-    "viewPlan": "View plan",
-    "plans": [
-      {
-        "title": "Keto",
-        "description": "Low-carb, high-fat meals",
-        "icon": "🥑",
-        "premium": true
-      },
-      {
-        "title": "Vegan",
-        "description": "100% plant-based",
-        "icon": "🌱",
-        "premium": false
-      },
-      {
-        "title": "Vegetarian",
-        "description": "Meat-free, protein-rich",
-        "icon": "🍆",
-        "premium": false
-      },
-      {
-        "title": "Halal",
-        "description": "Halal-certified",
-        "iconType": "image",
-        "icon": "/halalll.jpg",
-        "premium": true
-      },
-      {
-        "title": "Gluten-Free",
-        "description": "No gluten, full flavour",
-        "icon": "🌾",
-        "premium": false
-      },
-      {
-        "title": "High-Protein",
-        "description": "Muscle-building meals",
-        "icon": "💪",
-        "premium": true
-      },
-      {
-        "title": "Low-Carb",
-        "description": "Reduced carbs",
-        "icon": "🍎",
-        "premium": false
-      },
-      {
-        "title": "Family-Friendly",
-        "description": "Kid-approved",
-        "icon": "👨‍👩‍👧",
-        "premium": true
-      },
-      {
-        "title": "Budget-Friendly",
-        "description": "Under $75/week",
-        "icon": "💰",
-        "premium": false
-      }
-    ]
-  },
+  "title": "Quick, Curated Meals You'll Love",
+  "subtitle": "Short on time? Get healthy, curated meals designed for your lifestyle and budget — effortless cooking, every day.",
+  "ctaTitle": "Unlock Premium Recipe Collections",
+  "ctaSubtitle": "Subscribe for the premium plans, unlimited and exclusive recipes",
+  "ctaButton": "Try 7 days free",
+  "premium": "Premium",
+  "viewPlan": "View plan",
+  "plans": [
+    {
+      "key": "keto", 
+      "title": "Keto",
+      "description": "Low-carb, high-fat meals",
+      "icon": "🥑",
+      "premium": true
+    },
+    {
+      "key": "vegan",
+      "title": "Vegan",
+      "description": "100% plant-based",
+      "icon": "🌱",
+      "premium": false
+    },
+    {
+      "key": "vegetarian", 
+      "title": "Vegetarian",
+      "description": "Meat-free, protein-rich",
+      "icon": "🍆",
+      "premium": false
+    },
+    {
+      "key": "halal", 
+      "title": "Halal",
+      "description": "Halal-certified",
+      "iconType": "image",
+      "icon": "/halalll.jpg",
+      "premium": true
+    },
+    {
+      "key": "glutenFree",  
+      "title": "Gluten-Free",
+      "description": "No gluten, full flavour",
+      "icon": "🌾",
+      "premium": false
+    },
+    {
+      "key": "highProtein", 
+      "title": "High-Protein",
+      "description": "Muscle-building meals",
+      "icon": "💪",
+      "premium": true
+    },
+    {
+      "key": "lowCarb", 
+      "title": "Low-Carb",
+      "description": "Reduced carbs",
+      "icon": "🍎",
+      "premium": false
+    },
+    {
+      "key": "familyFriendly", 
+      "title": "Family-Friendly",
+      "description": "Kid-approved",
+      "icon": "👨‍👩‍👧",
+      "premium": true
+    },
+    {
+      "key": "budgetFriendly",
+      "title": "Budget-Friendly",
+      "description": "Under $75/week",
+      "icon": "💰",
+      "premium": false
+    }
+  ]
+},
   "quickPlanModal": {
     "title": "Your Quick Plan",
     "subtitle": "Generated for {tier} tier",
@@ -252,7 +262,7 @@
     "upgradeDescription": "Get full 7-day plans, grocery lists, and premium recipes",
     "upgradeButton": "Upgrade Now",
     "fullPlanTitle": "Want More Accuracy?",
-    "fullPlanDescription": "Generate a full 7-day plan with all your preferences",
+    "fullPlanDescription": "Generate a full plan with all your preferences & save it!",
     "fullPlanButton": "Generate Full Plan"
   },
   "mealPlanning": {
