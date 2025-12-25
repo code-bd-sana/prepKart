@@ -128,33 +128,33 @@ const userSchema = new mongoose.Schema(
     stripeCustomerId: String,
 
     subscription: {
-  stripeSubscriptionId: String,
-  stripePriceId: String,
-  status: {
-    type: String,
-    enum: [
-      "active",
-      "canceled",
-      "past_due",
-      "unpaid",
-      "incomplete",
-      "incomplete_expired",
-      "trialing",
-      null,
-    ],
-    default: null,
-  },
-  currentPeriodEnd: Date,
-  cancelAtPeriodEnd: {
-    type: Boolean,
-    default: false,
-  },
-  tier: {
-    type: String,
-    enum: ["free", "tier2", "tier3", "admin"], 
-    default: "free",
-  },
-},
+      stripeSubscriptionId: String,
+      stripePriceId: String,
+      status: {
+        type: String,
+        enum: [
+          "active",
+          "canceled",
+          "past_due",
+          "unpaid",
+          "incomplete",
+          "incomplete_expired",
+          "trialing",
+          null,
+        ],
+        default: null,
+      },
+      currentPeriodEnd: Date,
+      cancelAtPeriodEnd: {
+        type: Boolean,
+        default: false,
+      },
+      tier: {
+        type: String,
+        enum: ["free", "tier2", "tier3", "admin"],
+        default: "free",
+      },
+    },
     isActive: {
       type: Boolean,
       default: true,
