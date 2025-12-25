@@ -254,7 +254,7 @@ export default function HomeBanner({ locale }) {
                   {t("generateButton")} <FiArrowRight />
                 </button>
 
-                {!isAdmin && (
+                {/* {!isAdmin && (
                   <button
                     onClick={() => setShowDashboardModal(true)}
                     className="
@@ -270,7 +270,43 @@ export default function HomeBanner({ locale }) {
                   >
                     {t("quickStartButton")} <FiArrowRight />
                   </button>
-                )}
+                )} */}
+                {!isAdmin &&
+                  (user ? (
+                    // Logged in user - shows Dashboard button
+                    <button
+                      onClick={() => setShowDashboardModal(true)}
+                      className="
+        p-3 text-[14px] font-medium 
+        text-[#4a9fd8] hover:text-white
+        rounded-[10px] border-2 border-[#E5E5E5]
+        bg-white hover:bg-[#4a9fd8]
+        transition-colors
+        shadow-[0px_3px_10px_rgba(0,0,0,0.08)]
+        w-full sm:w-auto
+        flex items-center justify-center gap-2
+      "
+                    >
+                      {t("dashboardButton")} <FiArrowRight />
+                    </button>
+                  ) : (
+                    // Logged out user - shows Login/Start button
+                    <button
+                      onClick={() => (window.location.href = `/${locale}/#quickplans`)}
+                      className="
+        p-3 text-[14px] font-medium 
+          text-[#4a9fd8] hover:text-white
+          rounded-[10px] border-2 border-[#E5E5E5]
+          bg-white hover:bg-[#4a9fd8]
+          transition-colors
+          shadow-[0px_3px_10px_rgba(0,0,0,0.08)]
+          w-full sm:w-auto
+          flex items-center justify-center gap-2
+      "
+                    >
+                      {t("quickStartButton")} <FiArrowRight />
+                    </button>
+                  ))}
               </div>
 
               {/* Badges */}
