@@ -3,32 +3,35 @@ import { MdOutlineHandshake } from "react-icons/md";
 import Image from "next/image";
 import Link from "next/link";
 import { FaFacebook, FaInstagram, FaLinkedin, FaTwitter } from "react-icons/fa";
-import { useTranslations } from 'next-intl';
+import { useTranslations } from "next-intl";
+import { useParams } from "next/navigation";
 
 const Footer = () => {
-  const t = useTranslations('footer');
+  const params = useParams();
+  const locale = params.locale;
+  const t = useTranslations("footer");
 
   const socialLinks = [
-    { icon: FaFacebook, href: "#", label: t('social.facebook') },
-    { icon: FaTwitter, href: "#", label: t('social.twitter') },
-    { icon: FaInstagram, href: "#", label: t('social.instagram') },
-    { icon: FaLinkedin, href: "#", label: t('social.linkedin') },
+    { icon: FaFacebook, href: "#", label: t("social.facebook") },
+    { icon: FaTwitter, href: "#", label: t("social.twitter") },
+    { icon: FaInstagram, href: "#", label: t("social.instagram") },
+    { icon: FaLinkedin, href: "#", label: t("social.linkedin") },
   ];
 
   const footerLinks = {
     home: [
-      { label: t('links.howItWorks'), href: "/#howitworks" },
-      { label: t('links.pricing'), href: "/#pricing" },
-      { label: t('links.recipes'), href: "/#recipes" },
-      { label: t('links.partners'), href: "/#partners" },
+      { label: t("links.howItWorks"), href: "/#howitworks" },
+      { label: t("links.pricing"), href: "/#pricing" },
+      { label: t("links.recipes"), href: "/#recipes" },
+      { label: t("links.partners"), href: "/#partners" },
     ],
     legal: [
-      { name: t('links.terms'), href: "/terms" },
-      { name: t('links.privacy'), href: "/privacy" },
+      { name: t("links.terms"), href: `/${locale}/legal-terms-policy` },
+      { name: t("links.privacy"), href: `/${locale}/legal-terms-policy` },
     ],
     help: [
-      { name: t('links.support'), href: "/support" },
-      { name: t('links.contact'), href: "/#contact" },
+      { name: t("links.support"), href: "/support" },
+      { name: t("links.contact"), href: "/#contact" },
     ],
   };
 
@@ -50,13 +53,13 @@ const Footer = () => {
               />
             </Link>
             <p className="text-gray-600 text-sm mt-3 lg:mt-4 pl-1">
-              {t('tagline')}
+              {t("tagline")}
             </p>
           </div>
 
           {/* Company Links */}
           <div>
-            <p className="font-semibold text-gray-800 mb-4">{t('company')}</p>
+            <p className="font-semibold text-gray-800 mb-4">{t("company")}</p>
             <ul className="space-y-3">
               {footerLinks.home.map((link) => (
                 <li key={link.label}>
@@ -73,7 +76,7 @@ const Footer = () => {
 
           {/* Legal Links */}
           <div>
-            <p className="font-semibold text-gray-800 mb-4">{t('legal')}</p>
+            <p className="font-semibold text-gray-800 mb-4">{t("legal")}</p>
             <ul className="space-y-3">
               {footerLinks.legal.map((link) => (
                 <li key={link.name}>
@@ -93,7 +96,7 @@ const Footer = () => {
             <div className="grid grid-cols-2 gap-6 lg:gap-8">
               {/* Help Links */}
               <div>
-                <p className="font-semibold text-gray-800 mb-4">{t('help')}</p>
+                <p className="font-semibold text-gray-800 mb-4">{t("help")}</p>
                 <ul className="space-y-3">
                   {footerLinks.help.map((link) => (
                     <li key={link.name}>
@@ -110,7 +113,9 @@ const Footer = () => {
 
               {/* Follow Us Column */}
               <div>
-                <p className="font-semibold text-gray-800 mb-4">{t('followUs')}</p>
+                <p className="font-semibold text-gray-800 mb-4">
+                  {t("followUs")}
+                </p>
                 <div className="flex gap-3">
                   {socialLinks.map((social) => (
                     <a
@@ -134,7 +139,7 @@ const Footer = () => {
         {/* Copyright */}
         <div className="flex justify-center items-center gap-2">
           <p className="text-gray-500 text-sm text-center sm:text-left order-2 sm:order-1">
-            {t('copyright')}
+            {t("copyright")}
           </p>
         </div>
       </div>

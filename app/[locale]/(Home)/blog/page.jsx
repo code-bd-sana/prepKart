@@ -119,7 +119,7 @@ export default function Blog() {
   if (loading) {
     return (
       <div className="min-h-screen bg-linear-to-b from-gray-50 to-white">
-        <header className="bg-white border-b">
+        <header className="bg-white">
           <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="text-center">
               <h1 className="text-4xl font-bold text-gray-900">Blog</h1>
@@ -130,8 +130,8 @@ export default function Blog() {
 
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center py-20">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500 mb-4"></div>
-            <p className="text-gray-600">Loading articles...</p>
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-green-500 mb-4"></div>
+            <p className="text-gray-600">Loading Prepcart blogs...</p>
           </div>
         </main>
       </div>
