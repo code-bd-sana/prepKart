@@ -590,23 +590,14 @@ export default function RegisterPage() {
                   />
                   <label htmlFor="agreeTerms" className="text-xs text-gray-700">
                     I agree to the{" "}
-                    <a
-                      href={`/${locale}/terms`}
+                    <Link
+                      href={`/${locale}/legal-terms-policy`}
                       className="text-[#4a9fd8] hover:text-[#3a8ec8] hover:underline font-medium"
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      Terms of Service
-                    </a>{" "}
-                    and{" "}
-                    <a
-                      href={`/${locale}/privacy`}
-                      className="text-[#4a9fd8] hover:text-[#3a8ec8] hover:underline font-medium"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Privacy Policy
-                    </a>
+                      legal terms & privacy policy
+                    </Link>
                   </label>
                 </div>
               </div>
