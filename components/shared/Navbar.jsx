@@ -8,6 +8,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { logout } from "@/store/slices/authSlice";
 import { toast } from "react-toastify";
 import { useTranslations } from "next-intl";
+import DashboardModal from "../Dashboard/DashboardModal";
 
 export default function Navbar() {
   const params = useParams();
@@ -17,6 +18,7 @@ export default function Navbar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [activeHash, setActiveHash] = useState("");
+  const [showDashboardModal, setShowDashboardModal] = useState(false);
 
   const { user, loading } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
@@ -163,11 +165,10 @@ export default function Navbar() {
                   key={item.href}
                   href={item.href}
                   onClick={() => handleNavClick(item.href)}
-                  className={`relative transition font-medium whitespace-nowrap ${
-                    isActive
+                  className={`relative transition font-medium whitespace-nowrap ${isActive
                       ? "text-[#4a9fd8]"
                       : "text-black hover:text-[#4a9fd8]"
-                  }`}
+                    }`}
                 >
                   {item.label}
                   {isActive && (
@@ -204,12 +205,12 @@ export default function Navbar() {
                   </Link>
                 )}
                 {user && (
-                  <Link
-                    href={`/${locale}/dashboard`}
+                  <button
+                    onClick={() => setShowDashboardModal(true)}
                     className="px-3 lg:px-4 xl:px-5 py-2 lg:py-2.5 text-white font-medium rounded-md bg-[#4a9fd8] hover:bg-[#3b8ec4] transition-colors duration-200 cursor-pointer text-sm lg:text-base whitespace-nowrap"
                   >
-                   Dashboard
-                  </Link>
+                    Dashboard
+                  </button>
                 )}
 
                 {/* Logout Button */}
@@ -304,11 +305,10 @@ export default function Navbar() {
                   key={item.href}
                   href={item.href}
                   onClick={() => handleNavClick(item.href)}
-                  className={`text-sm sm:text-[15px] font-medium ${
-                    isActive
+                  className={`text-sm sm:text-[15px] font-medium ${isActive
                       ? "text-[#4a9fd8]"
                       : "text-black hover:text-[#4a9fd8]"
-                  }`}
+                    }`}
                 >
                   {item.label}
                   {isActive && (
@@ -381,6 +381,12 @@ export default function Navbar() {
           </div>
         </div>
       )}
+       {/* Dashboard Modal */}
+      <DashboardModal
+        isOpen={showDashboardModal}
+        onClose={() => setShowDashboardModal(false)}
+        locale={locale}
+      />
     </nav>
   );
 }
