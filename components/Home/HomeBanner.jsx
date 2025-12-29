@@ -8,6 +8,7 @@ import PlanModal from "./PlanModal";
 import { useTranslations } from "next-intl";
 import DashboardModal from "../Dashboard/DashboardModal";
 import { useSelector } from "react-redux";
+import Link from "next/link";
 
 export default function HomeBanner({ locale }) {
   const { user } = useSelector((state) => state.auth);
@@ -176,11 +177,10 @@ export default function HomeBanner({ locale }) {
                   transform -translate-y-1/2 
                   px-3 py-2 rounded-lg 
                   flex items-center gap-2
-                  ${
-                    isListening
+                  ${isListening
                       ? "bg-red-50 text-red-600 border border-red-200"
                       : "bg-[#4a9fd8]/10 text-gray-600 hover:bg-[#4a9fd8]/20"
-                  } 
+                    } 
                   transition-colors
                   text-sm font-medium
                 `}
@@ -253,31 +253,10 @@ export default function HomeBanner({ locale }) {
                 >
                   {t("generateButton")} <FiArrowRight />
                 </button>
-
-                {/* {!isAdmin && (
-                  <button
-                    onClick={() => setShowDashboardModal(true)}
-                    className="
-          p-3 text-[14px] font-medium 
-          text-[#4a9fd8] hover:text-white
-          rounded-[10px] border-2 border-[#E5E5E5]
-          bg-white hover:bg-[#4a9fd8]
-          transition-colors
-          shadow-[0px_3px_10px_rgba(0,0,0,0.08)]
-          w-full sm:w-auto
-          flex items-center justify-center gap-2
-        "
-                  >
-                    {t("quickStartButton")} <FiArrowRight />
-                  </button>
-                )} */}
-                {!isAdmin &&
-                  (user ? (
-                    // Logged in user - shows Dashboard button
-                    <button
-                      onClick={() => setShowDashboardModal(true)}
-                      className="
-        p-3 text-[14px] font-medium 
+                <Link
+                  href={`/${locale}/#quickplans`}
+                  className="
+              p-3 text-[14px] font-medium 
         text-[#4a9fd8] hover:text-white
         rounded-[10px] border-2 border-[#E5E5E5]
         bg-white hover:bg-[#4a9fd8]
@@ -285,28 +264,10 @@ export default function HomeBanner({ locale }) {
         shadow-[0px_3px_10px_rgba(0,0,0,0.08)]
         w-full sm:w-auto
         flex items-center justify-center gap-2
-      "
-                    >
-                      {t("dashboardButton")} <FiArrowRight />
-                    </button>
-                  ) : (
-                    // Logged out user - shows Login/Start button
-                    <button
-                      onClick={() => (window.location.href = `/${locale}/#quickplans`)}
-                      className="
-        p-3 text-[14px] font-medium 
-          text-[#4a9fd8] hover:text-white
-          rounded-[10px] border-2 border-[#E5E5E5]
-          bg-white hover:bg-[#4a9fd8]
-          transition-colors
-          shadow-[0px_3px_10px_rgba(0,0,0,0.08)]
-          w-full sm:w-auto
-          flex items-center justify-center gap-2
-      "
-                    >
-                      {t("quickStartButton")} <FiArrowRight />
-                    </button>
-                  ))}
+            "
+                >
+                  {t("quickStartButton")} <FiArrowRight />
+                </Link>
               </div>
 
               {/* Badges */}
