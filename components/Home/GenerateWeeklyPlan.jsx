@@ -70,73 +70,73 @@ export default function GenerateWeeklyPlan({ voiceText }) {
       province: text.includes("alberta")
         ? "Alberta"
         : text.includes("british")
-        ? "British Columbia"
-        : text.includes("columbia")
-        ? "British Columbia"
-        : text.includes("manitoba")
-        ? "Manitoba"
-        : text.includes("New")
-        ? "New Brunswick"
-        : text.includes("Brunswick")
-        ? "New Brunswick"
-        : text.includes("yukon")
-        ? "Yukon"
-        : text.includes("nunavut")
-        ? "Nunavut"
-        : text.includes("quebec")
-        ? "Quebec"
-        : text.includes("columbia")
-        ? "British Columbia"
-        : prev.province,
+          ? "British Columbia"
+          : text.includes("columbia")
+            ? "British Columbia"
+            : text.includes("manitoba")
+              ? "Manitoba"
+              : text.includes("New")
+                ? "New Brunswick"
+                : text.includes("Brunswick")
+                  ? "New Brunswick"
+                  : text.includes("yukon")
+                    ? "Yukon"
+                    : text.includes("nunavut")
+                      ? "Nunavut"
+                      : text.includes("quebec")
+                        ? "Quebec"
+                        : text.includes("columbia")
+                          ? "British Columbia"
+                          : prev.province,
 
       // Goal
       goal: text.includes("lose")
         ? "Weigth Loss"
         : text.includes("weight")
-        ? "Weigth Loss"
-        : text.includes("muscle")
-        ? "Muscle Gain"
-        : text.includes("healthy")
-        ? "Healthy Eating"
-        : text.includes("quick")
-        ? "Quick Meals"
-        : text.includes("family")
-        ? "Family Friendly"
-        : prev.goal,
+          ? "Weigth Loss"
+          : text.includes("muscle")
+            ? "Muscle Gain"
+            : text.includes("healthy")
+              ? "Healthy Eating"
+              : text.includes("quick")
+                ? "Quick Meals"
+                : text.includes("family")
+                  ? "Family Friendly"
+                  : prev.goal,
 
       // level
       skillLevel: text.includes("beginner")
         ? "Beginner"
         : text.includes("intermediate")
-        ? "Intermediate"
-        : text.includes("expert")
-        ? "Advanced"
-        : text.includes("advanced")
-        ? "Advanced"
-        : prev.skillLevel,
+          ? "Intermediate"
+          : text.includes("expert")
+            ? "Advanced"
+            : text.includes("advanced")
+              ? "Advanced"
+              : prev.skillLevel,
 
       // Cuisine
       cuisine: text.includes("asian")
         ? "Asian"
         : text.includes("italian")
-        ? "Italian"
-        : text.includes("mexican")
-        ? "Mexican"
-        : text.includes("chinese")
-        ? "Chinese"
-        : text.includes("indian")
-        ? "Indian"
-        : prev.cuisine,
+          ? "Italian"
+          : text.includes("mexican")
+            ? "Mexican"
+            : text.includes("chinese")
+              ? "Chinese"
+              : text.includes("indian")
+                ? "Indian"
+                : prev.cuisine,
 
       // Budget
       budgetLevel:
         text.includes("cheap") || text.includes("low budget")
           ? "Low"
           : text.includes("medium") || text.includes("medium budget")
-          ? "Medium"
-          : text.includes("high") || text.includes("high budget")
-          ? "High"
-          : prev.budgetLevel,
+            ? "Medium"
+            : text.includes("high") || text.includes("high budget")
+              ? "High"
+              : prev.budgetLevel,
 
       // allergies
       allergies: [
@@ -539,21 +539,32 @@ export default function GenerateWeeklyPlan({ voiceText }) {
     try {
       setIsSwapping(true);
 
-      // Check if user is logged in
       if (!user) {
         toast.error("Please login to swap meals");
         return null;
       }
 
-      // Prepare swap data
+      if (user.tier === "free") {
+        toast.error("Upgrade to Plus or Premium to swap meals");
+        return null;
+      }
+
+      // Check current swaps
+      if (plan.swaps.remaining <= 0) {
+        toast.error(`No swaps remaining! Used ${plan.swaps.used}/${plan.swaps.allowed}`);
+        return null;
+      }
+
       const swapData = {
         dayIndex,
         mealIndex,
         userId: user?.id || user?._id,
         userEmail: user?.email,
         userTier: user?.tier || "free",
-        planData: plan, // Send current plan data
+        planData: plan,
       };
+
+      console.log("Sending swap request:", { planId, dayIndex, mealIndex });
 
       const response = await fetch(`/api/plans/${planId}/swap`, {
         method: "POST",
@@ -565,29 +576,34 @@ export default function GenerateWeeklyPlan({ voiceText }) {
 
       const data = await response.json();
 
-      if (response.ok) {
+      if (!response.ok) {
+        throw new Error(data.error || "Swap failed");
+      }
+
+      if (data.success) {
         toast.success(data.message);
 
-        // Update plan with swapped meal
+        // Update plan state
         setPlan((prev) => {
           const updatedDays = [...prev.days];
 
           // Update the specific meal
-          updatedDays[dayIndex].meals[mealIndex] = data.newMeal;
+          updatedDays[dayIndex].meals[mealIndex] = {
+            ...data.newMeal,
+            // Ensure all required fields
+            mealType: data.newMeal.mealType || prev.days[dayIndex].meals[mealIndex].mealType,
+            ingredients: data.newMeal.ingredients || [],
+            instructions: data.newMeal.instructions || ["Prepare", "Cook", "Serve"],
+            cookingTime: data.newMeal.cookingTime || 25,
+            recipeSource: data.newMeal.recipeSource || "openai",
+          };
 
-          const updatedPlan = {
+          return {
             ...prev,
             days: updatedDays,
             swaps: data.swaps || prev.swaps,
-            userTier: data.userTier || prev.tier,
-            // If plan was saved, mark as needing update
             needsUpdate: prev.isSaved ? true : false,
-            // Update plan data if it's a saved plan
-            ...(data.updatedPlanData && { ...data.updatedPlanData }),
           };
-
-          // console.log("Plan updated after swap:", updatedPlan);
-          return updatedPlan;
         });
 
         return data;
@@ -597,7 +613,18 @@ export default function GenerateWeeklyPlan({ voiceText }) {
       }
     } catch (error) {
       console.error("Swap error:", error);
-      toast.error("Error swapping meal: " + error.message);
+
+      // Specific error messages
+      if (error.message.includes("timeout")) {
+        toast.error("Swap request timed out. Please try again.");
+      } else if (error.message.includes("Free users")) {
+        toast.error("Upgrade to swap meals");
+      } else if (error.message.includes("No swaps")) {
+        toast.error("No swaps remaining");
+      } else {
+        toast.error("Error swapping meal: " + error.message);
+      }
+
       return null;
     } finally {
       setIsSwapping(false);
@@ -875,8 +902,8 @@ export default function GenerateWeeklyPlan({ voiceText }) {
                       {!user
                         ? "Login to access 7-day plans"
                         : user?.tier === "free"
-                        ? "Free tier: 3-day limit"
-                        : "Premium: Up to 7-day plans"}
+                          ? "Free tier: 3-day limit"
+                          : "Premium: Up to 7-day plans"}
                     </p>
 
                     {(!user || user?.tier === "free") && (
@@ -1025,11 +1052,10 @@ export default function GenerateWeeklyPlan({ voiceText }) {
                     return (
                       <label
                         key={pref}
-                        className={`flex items-center space-x-2 px-3 py-2 rounded-lg ${
-                          isDisabled
-                            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                            : "bg-gray-50 hover:bg-gray-100"
-                        }`}
+                        className={`flex items-center space-x-2 px-3 py-2 rounded-lg ${isDisabled
+                          ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                          : "bg-gray-50 hover:bg-gray-100"
+                          }`}
                       >
                         <input
                           type="checkbox"
@@ -1046,16 +1072,14 @@ export default function GenerateWeeklyPlan({ voiceText }) {
                             handleChange(e);
                           }}
                           disabled={isDisabled}
-                          className={`h-4 w-4 rounded ${
-                            isDisabled
-                              ? "cursor-not-allowed opacity-50"
-                              : "text-blue-600"
-                          }`}
+                          className={`h-4 w-4 rounded ${isDisabled
+                            ? "cursor-not-allowed opacity-50"
+                            : "text-blue-600"
+                            }`}
                         />
                         <span
-                          className={`text-sm ${
-                            isDisabled ? "text-gray-400" : "text-gray-700"
-                          }`}
+                          className={`text-sm ${isDisabled ? "text-gray-400" : "text-gray-700"
+                            }`}
                         >
                           {pref} {isDisabled && "🔒"}
                         </span>
@@ -1115,8 +1139,8 @@ export default function GenerateWeeklyPlan({ voiceText }) {
                     {form.days_count <= 3
                       ? "30-60 seconds"
                       : form.days_count <= 5
-                      ? "1-2 minutes"
-                      : "2-3 minutes"}
+                        ? "1-2 minutes"
+                        : "2-3 minutes"}
                   </p>
                 )}
               </div>
@@ -1141,9 +1165,8 @@ export default function GenerateWeeklyPlan({ voiceText }) {
                     •{" "}
                     {plan.tier === "free"
                       ? "Free Plan"
-                      : `${
-                          plan.tier.charAt(0).toUpperCase() + plan.tier.slice(1)
-                        } Tier`}
+                      : `${plan.tier.charAt(0).toUpperCase() + plan.tier.slice(1)
+                      } Tier`}
                   </p>
                 </div>
                 <div
@@ -1180,15 +1203,14 @@ export default function GenerateWeeklyPlan({ voiceText }) {
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center min-w-0 flex-1">
                               <span
-                                className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-sm font-semibold mr-2 shrink-0 ${
-                                  meal.mealType === "breakfast"
-                                    ? "bg-green-100 text-green-800"
-                                    : meal.mealType === "lunch"
+                                className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-sm font-semibold mr-2 shrink-0 ${meal.mealType === "breakfast"
+                                  ? "bg-green-100 text-green-800"
+                                  : meal.mealType === "lunch"
                                     ? "bg-yellow-100 text-yellow-800"
                                     : meal.mealType === "dinner"
-                                    ? "bg-red-100 text-red-800"
-                                    : "bg-purple-100 text-purple-800"
-                                }`}
+                                      ? "bg-red-100 text-red-800"
+                                      : "bg-purple-100 text-purple-800"
+                                  }`}
                               >
                                 {meal.mealType.charAt(0).toUpperCase()}
                               </span>
@@ -1288,26 +1310,58 @@ export default function GenerateWeeklyPlan({ voiceText }) {
                                 plan.swaps.remaining <= 0 ||
                                 isSwapping
                               }
-                              className={`w-full text-sm font-medium py-1.5 sm:py-1 rounded transition-colors duration-200 ${
-                                !user ||
-                                user.tier === "free" ||
-                                plan.swaps.remaining <= 0 ||
-                                isSwapping
+                              className={`w-full text-sm font-medium py-1.5 sm:py-1 rounded transition-colors duration-200 ${!user ||
+                                  user.tier === "free" ||
+                                  plan.swaps.remaining <= 0 ||
+                                  isSwapping
                                   ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                                   : "bg-[#4a9fd8] hover:bg-[#20a1f7] text-white"
-                              }`}
+                                }`}
                             >
                               {!user
                                 ? "Login to Swap"
                                 : user.tier === "free"
-                                ? "Upgrade to Swap"
-                                : isSwapping
-                                ? "Swapping..."
-                                : plan.swaps.remaining <= 0
-                                ? "No Swaps Left"
-                                : "Swap This Meal"}
+                                  ? "Upgrade to Swap"
+                                  : isSwapping
+                                    ? "Swapping..."
+                                    : plan.swaps.remaining <= 0
+                                      ? "No Swaps Left"
+                                      : "Swap This Meal"}
                             </button> */}
+                            <button
+                              onClick={async () => {
+                                if (!user) {
+                                  toast.error("Please login to swap meals");
+                                  return;
+                                }
 
+                                if (user.tier === "free") {
+                                  toast.error("Upgrade to Plus or Premium to swap meals");
+                                  window.location.href = "/#pricing";
+                                  return;
+                                }
+
+                                if (plan.swaps.remaining <= 0) {
+                                  toast.error(`No swaps remaining! Used ${plan.swaps.used}/${plan.swaps.allowed}`);
+                                  return;
+                                }
+
+                                setIsSwapping(true);
+                                const result = await swapMeal(plan.id, mealIndex, dayIndex);
+
+                                if (!result) {
+                                  // Error already shown by swapMeal function
+                                  setIsSwapping(false);
+                                }
+                              }}
+                              disabled={isSwapping}
+                              className={`w-full text-sm font-medium py-2 rounded transition ${isSwapping
+                                  ? "bg-gray-300 cursor-not-allowed"
+                                  : "bg-[#4a9fd8] hover:bg-[#3a8ec8] text-white"
+                                }`}
+                            >
+                              {isSwapping ? "Swapping..." : "Swap This Meal"}
+                            </button>
                             <p className="text-gray-600 mt-2">
                               {plan.days?.length || 7}-Day Plan •{" "}
                               {t("plan.generatedFor")}
@@ -1326,10 +1380,9 @@ export default function GenerateWeeklyPlan({ voiceText }) {
                               •{" "}
                               {plan.tier === "free"
                                 ? "Free Plan"
-                                : `${
-                                    plan.tier.charAt(0).toUpperCase() +
-                                    plan.tier.slice(1)
-                                  } Tier`}
+                                : `${plan.tier.charAt(0).toUpperCase() +
+                                plan.tier.slice(1)
+                                } Tier`}
                             </p>
                           </div>
                         </div>
@@ -1376,26 +1429,25 @@ export default function GenerateWeeklyPlan({ voiceText }) {
                       user?.tier === "free" ||
                       (plan.isSaved && !plan.needsUpdate)
                     }
-                    className={`px-6 py-3 rounded-lg font-semibold transition-all flex-1 ${
-                      !plan ||
+                    className={`px-6 py-3 rounded-lg font-semibold transition-all flex-1 ${!plan ||
                       !user ||
                       user?.tier === "free" ||
                       (plan.isSaved && !plan.needsUpdate)
-                        ? "bg-gray-300 cursor-not-allowed"
-                        : "bg-green-600 hover:bg-green-700 text-white"
-                    }`}
+                      ? "bg-gray-300 cursor-not-allowed"
+                      : "bg-green-600 hover:bg-green-700 text-white"
+                      }`}
                   >
                     {!plan
                       ? "Save Plan"
                       : !user
-                      ? "Login to Save"
-                      : user?.tier === "free"
-                      ? "Upgrade to Save"
-                      : plan.needsUpdate
-                      ? "Update Plan"
-                      : plan.isSaved
-                      ? "Plan Saved"
-                      : "Save Plan"}
+                        ? "Login to Save"
+                        : user?.tier === "free"
+                          ? "Upgrade to Save"
+                          : plan.needsUpdate
+                            ? "Update Plan"
+                            : plan.isSaved
+                              ? "Plan Saved"
+                              : "Save Plan"}
                   </button>
                   <button
                     onClick={() => {

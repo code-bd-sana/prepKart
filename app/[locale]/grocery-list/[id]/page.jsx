@@ -21,7 +21,11 @@ import {
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { trackInstacartLink, generateInstacartLink } from "@/lib/instacart";
+import { 
+  generateInstacartLink,
+  trackInstacartClick,
+  generateSimpleInstacartLink 
+} from "@/lib/instacart";
 
 // Aisle order for sorting
 const aisleOrder = [
@@ -108,6 +112,84 @@ export default function GroceryListPage({ params }) {
     }
   }, [groceryList]);
 
+  const handleInstacartOrder = async () => {
+    if (!groceryList) {
+      toast.error("Grocery list not loaded");
+      return;
+    }
+
+    const checkedItems = groceryList.items.filter(item => item.checked);
+
+    if (checkedItems.length === 0) {
+      toast.info("Please select items to order");
+      return;
+    }
+
+    console.log("=== Processing Instacart Order ===");
+    console.log("Selected items:", checkedItems.map(item => item.name));
+
+    try {
+      // Show loading
+      toast.loading("Connecting to Instacart...");
+
+      // Generate link with API
+      const result = await generateInstacartLink(
+        checkedItems,
+        user?.tier || 'free',
+        process.env.INSTACART_IMPACT_ID
+      );
+
+      console.log("Generated result:", result);
+
+      // Track the click
+      await trackInstacartClick({
+        userId: user?._id || 'anonymous',
+        groceryListId: groceryList._id,
+        cartId: result.cartId,
+        store: result.store,
+        method: result.method,
+        items: result.items,
+        totalItems: checkedItems.length,
+        matchedItems: result.matchedItems || 0,
+        userTier: user?.tier || 'free'
+      });
+
+      // Show appropriate message
+      toast.dismiss();
+
+      if (result.method === 'api_cart') {
+        toast.success(`Cart created with ${result.matchedItems} items!`);
+      } else {
+        toast.info("Opening Instacart search...");
+      }
+
+      // Open link
+      setTimeout(() => {
+        window.open(result.link, '_blank', 'noopener,noreferrer');
+      }, 500);
+
+    } catch (error) {
+      console.error("Instacart error:", error);
+      toast.dismiss();
+
+      // Fallback to simple link
+      const partnerId = process.env.INSTACART_IMPACT_ID || "6773996";
+      const simpleLink = generateSimpleInstacartLink(checkedItems, partnerId);
+
+      // Track fallback click
+      await trackInstacartClick({
+        userId: user?._id,
+        groceryListId: groceryList._id,
+        method: 'fallback',
+        items: checkedItems.map(item => ({ groceryItem: item.name })),
+        totalItems: checkedItems.length,
+        userTier: user?.tier || 'free'
+      });
+
+      window.open(simpleLink, '_blank', 'noopener,noreferrer');
+      toast.info("Opening Instacart...");
+    }
+  };
   const categorizeItem = (itemName) => {
     const name = itemName.toLowerCase();
 
@@ -255,10 +337,10 @@ export default function GroceryListPage({ params }) {
               inPantry,
               pantryQuantity: inPantry
                 ? pantryItems.find(
-                    (p) =>
-                      p.name.toLowerCase().includes(item.name.toLowerCase()) ||
-                      item.name.toLowerCase().includes(p.name.toLowerCase())
-                  )?.quantity
+                  (p) =>
+                    p.name.toLowerCase().includes(item.name.toLowerCase()) ||
+                    item.name.toLowerCase().includes(p.name.toLowerCase())
+                )?.quantity
                 : null,
             };
           });
@@ -902,12 +984,11 @@ export default function GroceryListPage({ params }) {
                 <div
                   className="bg-green-500 h-2.5 rounded-full transition-all duration-300"
                   style={{
-                    width: `${
-                      visibleProgressItemsCount > 0
+                    width: `${visibleProgressItemsCount > 0
                         ? (visibleCheckedCount / visibleProgressItemsCount) *
-                          100
+                        100
                         : 0
-                    }%`,
+                      }%`,
                   }}
                 />
               </div>
@@ -1031,10 +1112,9 @@ export default function GroceryListPage({ params }) {
                 <div
                   className={`
                     grid gap-4
-                    ${
-                      sortedAisles.length === 1
-                        ? "grid-cols-1"
-                        : sortedAisles.length === 2
+                    ${sortedAisles.length === 1
+                      ? "grid-cols-1"
+                      : sortedAisles.length === 2
                         ? "grid-cols-1 md:grid-cols-2"
                         : "grid-cols-1 md:grid-cols-2"
                     }
@@ -1080,19 +1160,17 @@ export default function GroceryListPage({ params }) {
                           {groupedItems[aisle].map((item) => (
                             <div
                               key={item._id}
-                              className={`px-4 py-3 flex items-center gap-4 ${
-                                item.checked ? "bg-green-50" : ""
-                              }`}
+                              className={`px-4 py-3 flex items-center gap-4 ${item.checked ? "bg-green-50" : ""
+                                }`}
                             >
                               <button
                                 onClick={() => toggleItemChecked(item._id)}
                                 className={`
                                   h-5 w-5 rounded border flex items-center justify-center shrink-0
                                   transition-colors
-                                  ${
-                                    item.checked
-                                      ? "bg-green-500 border-green-500"
-                                      : "border-gray-300 hover:border-gray-400"
+                                  ${item.checked
+                                    ? "bg-green-500 border-green-500"
+                                    : "border-gray-300 hover:border-gray-400"
                                   }
                                 `}
                               >
@@ -1103,11 +1181,10 @@ export default function GroceryListPage({ params }) {
 
                               <div className=" flex-1 flex items-center">
                                 <span
-                                  className={`font-medium ${
-                                    item.checked
+                                  className={`font-medium ${item.checked
                                       ? "text-green-700"
                                       : "text-gray-900"
-                                  }`}
+                                    }`}
                                 >
                                   {item.name}
                                 </span>
@@ -1283,37 +1360,44 @@ export default function GroceryListPage({ params }) {
             </button>
           ) : (
             // ALL USERS CAN USE INSTACART
+            // <button
+            //   onClick={() => {
+            //     console.log("BUTTON CLICKED - Checking items:");
+            //     console.log("All items:", groceryList.items);
+            //     console.log("Checked items:", groceryList.items.filter(item => item.checked));
+
+            //     // Generate fresh link
+            //     const checkedItems = groceryList.items.filter(item => item.checked);
+
+            //     // Use a fallback if no items are checked
+            //     if (checkedItems.length === 0) {
+            //       const partnerId = process.env.INSTACART_IMPACT_ID || "6773996";
+            //       window.open(`https://www.instacart.com/store/s?k=groceries&partner=${partnerId}`, "_blank");
+            //       return;
+            //     }
+
+            //     const instacartLink = generateInstacartLink(
+            //       checkedItems,
+            //       user?.tier,
+            //       process.env.INSTACART_IMPACT_ID
+            //     );
+
+
+            //     console.log("Generated link:", instacartLink);
+            //     window.open(instacartLink, "_blank");
+            //   }}
+            //   className="bg-white text-[#5a9e3a] py-3 px-8 rounded-lg font-bold hover:bg-green-50 flex items-center mx-auto cursor-pointer"
+            // >
+            //   <ShoppingCart className="h-5 w-5 mr-2" />
+            //   Order {visibleCheckedCount} items on Instacart
+            // </button>
             <button
-              onClick={() => {
-  console.log("BUTTON CLICKED - Checking items:");
-  console.log("All items:", groceryList.items);
-  console.log("Checked items:", groceryList.items.filter(item => item.checked));
-  
-  // Generate fresh link
-  const checkedItems = groceryList.items.filter(item => item.checked);
-  
-  // Use a fallback if no items are checked
-  if (checkedItems.length === 0) {
-    const partnerId = process.env.INSTACART_IMPACT_ID || "6773996";
-    window.open(`https://www.instacart.com/store/s?k=groceries&partner=${partnerId}`, "_blank");
-    return;
-  }
-  
-  const instacartLink = generateInstacartLink(
-    checkedItems,
-    user?.tier,
-    process.env.INSTACART_IMPACT_ID
-  );
-  
-  
-  console.log("Generated link:", instacartLink);
-  window.open(instacartLink, "_blank");
-}}
-              className="bg-white text-[#5a9e3a] py-3 px-8 rounded-lg font-bold hover:bg-green-50 flex items-center mx-auto cursor-pointer"
-            >
-              <ShoppingCart className="h-5 w-5 mr-2" />
-              Order {visibleCheckedCount} items on Instacart
-            </button>
+  onClick={handleInstacartOrder}
+  className="bg-white text-[#5a9e3a] py-3 px-8 rounded-lg font-bold hover:bg-green-50 flex items-center mx-auto cursor-pointer"
+>
+  <ShoppingCart className="h-5 w-5 mr-2" />
+  Order {visibleCheckedCount} items on Instacart
+</button>
           )}
         </div>
       </div>

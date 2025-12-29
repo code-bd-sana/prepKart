@@ -48,6 +48,7 @@
     "subtitle": "Connectez-vous pour continuer avec PrepCart",
     "email": "Adresse E-mail",
     "password": "Mot de Passe",
+    "forgotPassword": "Mot de passe oublié?",
     "loginButton": "Se Connecter à PrepCart",
     "loggingIn": "Connexion en cours...",
     "noAccount": "Vous n'avez pas de compte ?",
@@ -392,11 +393,14 @@
     }
   },
    "subscribe": {
-    "title": "Recevez des Conseils, des Mises à Jour & de l'Inspiration pour la Planification des Repas !",
-    "subtitle": "Rejoignez notre communauté et restez informé des dernières recettes, conseils nutritionnels et offres exclusives",
-    "emailPlaceholder": "Votre Adresse E-mail",
-    "postalPlaceholder": "Code Postal (ex. M5H 2N2)",
-    "buttonText": "S'abonner Maintenant"
+    "title": "Restez Informé",
+    "subtitle": "Recevez les derniers plans de repas et offres dans votre boîte de réception",
+    "emailPlaceholder": "Entrez votre email",
+    "postalPlaceholder": "Entrez votre code postal",
+    "buttonText": "S'abonner Maintenant",
+    "subscribingText": "Abonnement en cours...",
+    "successMessage": "Abonnement réussi!",
+    "errorMessage": "Échec de l'abonnement. Veuillez réessayer."
   },
 "contactUs": {
   "title": "Contactez-nous",
@@ -494,80 +498,81 @@
     }
   },
   "legal": {
-    "title": "Conditions d’utilisation",
+    "title": "Conditions d'utilisation",
     "lastUpdated": "Dernière mise à jour : janvier 2025",
-    "intro": "Bienvenue sur PrepCart. En utilisant ce site et nos services, vous acceptez ces Conditions d’utilisation. Si vous n’êtes pas d’accord, veuillez ne pas utiliser PrepCart.",
-
+    "intro": "Bienvenue sur PrepCart. En utilisant ce site et nos services, vous acceptez ces Conditions d'utilisation. Si vous n'êtes pas d'accord, veuillez ne pas utiliser PrepCart.",
+    
     "serviceNatureTitle": "Nature du service",
-    "serviceNatureText": "PrepCart est une application Web canadienne qui aide les utilisateurs à créer des plans de repas personnalisés et des listes d’épicerie organisées. Le service peut inclure des suggestions de recettes, des résumés nutritionnels, des outils de liste d’épicerie, le suivi du garde-manger et des liens d’achat affiliés optionnels.",
-
+    "serviceNatureText": "PrepCart est une application Web canadienne qui aide les utilisateurs à créer des plans de repas personnalisés et des listes d'épicerie organisées. Le service peut inclure des suggestions de recettes, des résumés nutritionnels, des outils de liste d'épicerie, le suivi du garde-manger et des liens d'achat affiliés optionnels.",
+    
     "ageRequirementTitle": "Âge requis",
-    "ageRequirementText": "PrepCart s’adresse uniquement aux personnes âgées de 18 ans et plus. En utilisant le service, vous confirmez respecter cette condition.",
-
+    "ageRequirementText": "PrepCart s'adresse uniquement aux personnes âgées de 18 ans et plus. En utilisant le service, vous confirmez respecter cette condition.",
+    
     "noMedicalAdviceTitle": "Aucun avis médical ou nutritionnel",
-    "noMedicalAdviceText": "Le contenu fourni par PrepCart est à titre informatif seulement. Il ne constitue pas un avis médical, nutritionnel ou de mise en forme. Consultez un professionnel qualifié avant d’apporter des changements à votre alimentation, surtout en cas d’allergies ou de problèmes de santé.",
-
+    "noMedicalAdviceText": "Le contenu fourni par PrepCart est à titre informatif seulement. Il ne constitue pas un avis médical, nutritionnel ou de mise en forme. Consultez un professionnel qualifié avant d'apporter des changements à votre alimentation, surtout en cas d'allergies ou de problèmes de santé.",
+    
     "accountTitle": "Comptes",
-    "accountText": "Certaines fonctionnalités exigent la création d’un compte. Vous êtes responsable de la confidentialité de vos identifiants et des activités effectuées dans votre compte.",
-
+    "accountText": "Certaines fonctionnalités exigent la création d'un compte. Vous êtes responsable de la confidentialité de vos identifiants et des activités effectuées dans votre compte.",
+    
     "subscriptionTitle": "Abonnements et paiements",
     "subscriptionText": "Certaines fonctionnalités nécessitent un abonnement payant. Les prix et fonctionnalités sont indiqués lors du paiement. Les paiements sont traités de façon sécuritaire par des fournisseurs tels que Stripe ou PayPal.",
-
+    
     "affiliateTitle": "Liens affiliés",
-    "affiliateText": "PrepCart peut inclure des liens affiliés, y compris des liens d’achat d’épicerie en un clic avec des partenaires comme Instacart. Si vous utilisez ces liens, PrepCart peut recevoir une commission, sans frais supplémentaires pour vous.",
-
+    "affiliateText": "PrepCart peut inclure des liens affiliés, y compris des liens d'achat d'épicerie en un clic avec des partenaires comme Instacart. Si vous utilisez ces liens, PrepCart peut recevoir une commission, sans frais supplémentaires pour vous.",
+    
     "dataAccuracyTitle": "Exactitude des données",
     "dataAccuracyText": "Les recettes, ingrédients et valeurs nutritionnelles sont des estimations et peuvent comporter des écarts. La disponibilité et les prix des produits dépendent des détaillants.",
-
+    
     "acceptableUseTitle": "Utilisation acceptable",
-    "acceptableUseText": "Vous acceptez de ne pas utiliser le site de manière abusive, de ne pas compromettre la sécurité, de ne pas tenter d’accéder aux comptes d’autres utilisateurs ni d’utiliser le service à des fins illégales.",
-
+    "acceptableUseText": "Vous acceptez de ne pas utiliser le site de manière abusive, de ne pas compromettre la sécurité, de ne pas tenter d'accéder aux comptes d'autres utilisateurs ni d'utiliser le service à des fins illégales.",
+    
     "terminationTitle": "Suspension ou résiliation",
-    "terminationText": "Nous pouvons suspendre ou résilier l’accès si nos politiques sont violées.",
-
+    "terminationText": "Nous pouvons suspendre ou résilier l'accès si nos politiques sont violées.",
+    
     "liabilityTitle": "Limitation de responsabilité",
-    "liabilityText": "PrepCart est fourni « tel quel ». Dans la mesure permise par la loi canadienne, PrepCart n’est pas responsable des pertes, dommages, blessures, réactions allergiques ou conséquences liées aux recettes, ingrédients, achats ou à l’utilisation du contenu fourni.",
-
+    "liabilityText": "PrepCart est fourni « tel quel ». Dans la mesure permise par la loi canadienne, PrepCart n'est pas responsable des pertes, dommages, blessures, réactions allergiques ou conséquences liées aux recettes, ingrédients, achats ou à l'utilisation du contenu fourni.",
+    
     "contactTitle": "Contact",
-    "contactText": "Pour toute question concernant ces Conditions d’utilisation, écrivez-nous à info@prepcart.ca."
+    "contactText": "Pour toute question concernant ces Conditions d'utilisation, écrivez-nous à info@prepcart.ca."
   },
   "privacy": {
     "title": "Politique de confidentialité",
     "lastUpdated": "Dernière mise à jour : janvier 2025",
     "intro": "La présente Politique de confidentialité explique comment PrepCart recueille, utilise et protège vos renseignements personnels conformément aux lois canadiennes, y compris la LPRPDE.",
-
+    
     "personalInfoTitle": "Renseignements que nous recueillons",
-    "personalInfoText": "Nous pouvons recueillir votre nom, adresse courriel, information de compte, préférences, données d’utilisation, statut d’abonnement, type d’appareil et données analytiques de base.",
-
+    "personalInfoText": "Nous pouvons recueillir votre nom, adresse courriel, information de compte, préférences, données d'utilisation, statut d'abonnement, type d'appareil et données analytiques de base.",
+    
     "foodInfoTitle": "Préférences alimentaires",
-    "foodInfoText": "Pour fournir le service, nous recueillons des informations concernant vos préférences de repas et d’épicerie, telles que les goûts, restrictions et contraintes de temps. Ces renseignements servent uniquement à générer des plans de repas et des listes d’épicerie.",
-
+    "foodInfoText": "Pour fournir le service, nous recueillons des informations concernant vos préférences de repas et d'épicerie, telles que les goûts, restrictions et contraintes de temps. Ces renseignements servent uniquement à générer des plans de repas et des listes d'épicerie.",
+    
     "paymentTitle": "Paiements",
     "paymentText": "Les paiements sont traités de façon sécuritaire par des tiers comme Stripe ou PayPal. PrepCart ne conserve pas les détails complets de votre carte.",
-
+    
     "cookiesTitle": "Témoins (cookies) et analyse",
-    "cookiesText": "Nous pouvons utiliser des témoins et outils d’analyse afin d’améliorer le service et mémoriser vos préférences.",
-
+    "cookiesText": "Nous pouvons utiliser des témoins et outils d'analyse afin d'améliorer le service et mémoriser vos préférences.",
+    
     "instacartTitle": "Instacart et autres partenaires",
-    "instacartText": "Si vous choisissez d’acheter via Instacart ou un autre partenaire, certains renseignements peuvent être partagés avec ce partenaire afin de compléter votre commande. Leur politique de confidentialité s’applique alors.",
-
+    "instacartText": "Si vous choisissez d'acheter via Instacart ou un autre partenaire, certains renseignements peuvent être partagés avec ce partenaire afin de compléter votre commande. Leur politique de confidentialité s'applique alors.",
+    
     "storageTitle": "Sécurité et conservation des données",
-    "storageText": "Vos renseignements sont conservés de manière sécuritaire et l’accès est limité au personnel autorisé.",
-
+    "storageText": "Vos renseignements sont conservés de manière sécuritaire et l'accès est limité au personnel autorisé.",
+    
     "locationTitle": "Localisation des services",
-    "locationText": "PrepCart est conçu pour les utilisateurs situés au Canada. Certains traitements de données peuvent avoir lieu à l’extérieur du pays.",
-
+    "locationText": "PrepCart est conçu pour les utilisateurs situés au Canada. Certains traitements de données peuvent avoir lieu à l'extérieur du pays.",
+    
     "minorsTitle": "Mineurs",
-    "minorsText": "PrepCart ne s’adresse pas aux personnes de moins de 18 ans et nous ne recueillons pas sciemment leurs renseignements personnels.",
-
+    "minorsText": "PrepCart ne s'adresse pas aux personnes de moins de 18 ans et nous ne recueillons pas sciemment leurs renseignements personnels.",
+    
     "rightsTitle": "Vos droits",
-    "rightsText": "Vous pouvez demander l’accès, la correction ou la suppression de vos renseignements personnels, sous réserve des exigences légales. Veuillez écrire à info@prepcart.ca.",
-
+    "rightsText": "Vous pouvez demander l'accès, la correction ou la suppression de vos renseignements personnels, sous réserve des exigences légales. Veuillez écrire à info@prepcart.ca.",
+    
     "updatesTitle": "Modifications",
-    "updatesText": "Cette Politique de confidentialité peut être mise à jour à l’occasion. L’utilisation continue du service signifie que vous acceptez la version révisée.",
-
+    "updatesText": "Cette Politique de confidentialité peut être mise à jour à l'occasion. L'utilisation continue du service signifie que vous acceptez la version révisée.",
+    
     "contactTitle": "Contact",
     "contactText": "Pour toute question liée à la confidentialité, écrivez-nous à info@prepcart.ca."
   }
+
 
 }
