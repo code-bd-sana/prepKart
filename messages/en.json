@@ -47,6 +47,7 @@
     "subtitle": "Login to continue with PrepCart",
     "email": "Email Address",
     "password": "Password",
+    "forgotPassword": "Forgot Password?",
     "loginButton": "Login to PrepCart",
     "loggingIn": "Logging in...",
     "noAccount": "Do not have an account?",
@@ -392,11 +393,14 @@
     }
   },
   "subscribe": {
-    "title": "Get Tips, Updates & Meal Planning Inspiration!",
-    "subtitle": "Join our community and stay updated with the latest recipes, nutrition tips and exclusive offers",
-    "emailPlaceholder": "Your Email Address",
-    "postalPlaceholder": "Postal Code (e.g. M5H 2N2)",
-    "buttonText": "Subscribe Now"
+    "title": "Stay Updated",
+    "subtitle": "Get the latest meal plans and offers delivered to your inbox",
+    "emailPlaceholder": "Enter your email",
+    "postalPlaceholder": "Enter your postal code",
+    "buttonText": "Subscribe Now",
+    "subscribingText": "Subscribing...",
+    "successMessage": "Successfully subscribed!",
+    "errorMessage": "Failed to subscribe. Please try again."
   },
 "contactUs": {
   "title": "Contact Us",
@@ -500,34 +504,34 @@
     
     "serviceNatureTitle": "Nature of the Service",
     "serviceNatureText": "PrepCart is a Canadian web application that helps users create personalized meal plans and organized grocery lists. The service may include recipe suggestions, nutrition summaries, grocery list tools, pantry tracking and optional affiliate shopping links.",
-
+    
     "ageRequirementTitle": "Age Requirement",
     "ageRequirementText": "PrepCart is intended for users aged 18 and older. By using the service, you confirm that you meet this age requirement.",
-
+    
     "noMedicalAdviceTitle": "No Medical, Nutrition or Fitness Advice",
     "noMedicalAdviceText": "The content provided on PrepCart is for informational purposes only. It is not medical, nutrition or fitness advice. You should consult a qualified professional before making dietary or lifestyle changes, especially if you have allergies, health concerns or dietary restrictions.",
-
+    
     "accountTitle": "Accounts and Access",
     "accountText": "Some features may require an account. You are responsible for keeping your login information secure and for any activity under your account.",
-
+    
     "subscriptionTitle": "Subscriptions and Payments",
     "subscriptionText": "Certain features may require a paid subscription. Prices and features are shown at checkout. Subscription payments are processed securely through trusted payment providers such as Stripe or PayPal.",
-
+    
     "affiliateTitle": "Affiliate Links",
     "affiliateText": "PrepCart may include affiliate links, including one-click grocery checkout links through partners such as Instacart. If you click these links or complete a purchase, PrepCart may receive a commission at no additional cost to you.",
-
+    
     "dataAccuracyTitle": "Nutrition and Recipe Information",
     "dataAccuracyText": "Recipe information, ingredients and nutrition values are estimates and may not be fully accurate. Grocery product availability and pricing are controlled by the retailer and may change.",
-
+    
     "acceptableUseTitle": "Acceptable Use",
     "acceptableUseText": "You agree not to misuse the website, interfere with security, attempt to access other user accounts, reverse-engineer the service, or use the platform for unlawful purposes.",
-
+    
     "terminationTitle": "Suspension or Termination",
     "terminationText": "We may suspend or terminate access if we believe our service is being misused or our policies are violated.",
-
+    
     "liabilityTitle": "Limitation of Liability",
     "liabilityText": "PrepCart is provided on an 'as-is' basis. To the fullest extent permitted by Canadian law, PrepCart is not responsible for any loss, injury, damages, allergic reactions, or issues resulting from recipes, ingredients, grocery purchases, or reliance on the content provided.",
-
+    
     "contactTitle": "Contact",
     "contactText": "If you have questions about these Legal Terms, please contact us at info@prepcart.ca."
   },
@@ -535,37 +539,37 @@
     "title": "Privacy Policy",
     "lastUpdated": "Last updated: January 2025",
     "intro": "This Privacy Policy explains how PrepCart collects, uses and protects your personal information in accordance with Canadian privacy laws, including the Personal Information Protection and Electronic Documents Act (PIPEDA).",
-
+    
     "personalInfoTitle": "Information We Collect",
     "personalInfoText": "We may collect information such as your name, email address, account details, preferences, submitted form inputs, usage data, subscription status, device/browser type and basic analytics.",
     
     "foodInfoTitle": "Food and Preferences",
     "foodInfoText": "To provide the service, we collect information about your meal and grocery preferences such as cuisine style, time limits, likes, dislikes, restrictions or allergies. This information is used only to generate meal plans and related grocery lists.",
-
+    
     "paymentTitle": "Payments",
     "paymentText": "Payments are processed securely through third-party providers such as Stripe or PayPal. PrepCart does not store your full payment card details.",
-
+    
     "cookiesTitle": "Cookies and Analytics",
     "cookiesText": "We may use cookies and analytics tools to improve functionality, remember preferences and understand website usage.",
-
+    
     "instacartTitle": "Instacart and Partner Links",
-    "instacartText": "If you choose to shop through Instacart or other affiliate partners, certain information may be shared with that partner as required to complete your grocery order. Your purchase and checkout are governed by the partner’s privacy policy.",
-
+    "instacartText": "If you choose to shop through Instacart or other affiliate partners, certain information may be shared with that partner as required to complete your grocery order. Your purchase and checkout are governed by the partner's privacy policy.",
+    
     "storageTitle": "How We Store and Protect Information",
     "storageText": "Personal information is stored securely and access is limited to authorized personnel. We take reasonable measures to safeguard user data.",
-
+    
     "locationTitle": "Location of Services",
     "locationText": "PrepCart is designed for users located in Canada. Some data may be stored or processed outside Canada depending on our service providers.",
-
+    
     "minorsTitle": "Children and Minors",
     "minorsText": "PrepCart is not intended for users under 18 and we do not knowingly collect personal information from minors.",
-
+    
     "rightsTitle": "Your Privacy Rights",
     "rightsText": "You may request access, correction or deletion of your personal information, subject to legal limitations. Contact info@prepcart.ca to submit a request.",
-
+    
     "updatesTitle": "Policy Updates",
     "updatesText": "We may update this Privacy Policy from time to time. Continued use of PrepCart means you accept the updated version.",
-
+    
     "contactTitle": "Contact",
     "contactText": "For privacy questions or requests, email us at info@prepcart.ca."
   }
