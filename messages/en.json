@@ -426,9 +426,8 @@
     },
     "social": {
       "facebook": "Facebook",
-      "twitter": "Twitter",
       "instagram": "Instagram",
-      "linkedin": "LinkedIn"
+      "pinterest": "Pinterest"
     }
   },
   "generatePlan": {

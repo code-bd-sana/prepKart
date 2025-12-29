@@ -2,7 +2,12 @@ import { MessageCircle } from "lucide-react";
 import { MdOutlineHandshake } from "react-icons/md";
 import Image from "next/image";
 import Link from "next/link";
-import { FaFacebook, FaInstagram, FaLinkedin, FaTwitter } from "react-icons/fa";
+import {
+  FaFacebook,
+  FaInstagram,
+  FaPinterest,
+  FaTwitter,
+} from "react-icons/fa";
 import { useTranslations } from "next-intl";
 import { useParams } from "next/navigation";
 
@@ -12,10 +17,21 @@ const Footer = () => {
   const t = useTranslations("footer");
 
   const socialLinks = [
-    { icon: FaFacebook, href: "#", label: t("social.facebook") },
-    { icon: FaTwitter, href: "#", label: t("social.twitter") },
-    { icon: FaInstagram, href: "#", label: t("social.instagram") },
-    { icon: FaLinkedin, href: "#", label: t("social.linkedin") },
+    {
+      icon: FaFacebook,
+      href: "https://www.facebook.com/profile.php?id=61585561839977",
+      label: t("social.facebook"),
+    },
+    {
+      icon: FaInstagram,
+      href: "https://www.instagram.com/prepcart1/",
+      label: t("social.instagram"),
+    },
+    {
+      icon: FaPinterest,
+      href: "https://www.pinterest.com/Prepcart/",
+      label: t("social.pinterest"),
+    },
   ];
 
   const footerLinks = {
@@ -121,6 +137,7 @@ const Footer = () => {
                     <a
                       key={social.label}
                       href={social.href}
+                      target="_blank"
                       className="h-10 w-10 rounded-full bg-white shadow-sm hover:shadow-md flex items-center justify-center text-gray-600 hover:text-teal-600 transition-all duration-300 hover:-translate-y-0.5"
                       aria-label={social.label}
                     >
