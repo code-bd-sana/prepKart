@@ -71,6 +71,7 @@ const Footer = () => {
             <p className="text-gray-600 text-sm mt-3 lg:mt-4 pl-1">
               {t("tagline")}
             </p>
+
           </div>
 
           {/* Company Links */}
@@ -145,6 +146,8 @@ const Footer = () => {
                     </a>
                   ))}
                 </div>
+                <p className="text-gray-600 text-sm mt-3 lg:mt-4 pl-1">Phone Number:  450-525-1786</p>
+                <p className="text-gray-600 text-sm mt-3 lg:mt-4 pl-1">Email – info@prepcart.ca</p>
               </div>
             </div>
           </div>

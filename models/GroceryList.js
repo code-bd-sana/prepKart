@@ -61,7 +61,7 @@ const groceryItemSchema = new mongoose.Schema({
 
   instacartProductId: String,
 
-  recipeSources: [String], 
+  recipeSources: [String],
 });
 
 const groceryListSchema = new mongoose.Schema(
@@ -119,6 +119,16 @@ const groceryListSchema = new mongoose.Schema(
     // Metadata
     storePreference: String,
     shoppingDate: Date,
+    instacartData: {
+      link: String,
+      method: String,
+      items: [
+        {
+          groceryItem: String,
+          method: String,
+        },
+      ],
+    },
 
     isActive: {
       type: Boolean,

@@ -139,7 +139,9 @@ export async function POST(request) {
     const groceryList = await GroceryList.create(groceryListData);
 
     // Generate Instacart deep link
-    const itemsForInstacart = sortedItems.filter((item) => item.checked === true);
+    const itemsForInstacart = sortedItems.filter(
+      (item) => item.checked === true
+    );
     const instacartLink = await generateInstacartLink(
       itemsForInstacart,
       userTier,
@@ -150,7 +152,9 @@ export async function POST(request) {
 
     // Update grocery list with Instacart link
     await GroceryList.findByIdAndUpdate(groceryList._id, {
-      instacartDeepLink: instacartLink,
+      instacartDeepLink: instacartLink.link, // Save only the link string
+      instacartMethod: instacartLink.method, // Optional: save method separately
+      instacartItems: instacartLink.items, // Optional: save items separately
     });
 
     return NextResponse.json({
@@ -170,10 +174,13 @@ export async function POST(request) {
     });
   } catch (error) {
     console.error("Grocery list generation error:", error);
-    return NextResponse.json({ 
-      error: error.message,
-      details: "Check server logs for more info"
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: error.message,
+        details: "Check server logs for more info",
+      },
+      { status: 500 }
+    );
   }
 }
 

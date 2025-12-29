@@ -5,14 +5,14 @@ import HomeBanner from "@/components/Home/HomeBanner";
 import HowItWorks from "@/components/Home/HowItWorks";
 import QuickPlans from "@/components/Home/QuickPlans";
 import MealPlanning from "@/components/Home/MealPlanning";
-// import GroceryListDemo from "@/components/Home/GroceryListDemo";
+import GroceryListDemo from "@/components/Home/GroceryListDemo";
 import PricingSection from "@/components/Home/PricingSection";
 import Testimonials from "@/components/Home/Testimonials";
-// import Subscribe from "@/components/Home/ContactUs";
+import Subscribe from "@/components/Home/ContactUs";
 import WhyPeopleLove from "@/components/Home/WhyPeopleLove";
 import FAQSection from "@/components/Home/FAQ";
 import ProblemStatement from "@/components/Home/ProblemStatement";
-import ContactUs from "@/components/Home/ContactUs";
+// import ContactUs from "@/components/Home/ContactUs";
 
 export default function HomePage({ params }) {
   // Get locale from params
@@ -26,11 +26,11 @@ export default function HomePage({ params }) {
       <QuickPlans locale={locale} />
       <MealPlanning locale={locale} />
       <PricingSection locale={locale} />
-      {/* <GroceryListDemo locale={locale} /> */}
+      <GroceryListDemo locale={locale} />
       <Testimonials locale={locale} />
       <FAQSection locale={locale} />
-      {/* <Subscribe locale={locale} /> */}
-      <ContactUs locale={locale} />
+      <Subscribe locale={locale} />
+      {/* <ContactUs locale={locale} /> */}
     </div>
   );
 }
