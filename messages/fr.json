@@ -398,7 +398,6 @@
     "postalPlaceholder": "Code Postal (ex. M5H 2N2)",
     "buttonText": "S'abonner Maintenant"
   },
-  
 "contactUs": {
   "title": "Contactez-nous",
   "subtitle": "Des questions ou besoin d'aide ? Nous sommes là pour vous aider !",
@@ -427,9 +426,8 @@
     },
     "social": {
       "facebook": "Facebook",
-      "twitter": "Twitter",
       "instagram": "Instagram",
-      "linkedin": "LinkedIn"
+      "pinterest": "Pinterest"
     }
   },
   "generatePlan": {
@@ -533,7 +531,6 @@
     "contactTitle": "Contact",
     "contactText": "Pour toute question concernant ces Conditions d’utilisation, écrivez-nous à info@prepcart.ca."
   },
-
   "privacy": {
     "title": "Politique de confidentialité",
     "lastUpdated": "Dernière mise à jour : janvier 2025",

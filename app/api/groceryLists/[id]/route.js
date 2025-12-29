@@ -78,54 +78,174 @@ export async function GET(request, { params }) {
   }
 }
 
+// export async function PATCH(request, { params }) {
+//   try {
+//     await connectDB();
+
+//     const auth = await authenticate(request);
+//     if (!auth.success) {
+//       return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+//     }
+
+//     const { userId } = auth;
+//     const { id } = await params;
+//     const body = await request.json();
+
+//     // Find the grocery list
+//     const existingList = await GroceryList.findById(id);
+//     if (!existingList) {
+//       return NextResponse.json({ error: "Grocery list not found" }, { status: 404 });
+//     }
+
+//     // Check ownership
+//     if (existingList.userId.toString() !== userId.toString()) {
+//       return NextResponse.json({ error: "Not authorized" }, { status: 403 });
+//     }
+
+//     // ====== SIMPLE UPDATE LOGIC ======
+//     // If updating items, just save them - NO INSTACART LINK REGENERATION
+//     if (body.items) {
+//       // Clean items (keep your existing cleaning logic)
+//       const cleanedItems = body.items.map((item) => ({
+//         ...item,
+//         checked: item.checked === true, // Ensure boolean
+//         _id: item._id && mongoose.Types.ObjectId.isValid(item._id) 
+//           ? new mongoose.Types.ObjectId(item._id) 
+//           : new mongoose.Types.ObjectId(),
+//       }));
+
+//       // Count checked items
+//       const checkedCount = cleanedItems.filter(item => item.checked).length;
+
+//       // Update WITHOUT regenerating Instacart link
+//       const updatedList = await GroceryList.findByIdAndUpdate(
+//         id,
+//         {
+//           items: cleanedItems,
+//           checkedItems: checkedCount,
+//           totalItems: cleanedItems.length,
+//           updatedAt: new Date(),
+//         },
+//         { new: true }
+//       );
+
+//       return NextResponse.json({
+//         success: true,
+//         groceryList: updatedList,
+//         message: "Grocery list updated",
+//       });
+//     }
+
+//     // If no items, update other fields
+//     const updatedList = await GroceryList.findByIdAndUpdate(
+//       id,
+//       {
+//         totalItems: body.totalItems || existingList.totalItems,
+//         checkedItems: body.checkedItems || existingList.checkedItems,
+//         estimatedTotal: body.estimatedTotal || existingList.estimatedTotal,
+//         updatedAt: new Date(),
+//       },
+//       { new: true }
+//     );
+
+//     return NextResponse.json({
+//       success: true,
+//       groceryList: updatedList,
+//       message: "Grocery list updated",
+//     });
+
+//   } catch (error) {
+//     console.error("Update error:", error);
+//     return NextResponse.json({ error: error.message }, { status: 500 });
+//   }
+// }
+
 export async function PATCH(request, { params }) {
   try {
     await connectDB();
 
     const auth = await authenticate(request);
     if (!auth.success) {
-      return NextResponse.json(
-        { error: "Authentication required" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
     }
 
     const { userId } = auth;
-    const user = await User.findById(userId).select("tier subscription");
-    const userTier = user?.subscription?.tier || user?.tier || "free";
-    const impactId = process.env.INSTACART_IMPACT_ID || "6773996";
     const { id } = await params;
     const body = await request.json();
 
-    // First, find the grocery list
+    console.log("PATCH request for:", id, "Items:", body.items?.length || 0);
+
+    // Find the grocery list
     const existingList = await GroceryList.findById(id);
-
     if (!existingList) {
-      return NextResponse.json(
-        { error: "Grocery list not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Grocery list not found" }, { status: 404 });
     }
 
-    // Check if user owns this list
+    // Check ownership
     if (existingList.userId.toString() !== userId.toString()) {
-      return NextResponse.json(
-        { error: "Not authorized to update this list" },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: "Not authorized" }, { status: 403 });
     }
 
-    // If NO items in request, just update basic fields
-    if (!body.items) {
+    // ====== FIXED: Update items while preserving IDs ======
+    if (body.items) {
+      // Keep existing items and update their checked status
+      const updatedItems = existingList.items.map(existingItem => {
+        // Find the matching item from request
+        const updatedItem = body.items.find(item => 
+          item._id && item._id.toString() === existingItem._id.toString()
+        );
+        
+        if (updatedItem) {
+          // Update ONLY the checked status, preserve everything else
+          return {
+            ...existingItem.toObject(), // Keep all original properties
+            checked: updatedItem.checked === true, // Only update checked status
+            _id: existingItem._id // PRESERVE ORIGINAL ID
+          };
+        }
+        
+        // Item not in request, keep as is
+        return existingItem;
+      });
+
+      // Also handle new items (if any were added in frontend)
+      const newItems = body.items.filter(requestItem => 
+        !existingList.items.some(existingItem => 
+          existingItem._id.toString() === requestItem._id?.toString()
+        )
+      ).map(newItem => ({
+        name: newItem.name || "Item",
+        quantity: newItem.quantity || 1,
+        unit: newItem.unit || "unit",
+        aisle: newItem.aisle || "Other",
+        category: newItem.category || "Other",
+        checked: newItem.checked === true,
+        estimatedPrice: newItem.estimatedPrice || 0,
+        normalizedName: newItem.normalizedName || newItem.name?.toLowerCase() || "",
+        recipeSources: newItem.recipeSources || [],
+        note: newItem.note || "",
+        _id: new mongoose.Types.ObjectId(), // New ID for new items
+      }));
+
+      const finalItems = [...updatedItems, ...newItems];
+      const checkedCount = finalItems.filter(item => item.checked).length;
+
+      console.log("Updating:", {
+        existingItems: existingList.items.length,
+        updatedItems: updatedItems.length,
+        newItems: newItems.length,
+        totalItems: finalItems.length,
+        checkedCount
+      });
+
+      // Update the list
       const updatedList = await GroceryList.findByIdAndUpdate(
         id,
         {
-          $set: {
-            totalItems: body.totalItems || 0,
-            checkedItems: body.checkedItems || 0,
-            estimatedTotal: body.estimatedTotal || 0,
-            updatedAt: new Date(),
-          },
+          items: finalItems,
+          checkedItems: checkedCount,
+          totalItems: finalItems.length,
+          updatedAt: new Date(),
         },
         { new: true, runValidators: true }
       );
@@ -137,58 +257,19 @@ export async function PATCH(request, { params }) {
       });
     }
 
-    // IF ITEMS ARE BEING UPDATED:
-    const cleanedItems = body.items.map((item) => {
-      let itemId;
+    // If no items, update other fields
+    const updateData = {
+      updatedAt: new Date(),
+    };
 
-      if (
-        item._id &&
-        (item._id.startsWith("temp_") || item._id.startsWith("new_"))
-      ) {
-        itemId = new mongoose.Types.ObjectId();
-      } else if (item._id && mongoose.Types.ObjectId.isValid(item._id)) {
-        itemId = new mongoose.Types.ObjectId(item._id);
-      } else {
-        itemId = new mongoose.Types.ObjectId();
-      }
+    if (body.totalItems !== undefined) updateData.totalItems = body.totalItems;
+    if (body.checkedItems !== undefined) updateData.checkedItems = body.checkedItems;
+    if (body.estimatedTotal !== undefined) updateData.estimatedTotal = body.estimatedTotal;
 
-      return {
-        name: item.name || "Unknown",
-        quantity: item.quantity || 1,
-        unit: item.unit || "unit",
-        aisle: item.aisle || "Other",
-        category: item.category || "Other",
-        checked: item.checked || false,
-        estimatedPrice: item.estimatedPrice || 0,
-        normalizedName: item.normalizedName || item.name?.toLowerCase() || "",
-        recipeSources: item.recipeSources || [],
-        note: item.note || "",
-        _id: itemId,
-      };
-    });
-
-    // Filter ONLY checked items for Instacart link
-    const checkedItems = cleanedItems.filter((item) => item.checked === true);
-    const newInstacartLink = generateInstacartLink(
-      checkedItems,
-      userTier,
-      impactId
-    );
-
-    // Update the grocery list
     const updatedList = await GroceryList.findByIdAndUpdate(
       id,
-      {
-        $set: {
-          items: cleanedItems,
-          totalItems: body.totalItems || cleanedItems.length,
-          checkedItems: body.checkedItems || checkedItems.length,
-          estimatedTotal: body.estimatedTotal || 0,
-          instacartDeepLink: newInstacartLink,
-          updatedAt: new Date(),
-        },
-      },
-      { new: true, runValidators: true }
+      { $set: updateData },
+      { new: true }
     );
 
     return NextResponse.json({
@@ -196,14 +277,12 @@ export async function PATCH(request, { params }) {
       groceryList: updatedList,
       message: "Grocery list updated",
     });
+
   } catch (error) {
-    console.error("Update grocery list error:", error);
-    return NextResponse.json(
-      {
-        error: "Failed to update grocery list",
-        details: error.message,
-      },
-      { status: 500 }
-    );
+    console.error("Update error:", error);
+    return NextResponse.json({ 
+      error: "Failed to update grocery list",
+      details: error.message 
+    }, { status: 500 });
   }
 }

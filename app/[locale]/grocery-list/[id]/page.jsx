@@ -21,7 +21,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { trackInstacartClick } from "@/lib/instacart";
+import { trackInstacartLink, generateInstacartLink } from "@/lib/instacart";
 
 // Aisle order for sorting
 const aisleOrder = [
@@ -76,11 +76,38 @@ export default function GroceryListPage({ params }) {
   const [expandedAisles, setExpandedAisles] = useState({});
   const [isAllSelected, setIsAllSelected] = useState(false);
 
+
   useEffect(() => {
-    if (!user) {
-      router.push(`/${locale}/login`);
-    }
+    // Only check authentication AFTER Redux has had time to load
+    const timer = setTimeout(() => {
+      if (!user) {
+        // Check localStorage first (might have token)
+        const token =
+          localStorage.getItem("token") || localStorage.getItem("accessToken");
+
+        if (!token) {
+          router.push(`/${locale}/login`);
+        }
+        // If token exists, user might still be loading from Redux
+      }
+    }, 500); // Wait 500ms for Redux to load
+
+    return () => clearTimeout(timer);
   }, [user, locale, router]);
+
+  useEffect(() => {
+    if (groceryList) {
+      // console.log("GROCERY LIST DEBUG:", {
+      //   id: groceryList._id,
+      //   title: groceryList.title,
+      //   instacartLink: groceryList.instacartDeepLink,
+      //   hasLink: !!groceryList.instacartDeepLink,
+      //   itemsCount: groceryList.items?.length,
+      //   checkedItems: groceryList.items?.filter((i) => i.checked).length,
+      // });
+    }
+  }, [groceryList]);
+
   const categorizeItem = (itemName) => {
     const name = itemName.toLowerCase();
 
@@ -390,6 +417,42 @@ export default function GroceryListPage({ params }) {
     ) || 0;
 
   // toggleItemChecked function
+
+  // const toggleItemChecked = async (itemId) => {
+  //   if (!groceryList) return;
+
+  //   // INSTANT UI UPDATE
+  //   const updatedItems = groceryList.items.map((item) =>
+  //     item._id === itemId ? { ...item, checked: !item.checked } : item
+  //   );
+
+  //   const checkedCount = updatedItems.filter((item) => item.checked).length;
+
+  //   // Update state immediately (no waiting)
+  //   setGroceryList({
+  //     ...groceryList,
+  //     items: updatedItems,
+  //     checkedItems: checkedCount
+  //   });
+
+  //   // Save in background - NO TOAST, NO WAITING
+  //   setTimeout(async () => {
+  //     try {
+  //       await fetchWithAuth(`/api/groceryLists/${groceryList._id}`, {
+  //         method: "PATCH",
+  //         body: JSON.stringify({
+  //           items: updatedItems,
+  //           checkedItems: checkedCount,
+  //           totalItems: updatedItems.length,
+  //         }),
+  //       });
+  //       // No toast - silent save
+  //     } catch (error) {
+  //       console.log("Background save failed (this is ok)", error);
+  //     }
+  //   }, 100); // Small delay to not block UI
+  // };
+
   const toggleItemChecked = async (itemId) => {
     if (!groceryList) return;
 
@@ -397,56 +460,39 @@ export default function GroceryListPage({ params }) {
       item._id === itemId ? { ...item, checked: !item.checked } : item
     );
 
-    const updatedList = {
-      ...groceryList,
-      items: updatedItems,
-      checkedItems: updatedItems.filter((item) => item.checked).length,
-    };
+    // Send ALL item properties, not just checked status
+    const itemsToSend = updatedItems.map((item) => ({
+      _id: item._id, // CRITICAL: Send the ID
+      name: item.name,
+      quantity: item.quantity,
+      unit: item.unit,
+      aisle: item.aisle,
+      checked: item.checked,
+      // Include other fields that exist
+      ...(item.estimatedPrice && { estimatedPrice: item.estimatedPrice }),
+      ...(item.normalizedName && { normalizedName: item.normalizedName }),
+    }));
 
-    setGroceryList(updatedList);
-
-    const visibleItems = hidePantry
-      ? updatedItems.filter((item) => !item.inPantry)
-      : updatedItems;
-    const visibleCheckedCount = visibleItems.filter(
-      (item) => item.checked
-    ).length;
-
-    localStorage.setItem(
-      "prepcart_cart",
-      JSON.stringify({
-        checkedCount: visibleCheckedCount,
-        listId: groceryList._id,
-        instacartLink: groceryList.instacartDeepLink,
-        timestamp: Date.now(),
-      })
-    );
-    // Save to database AND update Instacart link
     try {
       const response = await fetchWithAuth(
         `/api/groceryLists/${groceryList._id}`,
         {
           method: "PATCH",
           body: JSON.stringify({
-            items: updatedItems,
-            checkedItems: updatedList.checkedItems,
+            items: itemsToSend, // Send ALL items with their IDs
           }),
         }
       );
 
-      if (response.ok) {
-        const data = await response.json();
+      const data = await response.json();
 
-        if (data.success && data.groceryList) {
-          // Update with new Instacart link
-          setGroceryList(data.groceryList);
-        }
+      if (data.success) {
+        setGroceryList(data.groceryList);
       }
     } catch (error) {
-      toast.error("Failed to update item");
+      console.error("Update error:", error);
     }
   };
-
   // updateQuantity function
   const updateQuantity = async (itemId, newQuantity) => {
     if (!groceryList || newQuantity < 0.1) return;
@@ -1189,101 +1235,85 @@ export default function GroceryListPage({ params }) {
           </div>
         </div>
 
-        {/* Instacart CTA - FIXED LOGIC */}
+        {/* Instacart CTA */}
         <div className="mt-8 bg-linear-to-r from-[#5a9e3a] to-[#4a9fd8] rounded-2xl p-8 text-center text-white">
           <h3 className="text-2xl font-bold mb-3">Ready to shop?</h3>
           <p className="mb-6 opacity-90">
             Order all ingredients with one click on Instacart
           </p>
 
-          {/* Check user tier first */}
-          {user?.tier !== "tier3" ? (
-            // User is NOT tier3 - Show upgrade message
-            <>
-              <button
-                onClick={() => {
-                  toast.info(
-                    "Upgrade to Premium to access Instacart integration"
-                  );
-                }}
-                className="bg-white text-[#5a9e3a] py-3 px-8 rounded-lg font-bold hover:bg-green-50 flex items-center mx-auto"
-              >
-                <ShoppingCart className="h-5 w-5 mr-2" />
-                Order on Instacart
-              </button>
-              <p className="text-sm mt-3 opacity-90">
-                Upgrade to Premium for Instacart integration
-              </p>
-            </>
-          ) : // User IS tier3 - Check for selected items
-          visibleCheckedCount === 0 ? (
-            // Tier3 user with NO items selected
-            <>
-              <button
-                onClick={() => {
-                  toast.info(
-                    "Please select at least one item to add to your Instacart cart"
-                  );
-                }}
-                className="bg-white text-[#5a9e3a] py-3 px-8 rounded-lg font-bold hover:bg-green-50 flex items-center mx-auto"
-              >
-                <ShoppingCart className="h-5 w-5 mr-2" />
-                Select Items First
-              </button>
-              <p className="text-sm mt-3 opacity-90">
-                Please select items to add to your Instacart cart
-              </p>
-            </>
-          ) : // Tier3 user WITH items selected
-          !groceryList?.instacartDeepLink ? (
-            <>
-              <button
-                onClick={() => {
-                  toast.error(
-                    "Instacart link not available. Please try refreshing the page."
-                  );
-                }}
-                className="bg-gray-300 text-gray-500 py-3 px-8 rounded-lg font-bold flex items-center mx-auto cursor-not-allowed"
-                disabled
-              >
-                <ShoppingCart className="h-5 w-5 mr-2" />
-                Link Unavailable
-              </button>
-              <p className="text-sm mt-3 opacity-90">
-                Could not generate shopping link. Please refresh.
-              </p>
-            </>
+          {!user ? (
+            // Not logged in
+            <button
+              onClick={() => {
+                toast.info("Please login to use Instacart");
+                router.push(`/${locale}/login`);
+              }}
+              className="bg-white text-[#5a9e3a] py-3 px-8 rounded-lg font-bold hover:bg-green-50 flex items-center mx-auto"
+            >
+              <ShoppingCart className="h-5 w-5 mr-2" />
+              Login to Use Instacart
+            </button>
+          ) : visibleCheckedCount === 0 ? (
+            // No items selected
+            <button
+              onClick={() => {
+                toast.info(
+                  "Please select at least one item to add to your Instacart cart"
+                );
+              }}
+              className="bg-white text-[#5a9e3a] py-3 px-8 rounded-lg font-bold hover:bg-green-50 flex items-center mx-auto"
+            >
+              <ShoppingCart className="h-5 w-5 mr-2" />
+              Select Items First
+            </button>
+          ) : !groceryList?.instacartDeepLink ? (
+            // No Instacart link
+            <button
+              onClick={() => {
+                toast.error(
+                  "Instacart link not available. Please try refreshing."
+                );
+              }}
+              className="bg-gray-300 text-gray-500 py-3 px-8 rounded-lg font-bold flex items-center mx-auto cursor-not-allowed"
+              disabled
+            >
+              <ShoppingCart className="h-5 w-5 mr-2" />
+              Link Unavailable
+            </button>
           ) : (
-            // Tier3 user, has items selected, AND link exists
-            <>
-              <button
-                onClick={() => {
-                  if (visibleCheckedCount === 0) {
-                    toast.info("Please select items first");
-                    return;
-                  }
-
-                  // Track click
-                  trackInstacartClick({
-                    groceryListId: id,
-                    userId: user?.id,
-                    userTier: user?.tier,
-                    checkedItemsCount: visibleCheckedCount,
-                  });
-
-                  // Open link
-                  window.open(groceryList.instacartDeepLink, "_blank");
-                }}
-                className="bg-white text-[#5a9e3a] py-3 px-8 rounded-lg font-bold hover:bg-green-50 flex items-center mx-auto cursor-pointer"
-              >
-                <ShoppingCart className="h-5 w-5 mr-2" />
-                Order {visibleCheckedCount} items on Instacart
-              </button>
-              <p className="text-sm mt-3 opacity-90">
-                {visibleCheckedCount} selected items will be searched on
-                Instacart
-              </p>
-            </>
+            // ALL USERS CAN USE INSTACART
+            <button
+              onClick={() => {
+  console.log("BUTTON CLICKED - Checking items:");
+  console.log("All items:", groceryList.items);
+  console.log("Checked items:", groceryList.items.filter(item => item.checked));
+  
+  // Generate fresh link
+  const checkedItems = groceryList.items.filter(item => item.checked);
+  
+  // Use a fallback if no items are checked
+  if (checkedItems.length === 0) {
+    const partnerId = process.env.INSTACART_IMPACT_ID || "6773996";
+    window.open(`https://www.instacart.com/store/s?k=groceries&partner=${partnerId}`, "_blank");
+    return;
+  }
+  
+  const instacartLink = generateInstacartLink(
+    checkedItems,
+    user?.tier,
+    process.env.INSTACART_IMPACT_ID
+  );
+  
+  
+  console.log("Generated link:", instacartLink);
+  window.open(instacartLink, "_blank");
+}}
+              className="bg-white text-[#5a9e3a] py-3 px-8 rounded-lg font-bold hover:bg-green-50 flex items-center mx-auto cursor-pointer"
+            >
+              <ShoppingCart className="h-5 w-5 mr-2" />
+              Order {visibleCheckedCount} items on Instacart
+            </button>
           )}
         </div>
       </div>

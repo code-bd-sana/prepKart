@@ -279,8 +279,14 @@ export default function GenerateWeeklyPlan({ voiceText }) {
       // Get user ID
       const userId = user?.id || user?._id;
 
-      if (!user || !userId) {
-        toast.warning("Please login to save plans!");
+      // if (!user || !userId) {
+      //   toast.warning("Please login to save plans!");
+      //   return;
+      // }
+
+      if (!user || user?.tier === "free") {
+        toast.error("Upgrade to Plus or Premium to save plans");
+        window.location.href = "/#pricing";
         return;
       }
 
@@ -397,29 +403,29 @@ export default function GenerateWeeklyPlan({ voiceText }) {
       }
 
       // Check user tier
-      if (user.tier === "free") {
-        toast.error("Upgrade to Plus or Premium to generate grocery lists");
-        return;
-      }
+      // if (user.tier === "free") {
+      //   toast.error("Upgrade to Plus or Premium to generate grocery lists");
+      //   return;
+      // }
 
       // Check if plan is saved
-      if (!plan.isSaved && plan.id.startsWith("temp_")) {
-        toast.warning(
-          <div>
-            <p className="font-medium">Please save the plan first!</p>
-            <p className="text-sm mt-1">
-              Click Save Plan to save your meal plan, then generate grocery
-              list.
-            </p>
-          </div>,
-          {
-            autoClose: 5000,
-            closeButton: true,
-            closeOnClick: true,
-          }
-        );
-        return;
-      }
+      // if (!plan.isSaved && plan.id.startsWith("temp_")) {
+      //   toast.warning(
+      //     <div>
+      //       <p className="font-medium">Please save the plan first!</p>
+      //       <p className="text-sm mt-1">
+      //         Click Save Plan to save your meal plan, then generate grocery
+      //         list.
+      //       </p>
+      //     </div>,
+      //     {
+      //       autoClose: 5000,
+      //       closeButton: true,
+      //       closeOnClick: true,
+      //     }
+      //   );
+      //   return;
+      // }
 
       setLoading(true);
 
@@ -436,6 +442,8 @@ export default function GenerateWeeklyPlan({ voiceText }) {
 
       const requestBody = {
         planId: plan.id,
+        planData: plan,
+        pantryToggle: false,
       };
       const response = await fetch("/api/groceryLists/generate", {
         method: "POST",
@@ -499,33 +507,33 @@ export default function GenerateWeeklyPlan({ voiceText }) {
     }
   };
   // Update your Instacart function
-  const orderOnInstacart = async () => {
-    try {
-      if (!plan || !plan.id) {
-        toast.error("No plan available");
-        return;
-      }
+  // const orderOnInstacart = async () => {
+  //   try {
+  //     if (!plan || !plan.id) {
+  //       toast.error("No plan available");
+  //       return;
+  //     }
 
-      if (user.tier === "free") {
-        toast.error(
-          "Instacart integration is only available for Plus and Premium users"
-        );
-        return;
-      }
+  //     if (user.tier === "free") {
+  //       toast.error(
+  //         "Instacart integration is only available for Plus and Premium users"
+  //       );
+  //       return;
+  //     }
 
-      // First generate grocery list if not already done
-      const groceryList = await generateGroceryList();
+  //     // First generate grocery list if not already done
+  //     const groceryList = await generateGroceryList();
 
-      if (groceryList && groceryList.instacartDeepLink) {
-        // Open Instacart in new tab
-        window.open(groceryList.instacartDeepLink, "_blank");
-      } else {
-        toast.error("Could not generate Instacart link");
-      }
-    } catch (error) {
-      toast.error("Error connecting to Instacart: " + error.message);
-    }
-  };
+  //     if (groceryList && groceryList.instacartDeepLink) {
+  //       // Open Instacart in new tab
+  //       window.open(groceryList.instacartDeepLink, "_blank");
+  //     } else {
+  //       toast.error("Could not generate Instacart link");
+  //     }
+  //   } catch (error) {
+  //     toast.error("Error connecting to Instacart: " + error.message);
+  //   }
+  // };
   // swap meal
   const swapMeal = async (planId, mealIndex, dayIndex) => {
     try {
@@ -1254,32 +1262,75 @@ export default function GenerateWeeklyPlan({ voiceText }) {
 
                           {/* Swap Button */}
                           <div className="pt-2 border-t border-gray-100">
-                            <button
+                            {/* <button
                               onClick={async () => {
-                                if (plan.swaps.remaining <= 0) {
-                                  toast.error(`No swaps remaining!`);
+                                // Check if user can swap based on tier
+                                if (!user || user.tier === "free") {
+                                  toast.error(
+                                    "Upgrade to Plus or Premium to swap meals"
+                                  );
                                   return;
                                 }
+
+                                if (plan.swaps.remaining <= 0) {
+                                  toast.error(
+                                    `No swaps remaining! Used ${plan.swaps.used}/${plan.swaps.allowed}`
+                                  );
+                                  return;
+                                }
+
                                 setIsSwapping(true);
                                 await swapMeal(plan.id, mealIndex, dayIndex);
                               }}
-                              disabled={plan.swaps.remaining <= 0 || isSwapping}
+                              disabled={
+                                !user ||
+                                user.tier === "free" ||
+                                plan.swaps.remaining <= 0 ||
+                                isSwapping
+                              }
                               className={`w-full text-sm font-medium py-1.5 sm:py-1 rounded transition-colors duration-200 ${
-                                plan.swaps.remaining <= 0 || isSwapping
+                                !user ||
+                                user.tier === "free" ||
+                                plan.swaps.remaining <= 0 ||
+                                isSwapping
                                   ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                                   : "bg-[#4a9fd8] hover:bg-[#20a1f7] text-white"
                               }`}
                             >
-                              {isSwapping ? (
-                                <span className="flex items-center justify-center">
-                                  Swapping...
-                                </span>
-                              ) : plan.swaps.remaining <= 0 ? (
-                                "No Swaps Left"
-                              ) : (
-                                "Swap This Meal"
-                              )}
-                            </button>
+                              {!user
+                                ? "Login to Swap"
+                                : user.tier === "free"
+                                ? "Upgrade to Swap"
+                                : isSwapping
+                                ? "Swapping..."
+                                : plan.swaps.remaining <= 0
+                                ? "No Swaps Left"
+                                : "Swap This Meal"}
+                            </button> */}
+
+                            <p className="text-gray-600 mt-2">
+                              {plan.days?.length || 7}-Day Plan •{" "}
+                              {t("plan.generatedFor")}
+                              <span className="font-semibold">
+                                {user?.tier === "free" ? (
+                                  <span className="text-gray-500 ml-1">
+                                    No swaps for free tier
+                                  </span>
+                                ) : (
+                                  <span className="text-[#8cc63c] ml-1">
+                                    {plan.swaps.remaining} of{" "}
+                                    {plan.swaps.allowed} swaps available
+                                  </span>
+                                )}
+                              </span>
+                              •{" "}
+                              {plan.tier === "free"
+                                ? "Free Plan"
+                                : `${
+                                    plan.tier.charAt(0).toUpperCase() +
+                                    plan.tier.slice(1)
+                                  } Tier`}
+                            </p>
                           </div>
                         </div>
                       ))}
@@ -1299,7 +1350,7 @@ export default function GenerateWeeklyPlan({ voiceText }) {
                   </div>
                 )}
                 <div className="flex flex-col md:flex-row gap-4">
-                  <button
+                  {/* <button
                     onClick={savePlan}
                     disabled={!plan || (plan.isSaved && !plan.needsUpdate)}
                     className={`px-6 py-3 rounded-lg font-semibold transition-all flex-1 ${
@@ -1310,6 +1361,36 @@ export default function GenerateWeeklyPlan({ voiceText }) {
                   >
                     {!plan
                       ? "Save Plan"
+                      : plan.needsUpdate
+                      ? "Update Plan"
+                      : plan.isSaved
+                      ? "Plan Saved"
+                      : "Save Plan"}
+                  </button> */}
+
+                  <button
+                    onClick={savePlan}
+                    disabled={
+                      !plan ||
+                      !user ||
+                      user?.tier === "free" ||
+                      (plan.isSaved && !plan.needsUpdate)
+                    }
+                    className={`px-6 py-3 rounded-lg font-semibold transition-all flex-1 ${
+                      !plan ||
+                      !user ||
+                      user?.tier === "free" ||
+                      (plan.isSaved && !plan.needsUpdate)
+                        ? "bg-gray-300 cursor-not-allowed"
+                        : "bg-green-600 hover:bg-green-700 text-white"
+                    }`}
+                  >
+                    {!plan
+                      ? "Save Plan"
+                      : !user
+                      ? "Login to Save"
+                      : user?.tier === "free"
+                      ? "Upgrade to Save"
                       : plan.needsUpdate
                       ? "Update Plan"
                       : plan.isSaved
