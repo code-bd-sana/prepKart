@@ -31,11 +31,11 @@ export async function POST(request) {
     // Get accurate user tier
     const user = await User.findById(userId).select("tier subscription");
     const userTier = user?.subscription?.tier || user?.tier || "free";
-    const impactId = process.env.INSTACART_IMPACT_ID;
+    const impactId = process.env.INSTACART_IMPACT_ID || "6773996";
 
     // Parse request body
     const body = await request.json();
-    const { planId, pantryToggle = false } = body;
+    const { planId, pantryToggle = false, planData } = body;
 
     if (!planId) {
       return NextResponse.json(
@@ -44,21 +44,41 @@ export async function POST(request) {
       );
     }
 
-    // Get the plan
-    const plan = await Plan.findOne({
-      $or: [{ _id: planId }, { id: planId }],
-    });
+    let plan;
+    let isTemporaryPlan = false;
 
-    if (!plan) {
-      return NextResponse.json({ error: "Plan not found" }, { status: 404 });
-    }
+    // ====== CHECK IF IT'S A TEMPORARY PLAN ======
+    if (planId.startsWith("temp_")) {
+      // TEMPORARY PLAN: Use plan data from request
+      isTemporaryPlan = true;
 
-    // Check if user owns the plan (if plan has userId)
-    if (plan.userId && plan.userId.toString() !== userId.toString()) {
-      return NextResponse.json(
-        { error: "Not authorized to access this plan" },
-        { status: 403 }
-      );
+      if (!planData) {
+        return NextResponse.json(
+          {
+            error: "Plan data required for temporary plans",
+          },
+          { status: 400 }
+        );
+      }
+
+      plan = planData;
+    } else {
+      // SAVED PLAN: Fetch from database
+      plan = await Plan.findOne({
+        $or: [{ _id: planId }, { id: planId }],
+      });
+
+      if (!plan) {
+        return NextResponse.json({ error: "Plan not found" }, { status: 404 });
+      }
+
+      // Check if user owns the plan
+      if (plan.userId && plan.userId.toString() !== userId.toString()) {
+        return NextResponse.json(
+          { error: "Not authorized to access this plan" },
+          { status: 403 }
+        );
+      }
     }
 
     // Check tier for pantry toggle
@@ -68,9 +88,9 @@ export async function POST(request) {
         { status: 403 }
       );
     }
+
     // Extract all ingredients from plan
     const allIngredients = extractIngredientsFromPlan(plan);
-    // console.log(`Total ingredients: ${allIngredients.length}`);
 
     // Get user's pantry if toggle is enabled
     let pantryItems = [];
@@ -78,7 +98,6 @@ export async function POST(request) {
       const pantry = await Pantry.findOne({ userId });
       if (pantry) {
         pantryItems = pantry.items || [];
-        // console.log(`Pantry items: ${pantryItems.length}`);
       }
     }
 
@@ -90,17 +109,14 @@ export async function POST(request) {
       plan.days
     );
 
-    // console.log(`Processed items: ${groceryItems.length}`);
-
     // Sort items by aisle
-    const sortedItems = sortByAisle(groceryItems);
+    const sortedItems = sortByAisle(groceryItems) || [];
 
     // Create grocery list
-    const groceryList = await GroceryList.create({
+    const groceryListData = {
       userId,
-      planId: plan._id,
-      planTitle: plan.title,
-      title: `Grocery List - ${plan.title}`,
+      planTitle: plan.title || "Temporary Plan",
+      title: `Grocery List - ${plan.title || "Temporary Plan"}`,
       items: sortedItems,
       pantryToggle,
       totalItems: sortedItems.length,
@@ -109,22 +125,33 @@ export async function POST(request) {
       storePreference: "Instacart",
       isActive: true,
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
-    });
+    };
 
-    // Generate Instacart deep link (
-    const itemsForInstacart = sortedItems.filter((item) => item.checked);
-    const instacartLink = generateInstacartLink(
+    // Only link to saved plans in database
+    if (!isTemporaryPlan && plan._id) {
+      groceryListData.planId = plan._id;
+    } else {
+      // For temp plans
+      groceryListData.tempPlanId = planId;
+      groceryListData.isTemporary = true;
+    }
+
+    const groceryList = await GroceryList.create(groceryListData);
+
+    // Generate Instacart deep link
+    const itemsForInstacart = sortedItems.filter((item) => item.checked === true);
+    const instacartLink = await generateInstacartLink(
       itemsForInstacart,
       userTier,
       impactId
     );
 
+    console.log("Instacart link generated:", instacartLink);
+
     // Update grocery list with Instacart link
     await GroceryList.findByIdAndUpdate(groceryList._id, {
       instacartDeepLink: instacartLink,
     });
-
-    // console.log(`Grocery list created: ${groceryList._id}`);
 
     return NextResponse.json({
       success: true,
@@ -143,7 +170,10 @@ export async function POST(request) {
     });
   } catch (error) {
     console.error("Grocery list generation error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ 
+      error: error.message,
+      details: "Check server logs for more info"
+    }, { status: 500 });
   }
 }
 
@@ -224,7 +254,7 @@ function processIngredients(ingredients, pantryItems, pantryToggle, planDays) {
         recipeSources: ing.recipeName
           ? [`${ing.mealType}: ${ing.recipeName}`]
           : [],
-        checked: false,
+        checked: true,
       });
     }
   }

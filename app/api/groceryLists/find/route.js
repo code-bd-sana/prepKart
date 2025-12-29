@@ -1,32 +1,8 @@
-// import { NextResponse } from "next/server";
-// import { connectDB } from "@/lib/db";
-// import GroceryList from "@/models/GroceryList";
-
-// export async function GET(request) {
-//   try {
-//     await connectDB();
-    
-//     const { searchParams } = new URL(request.url);
-//     const planId = searchParams.get('planId');
-    
-//     const groceryList = await GroceryList.findOne({ planId }).lean();
-    
-//     return NextResponse.json({
-//       success: true,
-//       groceryList: groceryList || null
-//     });
-    
-//   } catch (error) {
-//     return NextResponse.json({ success: false, error: error.message });
-//   }
-// }
-
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import GroceryList from "@/models/GroceryList";
 import Plan from "@/models/Plan";
-import { authenticate } from "@/middleware/auth"; // Use your existing auth middleware
-
+import { authenticate } from "@/middleware/auth"; 
 export async function GET(request) {
   try {
     await connectDB();

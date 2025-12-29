@@ -2,6 +2,7 @@ import { connectDB } from "@/lib/db";
 import User from "@/models/User";
 import bcrypt from "bcryptjs";
 import { generateAccessToken, generateRefreshToken } from "@/lib/jwt";
+import { sendWelcomeEmail } from "@/lib/email";
 
 export async function POST(request) {
   try {
@@ -106,6 +107,16 @@ export async function POST(request) {
     user.refreshToken = refreshToken;
     await user.save();
 
+    // Send welcome email (send in background)
+    sendWelcomeEmail({
+      email: user.email,
+      name: user.name,
+      province: user.province,
+      tier: user.tier,
+      preferences: user.preferences,
+      marketing_consent: user.marketing_consent,
+    }).catch(console.error); // Log errors but don't fail registration
+
     // Return response with user data
     return Response.json(
       {
@@ -130,7 +141,7 @@ export async function POST(request) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("❌ Registration error:", error);
+    console.error("Registration error:", error);
 
     // Handle duplicate email error
     if (error.code === 11000) {

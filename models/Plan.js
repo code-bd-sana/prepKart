@@ -33,6 +33,29 @@ const planSchema = new mongoose.Schema(
       default: "openai",
     },
 
+    generationMethod: {
+      type: String,
+      enum: ["openai", "spoonacular", "hybrid"],
+      default: "hybrid"
+    },
+    
+    nutritionValidationStatus: {
+      type: String,
+      enum: ["pending", "partial", "complete", "failed"],
+      default: "pending"
+    },
+    
+    recipeSources: {
+      type: Map,
+      of: String, // Stores which API generated which meal
+      default: {}
+    },
+    
+    estimatedApiCost: {
+      type: Number,
+      default: 0
+    },
+
     // Plan data
     inputs: Object,
     days: Array,
