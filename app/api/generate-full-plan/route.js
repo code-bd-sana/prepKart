@@ -2,10 +2,10 @@ import { NextResponse } from "next/server";
 import { generateMealPlan } from "@/lib/openai";
 import { generateSpoonacularMealPlan } from "@/lib/spoonacular";
 
-// quick plan
+// quick plan 
 const QUICK_PLAN_PRESETS = {
   vegetarian: {
-    days_count: 3,
+    days_count: 7,
     meals_per_day: 3,
     cuisine: "any",
     dietaryPreferences: ["Vegetarian"],
@@ -14,7 +14,7 @@ const QUICK_PLAN_PRESETS = {
     portions: 2,
   },
   lowCarb: {
-    days_count: 3,
+    days_count: 7,
     meals_per_day: 3,
     cuisine: "any",
     dietaryPreferences: ["Low-Carb"],
@@ -23,7 +23,7 @@ const QUICK_PLAN_PRESETS = {
     portions: 2,
   },
   budget: {
-    days_count: 3,
+    days_count: 7,
     meals_per_day: 2,
     cuisine: "any",
     max_cooking_time: 20,
@@ -31,7 +31,7 @@ const QUICK_PLAN_PRESETS = {
     portions: 2,
   },
   quick: {
-    days_count: 3,
+    days_count: 7,
     meals_per_day: 3,
     cuisine: "any",
     max_cooking_time: 15,
@@ -39,7 +39,7 @@ const QUICK_PLAN_PRESETS = {
     portions: 2,
   },
   family: {
-    days_count: 3,
+    days_count: 7,
     meals_per_day: 3,
     cuisine: "any",
     max_cooking_time: 25,
@@ -47,7 +47,7 @@ const QUICK_PLAN_PRESETS = {
     portions: 4,
   },
   gourmet: {
-    days_count: 3,
+    days_count: 7,
     meals_per_day: 3,
     cuisine: "any",
     max_cooking_time: 45,
@@ -55,7 +55,7 @@ const QUICK_PLAN_PRESETS = {
     portions: 2,
   },
   halal: {
-    days_count: 3,
+    days_count: 7,
     meals_per_day: 3,
     cuisine: "Middle Eastern",
     dietaryPreferences: ["Halal"],
@@ -64,7 +64,7 @@ const QUICK_PLAN_PRESETS = {
     portions: 2,
   },
   keto: {
-    days_count: 3,
+    days_count: 7,
     meals_per_day: 3,
     cuisine: "any",
     dietaryPreferences: ["Keto"],
@@ -73,7 +73,7 @@ const QUICK_PLAN_PRESETS = {
     portions: 2,
   },
   highProtein: {
-    days_count: 3,
+    days_count: 7,
     meals_per_day: 3,
     cuisine: "any",
     dietaryPreferences: ["High-Protein"],
@@ -82,7 +82,7 @@ const QUICK_PLAN_PRESETS = {
     portions: 2,
   },
   mediterranean: {
-    days_count: 3,
+    days_count: 7,
     meals_per_day: 3,
     cuisine: "Mediterranean",
     dietaryPreferences: ["Mediterranean"],
@@ -91,7 +91,7 @@ const QUICK_PLAN_PRESETS = {
     portions: 2,
   },
   detox: {
-    days_count: 3,
+    days_count: 7,
     meals_per_day: 3,
     cuisine: "any",
     dietaryPreferences: ["Vegetarian", "Dairy-Free"],
@@ -100,7 +100,7 @@ const QUICK_PLAN_PRESETS = {
     portions: 2,
   },
   weightLoss: {
-    days_count: 3,
+    days_count: 7,
     meals_per_day: 3,
     cuisine: "any",
     dietaryPreferences: ["Low-Carb", "Low-Fat"],
@@ -109,7 +109,7 @@ const QUICK_PLAN_PRESETS = {
     portions: 2,
   },
   glutenFree: {
-    days_count: 3,
+    days_count: 7,
     meals_per_day: 3,
     cuisine: "any",
     dietaryPreferences: ["Gluten-Free"],
@@ -119,7 +119,7 @@ const QUICK_PLAN_PRESETS = {
   },
 
   vegan: {
-    days_count: 3,
+    days_count: 7,
     meals_per_day: 3,
     cuisine: "any",
     dietaryPreferences: ["Vegan"],
@@ -129,7 +129,7 @@ const QUICK_PLAN_PRESETS = {
   },
 
   familyFriendly: {
-    days_count: 3,
+    days_count: 7,
     meals_per_day: 3,
     cuisine: "any",
     max_cooking_time: 25,
@@ -138,7 +138,7 @@ const QUICK_PLAN_PRESETS = {
   },
 
   budgetFriendly: {
-    days_count: 3,
+    days_count: 7,
     meals_per_day: 2,
     cuisine: "any",
     max_cooking_time: 20,
@@ -150,7 +150,7 @@ const QUICK_PLAN_PRESETS = {
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { planType, userTier, locale, daysCount = 3 } = body;
+    const { planType, userTier, locale } = body;
 
     if (!planType) {
       console.error("No planType provided");
@@ -172,16 +172,7 @@ export async function POST(request) {
       );
     }
 
-    // const preset = QUICK_PLAN_PRESETS[planType];
-
-    const basePreset = QUICK_PLAN_PRESETS[planType];
-    const preset = {
-      ...basePreset,
-      days_count: daysCount,
-      daysCount: daysCount,
-    };
-
-    console.log(`Generating ${daysCount}-day ${planType} plan`);
+    const preset = QUICK_PLAN_PRESETS[planType];
 
     let planData;
     // Generate based on user tier
