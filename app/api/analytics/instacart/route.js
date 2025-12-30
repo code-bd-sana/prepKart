@@ -1,4 +1,3 @@
-// /app/api/analytics/instacart/route.js - COMPLETE FIXED VERSION
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 

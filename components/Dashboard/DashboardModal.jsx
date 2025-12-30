@@ -916,7 +916,7 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
             ) : (
               <>
                 {/* Add Item Form */}
-                <div className="bg-white rounded-xl shadow-md p-6">
+                <div className="bg-white rounded-xl shadow-md p-6 ">
                   <h2 className="text-xl font-semibold text-gray-900 mb-4">
                     Add New Item
                   </h2>
@@ -973,7 +973,7 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
                 </div>
 
                 {/* Pantry Items */}
-                <div className="bg-white rounded-xl shadow-md p-6">
+                <div className="bg-white rounded-xl shadow-md p-6 mb-64">
                   <div className="flex justify-between items-center mb-6">
                     <h2 className="text-xl font-semibold text-gray-900">
                       My Pantry Items (0)
@@ -995,14 +995,14 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
                   </div>
 
                   {/* Link to full pantry page */}
-                  <div className="mt-8 pt-6 border-t border-gray-200 text-center">
+                  {/* <div className="mt-8 pt-6 border-t border-gray-200 text-center">
                     <Link
                       href={`/${locale}/pantry`}
                       className="inline-flex items-center gap-2 text-teal-600 hover:text-teal-700 font-medium"
                     >
                       View Full Pantry Page →
                     </Link>
-                  </div>
+                  </div> */}
                 </div>
               </>
             )}
@@ -1106,14 +1106,14 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
                 )}
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 ">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {savedMealPlans.map((plan) => {
                   const isExpired = isPlanExpired(plan);
 
                   return (
                     <div
                       key={plan._id}
-                      className={`bg-white border rounded-xl p-6 hover:shadow-lg transition-shadow min-h-[400px] flex flex-col mb-5 ${
+                      className={`bg-white border rounded-xl p-6 hover:shadow-lg transition-shadow min-h-[400px] flex flex-col  mb-64 ${
                         isExpired
                           ? "border-red-300 bg-red-50"
                           : "border-gray-200"
@@ -1205,14 +1205,14 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 ">
       {/* Overlay */}
       <div className="absolute inset-0" onClick={onClose} />
 
       {/* Modal Content */}
       <div
         ref={modalRef}
-        className="relative bg-white rounded-2xl w-full max-w-[1400px] h-[90vh] overflow-hidden flex flex-col shadow-2xl"
+        className="relative bg-white rounded-2xl w-full max-w-[1400px] max-h-[95vh] overflow-hidden flex flex-col shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header with gradient background */}

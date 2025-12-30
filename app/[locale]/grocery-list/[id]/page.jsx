@@ -21,10 +21,10 @@ import {
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { 
+import {
   generateInstacartLink,
   trackInstacartClick,
-  generateSimpleInstacartLink 
+  generateSimpleInstacartLink,
 } from "@/lib/instacart";
 
 // Aisle order for sorting
@@ -80,7 +80,6 @@ export default function GroceryListPage({ params }) {
   const [expandedAisles, setExpandedAisles] = useState({});
   const [isAllSelected, setIsAllSelected] = useState(false);
 
-
   useEffect(() => {
     // Only check authentication AFTER Redux has had time to load
     const timer = setTimeout(() => {
@@ -118,7 +117,7 @@ export default function GroceryListPage({ params }) {
       return;
     }
 
-    const checkedItems = groceryList.items.filter(item => item.checked);
+    const checkedItems = groceryList.items.filter((item) => item.checked);
 
     if (checkedItems.length === 0) {
       toast.info("Please select items to order");
@@ -126,48 +125,51 @@ export default function GroceryListPage({ params }) {
     }
 
     console.log("=== Processing Instacart Order ===");
-    console.log("Selected items:", checkedItems.map(item => item.name));
+    console.log(
+      "Selected items:",
+      checkedItems.map((item) => item.name)
+    );
 
     try {
       // Show loading
       toast.loading("Connecting to Instacart...");
+      const userId = user?._id || user?.id || "anonymous";
 
-      // Generate link with API
+      // Generate link
       const result = await generateInstacartLink(
         checkedItems,
-        user?.tier || 'free',
-        process.env.INSTACART_IMPACT_ID
+        user?.tier || "free",
+        process.env.INSTACART_IMPACT_ID,
+        userId, // Pass user ID here
+        groceryList._id
       );
 
       console.log("Generated result:", result);
 
-      // Track the click
-      await trackInstacartClick({
-        userId: user?._id || 'anonymous',
-        groceryListId: groceryList._id,
-        cartId: result.cartId,
-        store: result.store,
-        method: result.method,
-        items: result.items,
-        totalItems: checkedItems.length,
-        matchedItems: result.matchedItems || 0,
-        userTier: user?.tier || 'free'
-      });
+      // Track the click (it should already be tracked in generateInstacartLink)
+      // But also track separately to ensure it's recorded
+      // await trackInstacartClick({
+      //   userId: user?._id || "anonymous",
+      //   groceryListId: groceryList._id,
+      //   userTier: user?.tier || "free",
+      //   checkedItemsCount: checkedItems.length,
+      //   method: result.method,
+      //   searchTerms: result.searchTerms,
+      //   totalItems: checkedItems.length,
+      // });
 
-      // Show appropriate message
       toast.dismiss();
 
-      if (result.method === 'api_cart') {
-        toast.success(`Cart created with ${result.matchedItems} items!`);
+      if (result.method === "dictionary_search") {
+        toast.success("Opening Instacart...");
       } else {
         toast.info("Opening Instacart search...");
       }
 
       // Open link
       setTimeout(() => {
-        window.open(result.link, '_blank', 'noopener,noreferrer');
+        window.open(result.link, "_blank", "noopener,noreferrer");
       }, 500);
-
     } catch (error) {
       console.error("Instacart error:", error);
       toast.dismiss();
@@ -180,13 +182,13 @@ export default function GroceryListPage({ params }) {
       await trackInstacartClick({
         userId: user?._id,
         groceryListId: groceryList._id,
-        method: 'fallback',
-        items: checkedItems.map(item => ({ groceryItem: item.name })),
+        method: "fallback",
+        userTier: user?.tier || "free",
+        checkedItemsCount: checkedItems.length,
         totalItems: checkedItems.length,
-        userTier: user?.tier || 'free'
       });
 
-      window.open(simpleLink, '_blank', 'noopener,noreferrer');
+      window.open(simpleLink, "_blank", "noopener,noreferrer");
       toast.info("Opening Instacart...");
     }
   };
@@ -294,8 +296,31 @@ export default function GroceryListPage({ params }) {
           checkedItems: updatedItems.filter((item) => item.checked).length,
         }),
       });
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          const updatedList = data.groceryList;
+          const checkedItems = updatedList.items.filter((item) => item.checked);
+          const checkedCount = checkedItems.length;
+
+          // ===== Save to localStorage =====
+          if (checkedCount > 0) {
+            const cartData = {
+              checkedCount: checkedCount,
+              listId: updatedList._id,
+              instacartLink: updatedList.instacartDeepLink,
+              timestamp: Date.now(),
+              items: checkedItems,
+            };
+            localStorage.setItem("prepcart_cart", JSON.stringify(cartData));
+          } else {
+            localStorage.removeItem("prepcart_cart");
+          }
+          // ===== END ADD =====
+        }
+      }
     } catch (error) {
-      toast.error("Failed to update selection");
+      // toast.error("Failed to update selection");
     }
   };
   // Define markPantryItems function
@@ -337,10 +362,10 @@ export default function GroceryListPage({ params }) {
               inPantry,
               pantryQuantity: inPantry
                 ? pantryItems.find(
-                  (p) =>
-                    p.name.toLowerCase().includes(item.name.toLowerCase()) ||
-                    item.name.toLowerCase().includes(p.name.toLowerCase())
-                )?.quantity
+                    (p) =>
+                      p.name.toLowerCase().includes(item.name.toLowerCase()) ||
+                      item.name.toLowerCase().includes(p.name.toLowerCase())
+                  )?.quantity
                 : null,
             };
           });
@@ -461,6 +486,25 @@ export default function GroceryListPage({ params }) {
     return grouped;
   }, [groceryList, hidePantry]);
 
+  useEffect(() => {
+    if (groceryList) {
+      // Initialize cart data when list loads
+      const checkedItems = groceryList.items.filter((item) => item.checked);
+      const checkedCount = checkedItems.length;
+
+      if (checkedCount > 0) {
+        const cartData = {
+          checkedCount: checkedCount,
+          listId: groceryList._id,
+          instacartLink: groceryList.instacartDeepLink,
+          timestamp: Date.now(),
+          items: checkedItems,
+        };
+        localStorage.setItem("prepcart_cart", JSON.stringify(cartData));
+      }
+    }
+  }, [groceryList]);
+
   const groupedItems = getGroupedItems();
 
   // Sort aisles according to aisleOrder
@@ -498,42 +542,41 @@ export default function GroceryListPage({ params }) {
       0
     ) || 0;
 
+  const updateCartData = (list, instacartLink = null) => {
+    const checkedItems = list.items.filter((item) => item.checked);
+    const checkedCount = checkedItems.length;
+
+    if (checkedCount > 0) {
+      const cartData = {
+        checkedCount: checkedCount,
+        listId: list._id,
+        instacartLink: instacartLink, // Save the generated link
+        timestamp: Date.now(),
+        items: checkedItems.map((item) => ({
+          name: item.name,
+          quantity: item.quantity,
+          unit: item.unit,
+        })),
+      };
+      localStorage.setItem("prepcart_cart", JSON.stringify(cartData));
+
+      window.dispatchEvent(
+        new StorageEvent("storage", {
+          key: "prepcart_cart",
+          newValue: JSON.stringify(cartData),
+        })
+      );
+    } else {
+      localStorage.removeItem("prepcart_cart");
+      window.dispatchEvent(
+        new StorageEvent("storage", {
+          key: "prepcart_cart",
+          newValue: null,
+        })
+      );
+    }
+  };
   // toggleItemChecked function
-
-  // const toggleItemChecked = async (itemId) => {
-  //   if (!groceryList) return;
-
-  //   // INSTANT UI UPDATE
-  //   const updatedItems = groceryList.items.map((item) =>
-  //     item._id === itemId ? { ...item, checked: !item.checked } : item
-  //   );
-
-  //   const checkedCount = updatedItems.filter((item) => item.checked).length;
-
-  //   // Update state immediately (no waiting)
-  //   setGroceryList({
-  //     ...groceryList,
-  //     items: updatedItems,
-  //     checkedItems: checkedCount
-  //   });
-
-  //   // Save in background - NO TOAST, NO WAITING
-  //   setTimeout(async () => {
-  //     try {
-  //       await fetchWithAuth(`/api/groceryLists/${groceryList._id}`, {
-  //         method: "PATCH",
-  //         body: JSON.stringify({
-  //           items: updatedItems,
-  //           checkedItems: checkedCount,
-  //           totalItems: updatedItems.length,
-  //         }),
-  //       });
-  //       // No toast - silent save
-  //     } catch (error) {
-  //       console.log("Background save failed (this is ok)", error);
-  //     }
-  //   }, 100); // Small delay to not block UI
-  // };
 
   const toggleItemChecked = async (itemId) => {
     if (!groceryList) return;
@@ -544,7 +587,7 @@ export default function GroceryListPage({ params }) {
 
     // Send ALL item properties, not just checked status
     const itemsToSend = updatedItems.map((item) => ({
-      _id: item._id, // CRITICAL: Send the ID
+      _id: item._id,
       name: item.name,
       quantity: item.quantity,
       unit: item.unit,
@@ -569,7 +612,27 @@ export default function GroceryListPage({ params }) {
       const data = await response.json();
 
       if (data.success) {
-        setGroceryList(data.groceryList);
+        const updatedList = data.groceryList;
+        setGroceryList(updatedList);
+        updateCartData(updatedList);
+        // ===== Save to localStorage =====
+        const checkedItems = updatedList.items.filter((item) => item.checked);
+        const checkedCount = checkedItems.length;
+
+        if (checkedCount > 0) {
+          // Save cart data to localStorage
+          const cartData = {
+            checkedCount: checkedCount,
+            listId: updatedList._id,
+            instacartLink: updatedList.instacartDeepLink, // Make sure this field exists
+            timestamp: Date.now(),
+            items: checkedItems, // Optional: store the actual items if needed
+          };
+          localStorage.setItem("prepcart_cart", JSON.stringify(cartData));
+        } else {
+          // If no items checked, clear localStorage
+          localStorage.removeItem("prepcart_cart");
+        }
       }
     } catch (error) {
       console.error("Update error:", error);
@@ -984,11 +1047,12 @@ export default function GroceryListPage({ params }) {
                 <div
                   className="bg-green-500 h-2.5 rounded-full transition-all duration-300"
                   style={{
-                    width: `${visibleProgressItemsCount > 0
+                    width: `${
+                      visibleProgressItemsCount > 0
                         ? (visibleCheckedCount / visibleProgressItemsCount) *
-                        100
+                          100
                         : 0
-                      }%`,
+                    }%`,
                   }}
                 />
               </div>
@@ -1112,9 +1176,10 @@ export default function GroceryListPage({ params }) {
                 <div
                   className={`
                     grid gap-4
-                    ${sortedAisles.length === 1
-                      ? "grid-cols-1"
-                      : sortedAisles.length === 2
+                    ${
+                      sortedAisles.length === 1
+                        ? "grid-cols-1"
+                        : sortedAisles.length === 2
                         ? "grid-cols-1 md:grid-cols-2"
                         : "grid-cols-1 md:grid-cols-2"
                     }
@@ -1160,17 +1225,19 @@ export default function GroceryListPage({ params }) {
                           {groupedItems[aisle].map((item) => (
                             <div
                               key={item._id}
-                              className={`px-4 py-3 flex items-center gap-4 ${item.checked ? "bg-green-50" : ""
-                                }`}
+                              className={`px-4 py-3 flex items-center gap-4 ${
+                                item.checked ? "bg-green-50" : ""
+                              }`}
                             >
                               <button
                                 onClick={() => toggleItemChecked(item._id)}
                                 className={`
                                   h-5 w-5 rounded border flex items-center justify-center shrink-0
                                   transition-colors
-                                  ${item.checked
-                                    ? "bg-green-500 border-green-500"
-                                    : "border-gray-300 hover:border-gray-400"
+                                  ${
+                                    item.checked
+                                      ? "bg-green-500 border-green-500"
+                                      : "border-gray-300 hover:border-gray-400"
                                   }
                                 `}
                               >
@@ -1181,10 +1248,11 @@ export default function GroceryListPage({ params }) {
 
                               <div className=" flex-1 flex items-center">
                                 <span
-                                  className={`font-medium ${item.checked
+                                  className={`font-medium ${
+                                    item.checked
                                       ? "text-green-700"
                                       : "text-gray-900"
-                                    }`}
+                                  }`}
                                 >
                                   {item.name}
                                 </span>
@@ -1285,9 +1353,12 @@ export default function GroceryListPage({ params }) {
           <div className="p-6 border-t border-gray-200">
             <div className="flex justify-between items-center">
               <div className="text-sm text-gray-600">
-                <p className="mt-1">
-                  Note: Prices are estimates based on average Canadian grocery
-                  prices.
+                <p className="mt-1 p-3">
+                  Note: Prices and availability are provided by third-party
+                  services such as Instacart and may change at any time.
+                  PrepCart does not guarantee accuracy and is not responsible
+                  for price differences or availability. This protects you from
+                  consumer complaints and affiliate disputes.
                 </p>
               </div>
 
@@ -1359,45 +1430,13 @@ export default function GroceryListPage({ params }) {
               Link Unavailable
             </button>
           ) : (
-            // ALL USERS CAN USE INSTACART
-            // <button
-            //   onClick={() => {
-            //     console.log("BUTTON CLICKED - Checking items:");
-            //     console.log("All items:", groceryList.items);
-            //     console.log("Checked items:", groceryList.items.filter(item => item.checked));
-
-            //     // Generate fresh link
-            //     const checkedItems = groceryList.items.filter(item => item.checked);
-
-            //     // Use a fallback if no items are checked
-            //     if (checkedItems.length === 0) {
-            //       const partnerId = process.env.INSTACART_IMPACT_ID || "6773996";
-            //       window.open(`https://www.instacart.com/store/s?k=groceries&partner=${partnerId}`, "_blank");
-            //       return;
-            //     }
-
-            //     const instacartLink = generateInstacartLink(
-            //       checkedItems,
-            //       user?.tier,
-            //       process.env.INSTACART_IMPACT_ID
-            //     );
-
-
-            //     console.log("Generated link:", instacartLink);
-            //     window.open(instacartLink, "_blank");
-            //   }}
-            //   className="bg-white text-[#5a9e3a] py-3 px-8 rounded-lg font-bold hover:bg-green-50 flex items-center mx-auto cursor-pointer"
-            // >
-            //   <ShoppingCart className="h-5 w-5 mr-2" />
-            //   Order {visibleCheckedCount} items on Instacart
-            // </button>
             <button
-  onClick={handleInstacartOrder}
-  className="bg-white text-[#5a9e3a] py-3 px-8 rounded-lg font-bold hover:bg-green-50 flex items-center mx-auto cursor-pointer"
->
-  <ShoppingCart className="h-5 w-5 mr-2" />
-  Order {visibleCheckedCount} items on Instacart
-</button>
+              onClick={handleInstacartOrder}
+              className="bg-white text-[#5a9e3a] py-3 px-8 rounded-lg font-bold hover:bg-green-50 flex items-center mx-auto cursor-pointer"
+            >
+              <ShoppingCart className="h-5 w-5 mr-2" />
+              Order {visibleCheckedCount} items on Instacart
+            </button>
           )}
         </div>
       </div>
