@@ -106,7 +106,7 @@
       },
       {
         "question": "Comment les plans de repas sont-ils créés ?",
-        "answer": "Prepcart utilise une technologie de planification de repas intelligente pour créer des plans personnalisés en fonction de vos préférences alimentaires, de votre budget, de la taille de votre foyer et de votre temps de cuisine. Notre système équilibre la nutrition, réduit le gaspillage grâce à une utilisation intelligente des ingrédients et tient compte de la saisonnalité. Vous pouvez régénérer les plans jusqu’à trouver celui qui vous convient parfaitement."
+        "answer": "Prepcart utilise des systèmes automatisés pour générer des plans de repas et des recommandations à partir des informations que vous fournissez."
       },
       {
         "question": "Puis-je ajuster les recettes en fonction des allergies ou des restrictions alimentaires ?",

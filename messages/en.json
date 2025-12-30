@@ -105,7 +105,7 @@
       },
       {
         "question": "How are meal plans generated?",
-        "answer": "Prepcart uses smart meal planning technology to create personalized meal plans based on your dietary preferences, budget, family size, and cooking time. Our system balances nutrition, minimizes ingredient waste through smart ingredient overlap, and accounts for seasonal availability. You can regenerate plans until you find the perfect fit."
+        "answer": "Prepcart uses automated systems to generate meal plans and recommendations based on the information you provide."
       },
       {
         "question": "Can I adjust recipes for allergies or dietary restrictions?",

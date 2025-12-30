@@ -204,7 +204,7 @@ export default function Navbar() {
                     Admin Dashboard
                   </Link>
                 )}
-                {user && (
+                {user && user.tier !== "admin" && (
                   <button
                     onClick={() => setShowDashboardModal(true)}
                     className="px-3 lg:px-4 xl:px-5 py-2 lg:py-2.5 text-white font-medium rounded-md bg-[#4a9fd8] hover:bg-[#3b8ec4] transition-colors duration-200 cursor-pointer text-sm lg:text-base whitespace-nowrap"

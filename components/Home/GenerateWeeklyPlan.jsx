@@ -1337,7 +1337,7 @@ export default function GenerateWeeklyPlan({ voiceText }) {
 
                                 if (user.tier === "free") {
                                   toast.error("Upgrade to Plus or Premium to swap meals");
-                                  window.location.href = "/#pricing";
+                                  // window.location.href = "/#pricing";
                                   return;
                                 }
 

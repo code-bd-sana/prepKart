@@ -1,52 +1,50 @@
 // models/Click.js
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
-const clickSchema = new mongoose.Schema({
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: false // Can be null for non-logged in users
-  },
-  type: {
-    type: String,
-    enum: ["instacart", "recipe", "blog", "other"],
-    required: true
-  },
-  planId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "MealPlan",
-    required: false
-  },
-  blogId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Blogs",
-    required: false
-  },
-  groceryListId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "GroceryList",
-    required: false
-  },
-  userTier: {
-    type: String,
-    enum: ["free", "tier2", "tier3", "admin"]
-  },
-  timestamp: {
-    type: Date,
-    default: Date.now,
-    index: true
-  },
-  metadata: {
-    type: mongoose.Schema.Types.Mixed,
-    default: {}
-  }
+const ClickSchema = new mongoose.Schema({
+    type: {
+        type: String,
+        required: true,
+        enum: ['instacart', 'other'],
+        default: 'instacart'
+    },
+    timestamp: {
+        type: Date,
+        required: true,
+        default: Date.now
+    },
+    userTier: {
+        type: String,
+        required: true,
+        enum: ['free', 'tier2', 'tier3', 'admin'],
+        default: 'free'
+    },
+    userId: {
+        type: mongoose.Schema.Types.Mixed, // Allow both ObjectId and String
+        required: false
+    },
+    groceryListId: {
+        type: mongoose.Schema.Types.Mixed, // Allow both ObjectId and String
+        required: false
+    },
+    checkedItemsCount: {
+        type: Number,
+        required: true,
+        default: 0,
+        min: 0
+    },
+    metadata: {
+        type: mongoose.Schema.Types.Mixed,
+        default: {}
+    }
 }, {
-  timestamps: true
+    timestamps: true
 });
 
-// Index for faster queries
-clickSchema.index({ type: 1, timestamp: 1 });
-clickSchema.index({ userId: 1, timestamp: 1 });
+// Create indexes
+ClickSchema.index({ type: 1, timestamp: -1 });
+ClickSchema.index({ userTier: 1, timestamp: -1 });
+ClickSchema.index({ userId: 1 });
+ClickSchema.index({ groceryListId: 1 });
 
-const Click = mongoose.models.Click || mongoose.model("Click", clickSchema);
-export default Click;
+export default mongoose.models.Click || mongoose.model('Click', ClickSchema);
