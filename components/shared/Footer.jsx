@@ -147,7 +147,7 @@ const Footer = () => {
                   ))}
                 </div>
                 <p className="text-gray-600 text-sm mt-3 lg:mt-4 pl-1">Phone Number:  450-525-1786</p>
-                <p className="text-gray-600 text-sm mt-3 lg:mt-4 pl-1">Email – info@prepcart.ca</p>
+                <p className="text-gray-600 text-sm mt-3 lg:mt-4 pl-1 ">Email: <span className="underline">info@prepcart.ca</span></p>
               </div>
             </div>
           </div>

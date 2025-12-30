@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react"; 
 import { useRouter } from "next/navigation";
 import * as React from "react";
-import { RefreshCw, ShoppingCart, DollarSign, Package, AlertCircle } from "lucide-react";
+import { RefreshCw, ShoppingCart, DollarSign, Package, AlertCircle, Calendar, Database } from "lucide-react";
 import {
   LineChart,
   Line,
@@ -14,8 +14,6 @@ import {
   ResponsiveContainer,
   BarChart,
   Bar,
-  PieChart,
-  Pie,
   Cell
 } from 'recharts';
 
@@ -25,17 +23,18 @@ export default function InstacartAnalytics({ params }) {
   const { locale } = unwrappedParams;
   
   const [loading, setLoading] = useState(true);
-  const [timeRange, setTimeRange] = useState("6");
+  const [timeRange, setTimeRange] = useState("30days");
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
 
-  // Wrap fetchRealData in useCallback to stabilize it
   const fetchRealData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       const token = localStorage.getItem("token") || localStorage.getItem("accessToken");
-      const response = await fetch(`/api/admin/analytics/instacart?months=${timeRange}`, {
+      
+      console.log(`Fetching data for range: ${timeRange}`);
+      const response = await fetch(`/api/admin/analytics/instacart?range=${timeRange}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -44,6 +43,8 @@ export default function InstacartAnalytics({ params }) {
       }
       
       const result = await response.json();
+      console.log('API Response:', result);
+      
       if (result.success) {
         setData(result.data);
       } else {
@@ -52,26 +53,20 @@ export default function InstacartAnalytics({ params }) {
     } catch (error) {
       console.error("Error fetching analytics:", error);
       setError(error.message);
-      // Set empty data on error
-      setData({
-        summary: {
-          totalClicks: 0,
-          tier3Clicks: 0,
-          tier2Clicks: 0,
-          freeClicks: 0,
-          totalItems: 0,
-          avgItemsPerClick: 0,
-          estimatedCommission: 0,
-          commissionRate: 0.50,
-          period: `${timeRange} months`,
-          lastUpdated: new Date().toISOString()
-        },
-        monthlyData: []
-      });
     } finally {
       setLoading(false);
     }
   }, [timeRange]); 
+
+  const getTimeRangeLabel = (range) => {
+    switch(range) {
+      case 'today': return 'Today';
+      case '7days': return 'Last 7 days';
+      case '30days': return 'Last 30 days';
+      case 'all': return 'All time';
+      default: return 'Last 30 days';
+    }
+  };
 
   useEffect(() => {
     // Admin check
@@ -100,6 +95,75 @@ export default function InstacartAnalytics({ params }) {
     }).format(amount);
   };
 
+  // Time range buttons component
+  const TimeRangeSelector = () => {
+    const timeOptions = [
+      { value: 'today', label: 'Today' },
+      { value: '7days', label: 'Last 7 days' },
+      { value: '30days', label: 'Last 30 days' },
+      { value: 'all', label: 'All time' }
+    ];
+
+    return (
+      <div className="flex flex-wrap gap-2 mb-6">
+        {timeOptions.map((option) => (
+          <button
+            key={option.value}
+            onClick={() => {
+              console.log(`Changing time range to: ${option.value}`);
+              setTimeRange(option.value);
+            }}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              timeRange === option.value
+                ? 'bg-green-600 text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+    );
+  };
+
+  // Get appropriate chart data based on time range
+  const getChartData = () => {
+    if (!data) return [];
+    
+    console.log('Getting chart data for range:', timeRange, {
+      hasHourly: data?.hourlyData?.length,
+      hasDaily: data?.dailyData?.length,
+      hasMonthly: data?.monthlyData?.length
+    });
+    
+    if (timeRange === 'today') {
+      // For today, always return hourly data (even if empty)
+      return data?.hourlyData || [];
+    } else if (timeRange === '7days' || timeRange === '30days') {
+      return data?.dailyData || [];
+    } else if (timeRange === 'all') {
+      return data?.monthlyData || [];
+    }
+    
+    return [];
+  };
+
+  // Get X-axis key based on time range
+  const getXAxisKey = () => {
+    if (timeRange === 'today') return 'hour';
+    if (timeRange === 'all') return 'month';
+    return 'date';
+  };
+
+  // Format X-axis tick for today view
+  const formatXAxisTick = (value) => {
+    if (timeRange === 'today') {
+      // Show only hour part (e.g., "08:00" -> "08")
+      return value.split(':')[0];
+    }
+    return value;
+  };
+
   if (loading) {
     return (
       <div className="p-4 sm:p-6">
@@ -117,7 +181,12 @@ export default function InstacartAnalytics({ params }) {
     <div className="p-4 sm:p-6">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Instacart Analytics</h1>
-        <p className="text-gray-600">Real data from your Click tracking</p>
+        <div className="flex items-center gap-2">
+          <Database className={`w-5 h-5 ${data?.summary?.hasRealData ? 'text-green-500' : 'text-yellow-500'}`} />
+          <p className="text-gray-600">
+            {data?.summary?.hasRealData ? 'Live tracking data' : 'No clicks recorded yet'}
+          </p>
+        </div>
       </div>
 
       {error && (
@@ -129,115 +198,32 @@ export default function InstacartAnalytics({ params }) {
         </div>
       )}
 
-      <div className="mb-6 flex items-center space-x-4">
-        <select 
-          value={timeRange}
-          onChange={(e) => setTimeRange(e.target.value)}
-          className="border border-gray-300 rounded px-3 py-2"
-        >
-          <option value="1">Last 1 month</option>
-          <option value="3">Last 3 months</option>
-          <option value="6">Last 6 months</option>
-          <option value="12">Last 12 months</option>
-        </select>
-        
-        <button
-          onClick={fetchRealData}
-          disabled={loading}
-          className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 flex items-center"
-        >
-          <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-          Refresh
-        </button>
-        
-        {data?.summary?.lastUpdated && (
-          <span className="text-sm text-gray-500">
-            Updated: {new Date(data.summary.lastUpdated).toLocaleTimeString()}
-          </span>
-        )}
-      </div>
-
-{data && data.monthlyData && data.monthlyData.length > 0 ? (
-  <div className="mt-8">
-    <h3 className="text-lg font-semibold text-gray-900 mb-4">Monthly Click Trends</h3>
-    
-    {/* Line Chart */}
-    <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
-      <h4 className="font-medium text-gray-700 mb-4">Clicks Over Time</h4>
-      <div className="h-64">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data.monthlyData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-            <XAxis dataKey="month" />
-            <YAxis />
-            <Tooltip 
-              formatter={(value) => [value.toLocaleString(), 'Clicks']}
-            />
-            <Line 
-              type="monotone" 
-              dataKey="clicks" 
-              stroke="#10b981" 
-              strokeWidth={2}
-              dot={{ fill: '#10b981', r: 4 }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-    </div>
-
-    {/* Bar Chart */}
-    <div className="bg-white border border-gray-200 rounded-lg p-6">
-      <h4 className="font-medium text-gray-700 mb-4">Clicks by Tier per Month</h4>
-      <div className="h-64">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data.monthlyData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-            <XAxis dataKey="month" />
-            <YAxis />
-            <Tooltip 
-              formatter={(value, name) => {
-                if (name === 'tier3') return [value.toLocaleString(), 'Tier 3'];
-                if (name === 'tier2') return [value.toLocaleString(), 'Tier 2'];
-                if (name === 'free') return [value.toLocaleString(), 'Free'];
-                return [value.toLocaleString(), name];
-              }}
-            />
-            <Bar dataKey="tier3" name="Tier 3" fill="#10b981" stackId="a" />
-            <Bar dataKey="tier2" name="Tier 2" fill="#3b82f6" stackId="a" />
-            <Bar dataKey="free" name="Free" fill="#6b7280" stackId="a" />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-    </div>
-  </div>
-) : (
-  <div className="mt-8 p-6 bg-gray-50 rounded-lg text-center">
-    <p className="text-gray-500">No monthly data available yet</p>
-    <p className="text-sm text-gray-400 mt-2">Start tracking clicks to see charts</p>
-  </div>
-)}
-
-      {/* Show setup instructions if Click model not created */}
-      {data && data.summary.totalClicks === 0 && (
-        <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <h3 className="font-medium text-blue-800 mb-3">Setup Required</h3>
-          <p className="text-sm text-blue-700 mb-4">
-            To start tracking Instacart clicks, you need to:
-          </p>
-          <ol className="list-decimal list-inside text-sm text-blue-600 space-y-2">
-            <li><strong>Create the Click model</strong> - Save the Click.js file in your models folder</li>
-            <li><strong>Update GroceryList component</strong> - Add click logging to the Instacart button</li>
-            <li><strong>Wait for user activity</strong> - Tier 3 users need to click Instacart links</li>
-          </ol>
-          <div className="mt-4 p-3 bg-blue-100 rounded">
-            <code className="text-xs text-blue-800 block">
-            </code>
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-gray-900">Time Period</h2>
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={fetchRealData}
+              disabled={loading}
+              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 flex items-center"
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+              Refresh
+            </button>
+            
+            {data?.summary?.lastUpdated && (
+              <span className="text-sm text-gray-500 hidden sm:block">
+                Updated: {new Date(data.summary.lastUpdated).toLocaleString()}
+              </span>
+            )}
           </div>
         </div>
-      )}
+        
+        <TimeRangeSelector />
+      </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <div className="bg-white border border-gray-200 rounded-lg p-6">
           <div className="flex items-center mb-4">
             <div className="p-3 bg-blue-50 rounded-lg mr-4">
@@ -250,7 +236,7 @@ export default function InstacartAnalytics({ params }) {
               </div>
             </div>
           </div>
-          <div className="text-sm text-gray-400">in last {data?.summary?.period || '0 months'}</div>
+          <div className="text-sm text-gray-400">{getTimeRangeLabel(timeRange)}</div>
         </div>
 
         <div className="bg-white border border-gray-200 rounded-lg p-6">
@@ -306,6 +292,110 @@ export default function InstacartAnalytics({ params }) {
           <div className="text-sm text-gray-400">per shopping session</div>
         </div>
       </div>
+
+      {/* Click Trend Chart */}
+      <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900">
+              {timeRange === 'today' ? 'Hourly Click Trend' : 
+               timeRange === 'all' ? 'Monthly Click Trend' : 'Daily Click Trend'}
+            </h3>
+            <p className="text-sm text-gray-500">{getTimeRangeLabel(timeRange)}</p>
+          </div>
+          <div className="flex items-center text-gray-500">
+            <Calendar className="w-5 h-5 mr-2" />
+            <span className="text-sm">
+              {data?.summary?.hasRealData ? 'Live tracking' : 'No data yet'}
+            </span>
+          </div>
+        </div>
+        
+        {getChartData().length > 0 ? (
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={getChartData()}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <XAxis 
+                  dataKey={getXAxisKey()}
+                  tick={{ fontSize: 12 }}
+                  tickFormatter={formatXAxisTick}
+                />
+                <YAxis />
+                <Tooltip 
+                  formatter={(value) => [value.toLocaleString(), 'Clicks']}
+                  labelFormatter={(label) => {
+                    if (timeRange === 'today') return `Time: ${label}`;
+                    if (timeRange === 'all') return `Month: ${label}`;
+                    return `Date: ${label}`;
+                  }}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="clicks" 
+                  stroke="#10b981" 
+                  strokeWidth={2}
+                  dot={{ fill: '#10b981', r: 4 }}
+                  activeDot={{ r: 6 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        ) : (
+          <div className="h-64 flex items-center justify-center bg-gray-50 rounded-lg">
+            <div className="text-center">
+              <p className="text-gray-500 mb-2">No click data available</p>
+              <p className="text-sm text-gray-400">
+                {timeRange === 'today' ? 'No clicks recorded today yet' : 
+                 `No clicks recorded in ${getTimeRangeLabel(timeRange).toLowerCase()} yet`}
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Tier Breakdown Chart */}
+      {data && data.summary.totalClicks > 0 && (
+        <div className="bg-white border border-gray-200 rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-6">Clicks by User Tier</h3>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={[
+                  { name: 'Tier 3', value: data.summary.tier3Clicks },
+                  { name: 'Tier 2', value: data.summary.tier2Clicks },
+                  { name: 'Free', value: data.summary.freeClicks }
+                ]}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip 
+                  formatter={(value) => [value.toLocaleString(), 'Clicks']}
+                />
+                <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                  <Cell fill="#10b981" />
+                  <Cell fill="#3b82f6" />
+                  <Cell fill="#6b7280" />
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
+
+      {/* Debug info - only show in development */}
+      {process.env.NODE_ENV === 'development' && data && (
+        <div className="mt-6 p-4 bg-gray-100 rounded-lg text-xs">
+          <h4 className="font-bold mb-2">Debug Info:</h4>
+          <p>Time Range: {timeRange}</p>
+          <p>Has Real Data: {data.summary.hasRealData ? 'Yes' : 'No'}</p>
+          <p>Total Clicks: {data.summary.totalClicks}</p>
+          <p>Hourly Data Length: {data.hourlyData?.length || 0}</p>
+          <p>Daily Data Length: {data.dailyData?.length || 0}</p>
+          <p>Monthly Data Length: {data.monthlyData?.length || 0}</p>
+        </div>
+      )}
     </div>
   );
 }

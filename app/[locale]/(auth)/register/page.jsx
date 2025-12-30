@@ -267,10 +267,12 @@ export default function RegisterPage() {
     dispatch(clearError());
 
     try {
-      await dispatch(register({
-      ...formData,
-      marketing_consent: formData.marketing_consent 
-    })).unwrap();
+      await dispatch(
+        register({
+          ...formData,
+          marketing_consent: formData.marketing_consent,
+        })
+      ).unwrap();
       // await dispatch(register(formData)).unwrap();
       toast.success("Registered Successfully!");
       router.push("/");
@@ -541,7 +543,6 @@ export default function RegisterPage() {
                   </div>
                 )}
               </div>
-           
             </div>
 
             <div className="space-y-3">
@@ -616,9 +617,8 @@ export default function RegisterPage() {
                   htmlFor="marketing_consent"
                   className="text-xs text-gray-700"
                 >
-                  I agree to receive emails from Prepcart about meal plans,
-                  feature updates, and special offers. I can unsubscribe at any
-                  time.
+                  I agree to receive emails from Prepcart about updates,
+                  features, and offers.
                 </label>
               </div>
             </div>
