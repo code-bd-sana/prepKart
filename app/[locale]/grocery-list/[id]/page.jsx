@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { use } from "react";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
@@ -17,6 +17,8 @@ import {
   Save,
   ChevronDown,
   ChevronUp,
+  X,
+  Bookmark,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -79,6 +81,8 @@ export default function GroceryListPage({ params }) {
   const [userPantry, setUserPantry] = useState([]);
   const [expandedAisles, setExpandedAisles] = useState({});
   const [isAllSelected, setIsAllSelected] = useState(false);
+  // for pantry modal
+  const [showPantryModal, setShowPantryModal] = useState(false);
 
   useEffect(() => {
     // Only check authentication AFTER Redux has had time to load
@@ -145,18 +149,6 @@ export default function GroceryListPage({ params }) {
       );
 
       console.log("Generated result:", result);
-
-      // Track the click (it should already be tracked in generateInstacartLink)
-      // But also track separately to ensure it's recorded
-      // await trackInstacartClick({
-      //   userId: user?._id || "anonymous",
-      //   groceryListId: groceryList._id,
-      //   userTier: user?.tier || "free",
-      //   checkedItemsCount: checkedItems.length,
-      //   method: result.method,
-      //   searchTerms: result.searchTerms,
-      //   totalItems: checkedItems.length,
-      // });
 
       toast.dismiss();
 
@@ -262,7 +254,171 @@ export default function GroceryListPage({ params }) {
     setIsAllSelected(allChecked);
   }, [groceryList, hidePantry]);
 
+  const markPantryItems = useCallback(
+    async (groceryItems) => {
+      if (!user || user?.tier === "free") {
+        return groceryItems.map((item) => ({ ...item, inPantry: false }));
+      }
+
+      try {
+        const token = getAuthToken();
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+        const response = await fetch("/api/pantry", { headers });
+
+        if (response.ok) {
+          const pantryData = await response.json();
+          const pantryItems = pantryData.pantry?.items || [];
+
+          // Debug log to see what's in pantry
+          console.log(
+            "Pantry items from API:",
+            pantryItems.map((p) => p.name)
+          );
+          console.log(
+            "Grocery items:",
+            groceryItems.map((g) => g.name)
+          );
+
+          return groceryItems.map((item) => {
+            // Clean and normalize names for matching
+            const groceryName = (item.normalizedName || item.name)
+              .toLowerCase()
+              .trim();
+
+            // Find EXACT match or contains match (but more strict)
+            const pantryItem = pantryItems.find((pantryItem) => {
+              const pantryName = (pantryItem.normalizedName || pantryItem.name)
+                .toLowerCase()
+                .trim();
+
+              // First try exact match
+              if (groceryName === pantryName) return true;
+
+              // Check if grocery item contains pantry item name
+              if (groceryName.includes(pantryName)) return true;
+
+              // Check if pantry item contains grocery item name
+              if (pantryName.includes(groceryName)) return true;
+
+              // Check for common synonyms
+              const synonyms = {
+                broccoli: [
+                  "broccoli florets",
+                  "fresh broccoli",
+                  "broccoli heads",
+                ],
+                rice: [
+                  "cooked rice",
+                  "white rice",
+                  "brown rice",
+                  "basmati rice",
+                ],
+                honey: ["raw honey", "organic honey"],
+                water: ["drinking water", "bottled water", "mineral water"],
+                oil: ["olive oil", "vegetable oil", "cooking oil"],
+                salt: ["table salt", "sea salt", "kosher salt"],
+              };
+
+              // Check synonyms
+              if (synonyms[groceryName]) {
+                return synonyms[groceryName].some(
+                  (synonym) =>
+                    pantryName.includes(synonym) || synonym.includes(pantryName)
+                );
+              }
+
+              return false;
+            });
+
+            const inPantry = !!pantryItem;
+
+            // Debug log for matches
+            if (inPantry) {
+              console.log(
+                `Matched "${item.name}" with pantry item "${pantryItem?.name}"`
+              );
+            }
+
+            return {
+              ...item,
+              inPantry,
+              pantryQuantity: pantryItem?.quantity || null,
+              pantryUnit: pantryItem?.unit || null,
+            };
+          });
+        }
+      } catch (error) {
+        console.error("Error checking pantry:", error);
+      }
+
+      return groceryItems.map((item) => ({ ...item, inPantry: false }));
+    },
+    [user]
+  );
+
   // Toggle select all function
+  // const toggleSelectAll = async () => {
+  //   if (!groceryList) return;
+
+  //   const visibleItems = hidePantry
+  //     ? groceryList.items.filter((item) => !item.inPantry)
+  //     : groceryList.items;
+
+  //   const shouldSelectAll = !isAllSelected;
+  //   const updatedItems = groceryList.items.map((item) => {
+  //     // Only update items that are currently visible
+  //     const isVisible = hidePantry ? !item.inPantry : true;
+  //     if (isVisible) {
+  //       return { ...item, checked: shouldSelectAll };
+  //     }
+  //     return item;
+  //   });
+
+  //   // Update local state
+  //   setGroceryList({
+  //     ...groceryList,
+  //     items: updatedItems,
+  //     checkedItems: updatedItems.filter((item) => item.checked).length,
+  //   });
+
+  //   // Save to database
+  //   try {
+  //     await fetchWithAuth(`/api/groceryLists/${groceryList._id}`, {
+  //       method: "PATCH",
+  //       body: JSON.stringify({
+  //         items: updatedItems,
+  //         checkedItems: updatedItems.filter((item) => item.checked).length,
+  //       }),
+  //     });
+  //     if (response.ok) {
+  //       const data = await response.json();
+  //       if (data.success) {
+  //         const updatedList = data.groceryList;
+  //         const checkedItems = updatedList.items.filter((item) => item.checked);
+  //         const checkedCount = checkedItems.length;
+
+  //         // ===== Save to localStorage =====
+  //         if (checkedCount > 0) {
+  //           const cartData = {
+  //             checkedCount: checkedCount,
+  //             listId: updatedList._id,
+  //             instacartLink: updatedList.instacartDeepLink,
+  //             timestamp: Date.now(),
+  //             items: checkedItems,
+  //           };
+  //           localStorage.setItem("prepcart_cart", JSON.stringify(cartData));
+  //         } else {
+  //           localStorage.removeItem("prepcart_cart");
+  //         }
+  //         // ===== END ADD =====
+  //       }
+  //     }
+  //   } catch (error) {
+  //     // toast.error("Failed to update selection");
+  //   }
+  // };
+
   const toggleSelectAll = async () => {
     if (!groceryList) return;
 
@@ -289,14 +445,20 @@ export default function GroceryListPage({ params }) {
 
     // Save to database
     try {
-      await fetchWithAuth(`/api/groceryLists/${groceryList._id}`, {
-        method: "PATCH",
-        body: JSON.stringify({
-          items: updatedItems,
-          checkedItems: updatedItems.filter((item) => item.checked).length,
-        }),
-      });
+      const response = await fetchWithAuth(
+        `/api/groceryLists/${groceryList._id}`,
+        {
+          // FIX: Added const response
+          method: "PATCH",
+          body: JSON.stringify({
+            items: updatedItems,
+            checkedItems: updatedItems.filter((item) => item.checked).length,
+          }),
+        }
+      );
+
       if (response.ok) {
+        // Now response is defined
         const data = await response.json();
         if (data.success) {
           const updatedList = data.groceryList;
@@ -320,64 +482,9 @@ export default function GroceryListPage({ params }) {
         }
       }
     } catch (error) {
-      // toast.error("Failed to update selection");
+      toast.error("Failed to update selection");
     }
   };
-  // Define markPantryItems function
-  const markPantryItems = useCallback(
-    async (groceryItems) => {
-      if (!user || user?.tier === "free") {
-        return groceryItems.map((item) => ({ ...item, inPantry: false }));
-      }
-
-      try {
-        const token = getAuthToken();
-        const headers = token ? { Authorization: `Bearer ${token}` } : {};
-
-        const response = await fetch("/api/pantry", { headers });
-
-        if (response.ok) {
-          const pantryData = await response.json();
-          const pantryItems = pantryData.pantry?.items || [];
-
-          return groceryItems.map((item) => {
-            // Check if item exists in pantry
-            const inPantry = pantryItems.some((pantryItem) => {
-              // Use exact normalized name matching
-              const groceryNormalized =
-                item.normalizedName?.toLowerCase() || item.name.toLowerCase();
-              const pantryNormalized =
-                pantryItem.normalizedName?.toLowerCase() ||
-                pantryItem.name.toLowerCase();
-
-              // Exact match or very close match
-              return (
-                groceryNormalized === pantryNormalized ||
-                pantryNormalized.startsWith(groceryNormalized)
-              );
-            });
-
-            return {
-              ...item,
-              inPantry,
-              pantryQuantity: inPantry
-                ? pantryItems.find(
-                    (p) =>
-                      p.name.toLowerCase().includes(item.name.toLowerCase()) ||
-                      item.name.toLowerCase().includes(p.name.toLowerCase())
-                  )?.quantity
-                : null,
-            };
-          });
-        }
-      } catch (error) {
-        console.error("Error checking pantry:", error);
-      }
-
-      return groceryItems.map((item) => ({ ...item, inPantry: false }));
-    },
-    [user]
-  );
 
   // Fetch grocery list
   const fetchGroceryList = useCallback(
@@ -418,6 +525,35 @@ export default function GroceryListPage({ params }) {
     },
     [markPantryItems]
   );
+  // Function to refresh pantry data
+  const refreshPantryData = useCallback(async () => {
+    if (!groceryList || !id) return;
+
+    try {
+      console.log("Refreshing pantry data...");
+
+      // First, refresh the entire grocery list
+      await fetchGroceryList(id);
+
+      // Also force a pantry check
+      const token = getAuthToken();
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+      const pantryResponse = await fetch("/api/pantry", { headers });
+      if (pantryResponse.ok) {
+        const pantryData = await pantryResponse.json();
+        if (pantryData.success && pantryData.pantry?.items) {
+          console.log(
+            "Pantry refreshed with",
+            pantryData.pantry.items.length,
+            "items"
+          );
+        }
+      }
+    } catch (error) {
+      console.error("Error refreshing pantry data:", error);
+    }
+  }, [groceryList, id, fetchGroceryList]);
 
   // Fetch user pantry
   const fetchUserPantry = useCallback(async () => {
@@ -671,14 +807,27 @@ export default function GroceryListPage({ params }) {
 
     // Save to database
     try {
-      await fetchWithAuth(`/api/groceryLists/${groceryList._id}`, {
-        method: "PATCH",
-        body: JSON.stringify({
-          items: updatedItems,
-          estimatedTotal: updatedList.estimatedTotal,
-        }),
-      });
+      const response = await fetchWithAuth(
+        `/api/groceryLists/${groceryList._id}`,
+        {
+          method: "PATCH",
+          body: JSON.stringify({
+            items: updatedItems,
+            estimatedTotal: updatedList.estimatedTotal,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to save quantity");
+      }
+
+      const data = await response.json();
+      if (!data.success) {
+        toast.error("Failed to update quantity");
+      }
     } catch (error) {
+      console.error("Update quantity error:", error);
       toast.error("Failed to update quantity");
     }
   };
@@ -689,28 +838,99 @@ export default function GroceryListPage({ params }) {
 
     if (!confirm("Remove this item from the list?")) return;
 
-    const updatedItems = groceryList.items.filter(
-      (item) => item._id !== itemId
-    );
-
     try {
+      // Get the item name for debugging
+      const itemToDelete = groceryList.items.find(
+        (item) => item._id === itemId
+      );
+      console.log("Deleting item:", itemToDelete?.name, "with ID:", itemId);
+      console.log("Before deletion:", groceryList.items.length, "items");
+
+      const updatedItems = groceryList.items.filter(
+        (item) => item._id !== itemId
+      );
+
+      console.log("After deletion:", updatedItems.length, "items");
+      console.log(
+        "Sending to server:",
+        JSON.stringify({
+          items: updatedItems,
+          totalItems: updatedItems.length,
+          checkedItems: updatedItems.filter((item) => item.checked).length,
+        })
+      );
+      // Make a DELETE request to remove just this item
       const response = await fetchWithAuth(
-        `/api/groceryLists/${groceryList._id}`,
+        `/api/groceryLists/${groceryList._id}/items/${itemId}`,
         {
-          method: "PATCH",
-          body: JSON.stringify({ items: updatedItems }),
+          method: "DELETE",
         }
       );
 
       if (response.ok) {
-        setGroceryList({ ...groceryList, items: updatedItems });
-        toast.success("Item removed");
+        const data = await response.json();
+        if (data.success) {
+          // Remove from local state
+          const updatedItems = groceryList.items.filter(
+            (item) => item._id !== itemId
+          );
+
+          setGroceryList({
+            ...groceryList,
+            items: updatedItems,
+            totalItems: updatedItems.length,
+            checkedItems: updatedItems.filter((item) => item.checked).length,
+          });
+          toast.success("Item removed!");
+        } else {
+          toast.error(data.error || "Failed to remove item");
+        }
+      } else {
+        // Fallback: Use PATCH if DELETE endpoint doesn't exist
+        console.log("DELETE endpoint not found, using PATCH fallback...");
+        await removeItemFallback(itemId);
       }
     } catch (error) {
+      console.error("Remove item error:", error);
       toast.error("Failed to remove item");
     }
   };
 
+  // Fallback function if DELETE endpoint doesn't exist
+  const removeItemFallback = async (itemId) => {
+    const updatedItems = groceryList.items.filter(
+      (item) => item._id !== itemId
+    );
+
+    const response = await fetchWithAuth(
+      `/api/groceryLists/${groceryList._id}`,
+      {
+        method: "PATCH",
+        body: JSON.stringify({
+          items: updatedItems,
+          totalItems: updatedItems.length,
+          checkedItems: updatedItems.filter((item) => item.checked).length,
+        }),
+      }
+    );
+
+    if (response.ok) {
+      const data = await response.json();
+      if (data.success) {
+        setGroceryList({
+          ...groceryList,
+          items: updatedItems,
+          totalItems: updatedItems.length,
+          checkedItems: updatedItems.filter((item) => item.checked).length,
+        });
+        toast.success("Item removed!");
+      } else {
+        toast.error(data.error || "Failed to remove item");
+      }
+    } else {
+      toast.error("Failed to remove item");
+    }
+  };
   // addNewItem function
   const addNewItem = async () => {
     if (!newItem.name.trim() || !groceryList) {
@@ -744,15 +964,45 @@ export default function GroceryListPage({ params }) {
       // Create the updated items array
       const updatedItems = [...groceryList.items, newItemObj];
 
-      // Call saveChanges with the updated items directly
-      await saveChanges(updatedItems);
+      // Calculate updated totals
+      const totalItems = updatedItems.length;
+      const checkedItems = updatedItems.filter((item) => item.checked).length;
+      const estimatedTotal = updatedItems.reduce(
+        (sum, item) => sum + (item.estimatedPrice || 0),
+        0
+      );
 
-      // Only update local state and clear form AFTER successful save
-      setGroceryList({ ...groceryList, items: updatedItems });
-      setNewItem({ name: "", quantity: 1, unit: "unit", aisle: "Other" });
+      // Save to database FIRST
+      const response = await fetchWithAuth(
+        `/api/groceryLists/${groceryList._id}`,
+        {
+          method: "PATCH",
+          body: JSON.stringify({
+            items: updatedItems,
+            totalItems,
+            checkedItems,
+            estimatedTotal,
+            updatedAt: new Date().toISOString(),
+          }),
+        }
+      );
 
-      toast.success("Item added!");
+      if (!response.ok) {
+        throw new Error("Failed to save to server");
+      }
+
+      const data = await response.json();
+
+      if (data.success && data.groceryList) {
+        // Update local state only after successful save
+        setGroceryList(data.groceryList);
+        setNewItem({ name: "", quantity: 1, unit: "unit", aisle: "Other" });
+        toast.success("Item added!");
+      } else {
+        toast.error(data.error || "Failed to add item");
+      }
     } catch (error) {
+      console.error("Add item error:", error);
       toast.error("Failed to add item");
     }
   };
@@ -841,7 +1091,7 @@ export default function GroceryListPage({ params }) {
       if (navigator.share) {
         await navigator.share({
           title: groceryList?.title || "Grocery List",
-          text: `Check out my grocery list from PrepCart`,
+          text: `Check out my grocery list from Prepcart`,
           url: window.location.href,
         });
       } else {
@@ -856,14 +1106,34 @@ export default function GroceryListPage({ params }) {
   // saveChanges function
   const saveChanges = async (itemsToSaveParam = null) => {
     if (!groceryList) return;
-    const itemsToSave = itemsToSaveParam || groceryList.items;
 
     try {
+      const itemsToSave = itemsToSaveParam || groceryList.items;
+
+      console.log("Saving changes for", itemsToSave.length, "items");
+
+      // Prepare items with all necessary fields
       const processedItems = itemsToSave.map((item) => ({
-        ...item,
+        _id:
+          item._id ||
+          `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        name: item.name,
+        quantity: item.quantity || 1,
+        unit: item.unit || "unit",
+        aisle: item.aisle || item.category || "Other",
+        category: item.category || item.aisle || "Other",
+        checked: item.checked || false,
+        inPantry: item.inPantry || false,
         estimatedPrice:
           item.estimatedPrice ||
-          calculateEstimatedPrice(item.name, item.quantity, item.unit),
+          calculateEstimatedPrice(
+            item.name,
+            item.quantity || 1,
+            item.unit || "unit"
+          ),
+        normalizedName: item.normalizedName || item.name.toLowerCase(),
+        recipeSources: item.recipeSources || [],
+        note: item.note || "",
       }));
 
       const totalItems = processedItems.length;
@@ -872,6 +1142,12 @@ export default function GroceryListPage({ params }) {
         (sum, item) => sum + (item.estimatedPrice || 0),
         0
       );
+
+      console.log("Sending to server:", {
+        totalItems,
+        checkedItems,
+        estimatedTotal,
+      });
 
       const response = await fetchWithAuth(
         `/api/groceryLists/${groceryList._id}`,
@@ -887,22 +1163,39 @@ export default function GroceryListPage({ params }) {
         }
       );
 
-      if (!response.ok) {
-        throw new Error("Failed to save to server");
+      const responseText = await response.text();
+      console.log("Server response:", responseText);
+
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (e) {
+        console.error("Failed to parse server response:", e);
+        throw new Error("Invalid server response");
       }
 
-      const data = await response.json();
-
-      if (data.success && data.groceryList) {
+      if (response.ok && data.success) {
+        console.log("Save successful, updating local state");
+        // Update with the server's response
         setGroceryList(data.groceryList);
-        toast.success("Changes saved!");
         setIsEditing(false);
+        toast.success("Changes saved!");
+
+        // Force a refresh to ensure consistency
+        setTimeout(() => {
+          fetchGroceryList(id);
+        }, 500);
+
+        return true;
       } else {
-        toast.error("Failed to save changes");
+        console.error("Save failed:", data.error);
+        toast.error(data.error || "Failed to save changes");
+        return false;
       }
     } catch (error) {
       console.error("Save error:", error);
-      toast.error("Failed to save changes");
+      toast.error("Failed to save changes: " + error.message);
+      return false;
     }
   };
 
@@ -978,7 +1271,21 @@ export default function GroceryListPage({ params }) {
 
               <div className="flex items-center gap-4">
                 <button
-                  onClick={() => setIsEditing(!isEditing)}
+                  onClick={() => setShowPantryModal(true)}
+                  className="h-9 px-4 rounded-lg bg-[#4a9fd8] hover:bg-[#3b8ec4] transition-colors text-sm font-medium text-white flex items-center gap-2"
+                >
+                  <Bookmark className="h-4 w-4" />
+                  Pantry
+                </button>
+                <button
+                  onClick={() => {
+                    if (isEditing) {
+                      // Call saveChanges directly
+                      saveChanges();
+                    } else {
+                      setIsEditing(!isEditing);
+                    }
+                  }}
                   className="h-9 px-4 rounded-lg bg-white hover:bg-gray-50 transition-colors text-sm font-medium text-gray-700 flex items-center gap-2 border border-gray-300"
                 >
                   {isEditing ? (
@@ -1316,6 +1623,7 @@ export default function GroceryListPage({ params }) {
                                         ...groceryList,
                                         items: updatedItems,
                                       });
+                                      saveChanges(updatedItems);
                                     }}
                                     className="px-2 py-1 border border-gray-300 rounded text-sm"
                                   >
@@ -1356,9 +1664,8 @@ export default function GroceryListPage({ params }) {
                 <p className="mt-1 p-3">
                   Note: Prices and availability are provided by third-party
                   services such as Instacart and may change at any time.
-                  PrepCart does not guarantee accuracy and is not responsible
-                  for price differences or availability. This protects you from
-                  consumer complaints and affiliate disputes.
+                  Prepcart does not guarantee accuracy and is not responsible
+                  for price differences or availability.
                 </p>
               </div>
 
@@ -1440,6 +1747,424 @@ export default function GroceryListPage({ params }) {
           )}
         </div>
       </div>
+      <PantryModal
+        isOpen={showPantryModal}
+        onClose={() => {
+          setShowPantryModal(false);
+          refreshPantryData();
+        }}
+        locale={locale}
+        user={user}
+        onUpdatePantry={refreshPantryData}
+      />
     </section>
+  );
+}
+
+// Pantry Modal Component
+function PantryModal({
+  isOpen,
+  onClose,
+  locale,
+  user,
+  pantryItems = [],
+  onUpdatePantry,
+}) {
+  const modalRef = useRef(null);
+  const [pantry, setPantry] = useState(null);
+  const [pantryLoading, setPantryLoading] = useState(true);
+  const [newPantryItem, setNewPantryItem] = useState({
+    name: "",
+    quantity: 1,
+    unit: "unit",
+    category: "",
+  });
+  const router = useRouter();
+
+  // Fetch pantry when modal opens
+  useEffect(() => {
+    if (!isOpen || user?.tier === "free") return;
+
+    const fetchPantry = async () => {
+      if (!isOpen || user?.tier === "free") return;
+
+      try {
+        setPantryLoading(true);
+        const token =
+          localStorage.getItem("token") ||
+          localStorage.getItem("accessToken") ||
+          "";
+
+        const response = await fetch("/api/pantry", {
+          headers: {
+            "Content-Type": "application/json",
+            ...(token && { Authorization: `Bearer ${token}` }),
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            // Check for duplicates
+            const items = data.pantry.items || [];
+            const itemNames = items.map((item) => item.name.toLowerCase());
+            const duplicates = itemNames.filter(
+              (name, index) => itemNames.indexOf(name) !== index
+            );
+
+            if (duplicates.length > 0) {
+              console.warn("Duplicate pantry items found:", duplicates);
+            }
+
+            console.log("Pantry item count:", items.length);
+            console.log("Unique items:", [...new Set(itemNames)].length);
+
+            setPantry(data.pantry);
+          } else {
+            toast.error(data.error || "Failed to load pantry");
+          }
+        } else {
+          const errorData = await response.json();
+          if (response.status !== 403) {
+            toast.error(errorData.error || "Failed to load pantry");
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching pantry:", error);
+        if (user?.tier !== "free") {
+          toast.error("Failed to load pantry");
+        }
+      } finally {
+        setPantryLoading(false);
+      }
+    };
+
+    fetchPantry();
+  }, [isOpen, user]);
+
+  const handleClickOutside = useCallback(
+    (e) => {
+      if (modalRef.current && !modalRef.current.contains(e.target)) {
+        onClose();
+      }
+    },
+    [onClose]
+  );
+
+  const addPantryItem = async () => {
+    if (!newPantryItem.name.trim()) {
+      toast.error("Please enter an item name");
+      return;
+    }
+
+    try {
+      const token =
+        localStorage.getItem("token") ||
+        localStorage.getItem("accessToken") ||
+        "";
+      const response = await fetch("/api/pantry", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: JSON.stringify({
+          items: [newPantryItem],
+          action: "add",
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setPantry(data.pantry || data);
+          setNewPantryItem({
+            name: "",
+            quantity: 1,
+            unit: "unit",
+            category: "",
+          });
+          toast.success("Item added to pantry!");
+        } else {
+          toast.error(data.error || "Failed to add item");
+        }
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData.error || "Failed to add item to pantry");
+      }
+    } catch (error) {
+      console.error("Error adding item:", error);
+      toast.error("Failed to add item to pantry");
+    }
+  };
+
+  const removePantryItem = async (itemName) => {
+    if (!confirm("Remove this item from pantry?")) return;
+
+    try {
+      const token =
+        localStorage.getItem("token") ||
+        localStorage.getItem("accessToken") ||
+        "";
+      const response = await fetch("/api/pantry", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: JSON.stringify({
+          items: [{ name: itemName }],
+          action: "remove",
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setPantry(data.pantry || data);
+          toast.success("Item removed from pantry!");
+
+          // IMMEDIATELY refresh the grocery list after pantry change
+          if (onUpdatePantry) {
+            await onUpdatePantry();
+          }
+        } else {
+          toast.error(data.error || "Failed to remove item");
+        }
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData.error || "Failed to remove item from pantry");
+      }
+    } catch (error) {
+      console.error("Error removing item:", error);
+      toast.error("Failed to remove item from pantry");
+    }
+  };
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.body.style.overflow = "unset";
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.body.style.overflow = "unset";
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen, handleClickOutside]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+      {/* Overlay */}
+      <div className="absolute inset-0" onClick={onClose} />
+
+      {/* Modal Content */}
+      <div
+        ref={modalRef}
+        className="relative bg-white rounded-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="bg-green-600 px-8 py-6 relative">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-white mb-1">My Pantry</h1>
+              <p className="text-white/90">
+                Manage items you already have at home. These will be excluded
+                from grocery lists when pantry toggle is enabled.
+              </p>
+            </div>
+
+            <button
+              onClick={onClose}
+              className="p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors text-white"
+              aria-label="Close modal"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+        </div>
+
+        {/* Content Area */}
+        <div className="flex-1 overflow-y-auto p-8">
+          <div className="max-w-5xl mx-auto h-full">
+            {/* Upgrade message for free users */}
+            {user?.tier === "free" ? (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-8 text-center">
+                <h2 className="text-2xl font-semibold text-yellow-800 mb-3">
+                  Pantry Feature Unlocked
+                </h2>
+                <p className="text-yellow-700 mb-6 text-lg">
+                  The pantry feature is only available for Plus and Premium
+                  users.
+                </p>
+                <button
+                  onClick={() => {
+                    onClose();
+                    router.push(`/${locale}/#pricing`);
+                  }}
+                  className="inline-block bg-green-600 text-white px-8 py-4 rounded-lg font-medium hover:bg-green-700 transition text-lg"
+                >
+                  Upgrade Now
+                </button>
+              </div>
+            ) : (
+              <>
+                {/* Add Item Form */}
+                <div className="bg-white rounded-xl border border-gray-200 p-6 mb-8">
+                  <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+                    Add New Item
+                  </h2>
+
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Item Name *
+                      </label>
+                      <input
+                        type="text"
+                        value={newPantryItem.name}
+                        onChange={(e) =>
+                          setNewPantryItem({
+                            ...newPantryItem,
+                            name: e.target.value,
+                          })
+                        }
+                        placeholder="e.g., Rice, Olive Oil, Eggs"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Quantity
+                      </label>
+                      <input
+                        type="number"
+                        min="0.1"
+                        step="0.1"
+                        value={newPantryItem.quantity}
+                        onChange={(e) =>
+                          setNewPantryItem({
+                            ...newPantryItem,
+                            quantity: parseFloat(e.target.value) || 1,
+                          })
+                        }
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Unit
+                      </label>
+                      <select
+                        value={newPantryItem.unit}
+                        onChange={(e) =>
+                          setNewPantryItem({
+                            ...newPantryItem,
+                            unit: e.target.value,
+                          })
+                        }
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      >
+                        <option value="unit">unit</option>
+                        <option value="cup">cup</option>
+                        <option value="tbsp">tbsp</option>
+                        <option value="tsp">tsp</option>
+                        <option value="oz">oz</option>
+                        <option value="lb">lb</option>
+                        <option value="kg">kg</option>
+                        <option value="g">g</option>
+                        <option value="ml">ml</option>
+                        <option value="l">l</option>
+                      </select>
+                    </div>
+
+                    <div className="flex items-end">
+                      <button
+                        onClick={addPantryItem}
+                        className="w-full bg-green-600 text-white py-3 px-6 rounded-lg hover:bg-green-700 transition font-medium text-lg"
+                      >
+                        Add to Pantry
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Pantry Items */}
+                {pantryLoading ? (
+                  <div className="flex justify-center items-center h-64">
+                    <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-green-500"></div>
+                  </div>
+                ) : pantry?.items && pantry.items.length > 0 ? (
+                  <div className="bg-white rounded-xl border border-gray-200 p-6">
+                    <div className="flex justify-between items-center mb-8">
+                      <h2 className="text-2xl font-semibold text-gray-900">
+                        Pantry Items ({pantry.items.length})
+                      </h2>
+                      <span className="text-sm text-gray-500">
+                        Last updated:{" "}
+                        {new Date(pantry.lastSynced).toLocaleDateString()}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                      {pantry.items.map((item, index) => (
+                        <div
+                          key={index}
+                          className="border border-gray-200 rounded-lg p-5 hover:border-green-300 hover:shadow-md transition-all"
+                        >
+                          <div className="flex justify-between items-start mb-3">
+                            <div>
+                              <h3 className="text-lg font-medium text-gray-900 mb-1">
+                                {item.name}
+                              </h3>
+                              <p className="text-gray-600">
+                                {item.quantity} {item.unit}
+                              </p>
+                            </div>
+                            <button
+                              onClick={() => removePantryItem(item.name)}
+                              className="text-red-600 hover:text-red-800 text-sm p-1"
+                            >
+                              <Trash2 className="h-5 w-5" />
+                            </button>
+                          </div>
+
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="bg-gray-100 text-gray-800 px-3 py-1.5 rounded-lg">
+                              {item.category || "Uncategorized"}
+                            </span>
+                            <span className="text-gray-500">
+                              {new Date(item.lastUpdated).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+                    <div className="text-gray-400 text-8xl mb-6">🏪</div>
+                    <h3 className="text-2xl font-semibold text-gray-900 mb-3">
+                      Your pantry is empty
+                    </h3>
+                    <p className="text-gray-600 text-lg mb-8">
+                      Add items you already have at home to exclude them from
+                      grocery lists.
+                    </p>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

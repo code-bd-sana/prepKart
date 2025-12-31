@@ -44,7 +44,7 @@ export async function POST(request) {
     // Validate age verification (site is 18+)
     if (!ageVerified) {
       return Response.json(
-        { success: false, error: "You must be 18+ to use PrepCart" },
+        { success: false, error: "You must be 18+ to use Prepcart" },
         { status: 403 }
       );
     }

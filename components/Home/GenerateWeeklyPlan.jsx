@@ -1284,50 +1284,6 @@ export default function GenerateWeeklyPlan({ voiceText }) {
 
                           {/* Swap Button */}
                           <div className="pt-2 border-t border-gray-100">
-                            {/* <button
-                              onClick={async () => {
-                                // Check if user can swap based on tier
-                                if (!user || user.tier === "free") {
-                                  toast.error(
-                                    "Upgrade to Plus or Premium to swap meals"
-                                  );
-                                  return;
-                                }
-
-                                if (plan.swaps.remaining <= 0) {
-                                  toast.error(
-                                    `No swaps remaining! Used ${plan.swaps.used}/${plan.swaps.allowed}`
-                                  );
-                                  return;
-                                }
-
-                                setIsSwapping(true);
-                                await swapMeal(plan.id, mealIndex, dayIndex);
-                              }}
-                              disabled={
-                                !user ||
-                                user.tier === "free" ||
-                                plan.swaps.remaining <= 0 ||
-                                isSwapping
-                              }
-                              className={`w-full text-sm font-medium py-1.5 sm:py-1 rounded transition-colors duration-200 ${!user ||
-                                  user.tier === "free" ||
-                                  plan.swaps.remaining <= 0 ||
-                                  isSwapping
-                                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                                  : "bg-[#4a9fd8] hover:bg-[#20a1f7] text-white"
-                                }`}
-                            >
-                              {!user
-                                ? "Login to Swap"
-                                : user.tier === "free"
-                                  ? "Upgrade to Swap"
-                                  : isSwapping
-                                    ? "Swapping..."
-                                    : plan.swaps.remaining <= 0
-                                      ? "No Swaps Left"
-                                      : "Swap This Meal"}
-                            </button> */}
                             <button
                               onClick={async () => {
                                 if (!user) {

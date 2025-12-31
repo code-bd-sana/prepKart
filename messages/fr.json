@@ -347,24 +347,24 @@
     }
   ],
   "messages": {
-    "launchDeal": "Offre de Lancement",
+    "currentPlan": "Forfait actuel",
+    "freePlan": "Forfait gratuit",
+    "plusPlan": "Forfait Plus",
+    "upgradePremium": "Passer à Premium",
     "processing": "Traitement...",
     "cancelling": "Annulation...",
-    "currentPlan": "Plan Actuel",
-    "freePlan": "Plan Gratuit",
-    "plusPlan": "Plan Plus",
-    "upgradePremium": "Passer au Premium",
-    "cancelPlan": "Annuler le Plan"
+    "cancelPlan": "Annuler l’abonnement",
+    "launchDeal": "Special Launch Deal" 
   },
   "alerts": {
-    "paymentSuccess": "Paiement réussi !",
+    "cancellationSuccess": "Annulation réussie",
+    "cancellationFailed": "Échec de l’annulation :",
+    "somethingWrong": "Une erreur est survenue",
     "paymentError": "Erreur de paiement :",
-    "cancellationSuccess": "annulé ! Vous êtes maintenant sur le plan Gratuit.",
-    "cancellationFailed": "Échec de l'annulation :",
-    "somethingWrong": "Quelque chose s'est mal passé"
+    "paymentSuccess": "Paiement réussi !"
   },
   "currentAccount": "Compte actuel :",
-  "plan": "Plan :",
+  "plan": "Forfait :",
   "swaps": "Échanges :"
 },
   "groceryList": {
@@ -499,80 +499,132 @@
   },
   "legal": {
     "title": "Conditions d'utilisation",
-    "lastUpdated": "Dernière mise à jour : janvier 2025",
-    "intro": "Bienvenue sur PrepCart. En utilisant ce site et nos services, vous acceptez ces Conditions d'utilisation. Si vous n'êtes pas d'accord, veuillez ne pas utiliser PrepCart.",
+    "lastUpdated": "Dernière mise à jour : 31 décembre 2025",
+    "intro": "Les présentes Conditions d'utilisation ('Conditions') régissent votre accès et votre utilisation du site Web et des services de Prepcart (le 'Service'), exploités par Prepcart ('Prepcart', 'nous', 'notre', 'nos') à l'adresse https://Prepcart.ca. Ces Conditions sont rédigées conformément aux lois fédérales canadiennes applicables, y compris la Loi sur la protection des renseignements personnels et les documents électroniques (LPRPDE), la Loi canadienne anti-pourriel (LCAP) et la Loi sur la protection des renseignements personnels dans le secteur privé du Québec (Loi 25).",
     
-    "serviceNatureTitle": "Nature du service",
-    "serviceNatureText": "PrepCart est une application Web canadienne qui aide les utilisateurs à créer des plans de repas personnalisés et des listes d'épicerie organisées. Le service peut inclure des suggestions de recettes, des résumés nutritionnels, des outils de liste d'épicerie, le suivi du garde-manger et des liens d'achat affiliés optionnels.",
+    "acceptanceTitle": "1. Acceptation des Conditions",
+    "acceptanceText": "En accédant au Service ou en l'utilisant, vous confirmez que vous avez au moins 18 ans et que vous acceptez d'être lié par ces Conditions et notre Politique de confidentialité. Si vous n'êtes pas d'accord, vous ne devez pas utiliser le Service.",
     
-    "ageRequirementTitle": "Âge requis",
-    "ageRequirementText": "PrepCart s'adresse uniquement aux personnes âgées de 18 ans et plus. En utilisant le service, vous confirmez respecter cette condition.",
+    "serviceTitle": "2. Description du Service",
+    "serviceText": "Prepcart est une plateforme numérique de planification de repas qui utilise des systèmes automatisés et l'intelligence artificielle pour générer des plans de repas, des suggestions d'épicerie et des recommandations alimentaires basées sur les informations fournies par les utilisateurs. Prepcart ne vend pas de nourriture, d'épicerie, de kits repas ou de services de livraison.",
     
-    "noMedicalAdviceTitle": "Aucun avis médical ou nutritionnel",
-    "noMedicalAdviceText": "Le contenu fourni par PrepCart est à titre informatif seulement. Il ne constitue pas un avis médical, nutritionnel ou de mise en forme. Consultez un professionnel qualifié avant d'apporter des changements à votre alimentation, surtout en cas d'allergies ou de problèmes de santé.",
+    "aiTitle": "3. Utilisation de l'intelligence artificielle",
+    "aiText": "Le Service repose sur le traitement automatisé et l'intelligence artificielle pour personnaliser le contenu. Les résultats générés par l'IA sont fournis à titre informatif seulement et ne sont pas destinés à remplacer des conseils médicaux, nutritionnels ou diététiques professionnels.",
     
-    "accountTitle": "Comptes",
-    "accountText": "Certaines fonctionnalités exigent la création d'un compte. Vous êtes responsable de la confidentialité de vos identifiants et des activités effectuées dans votre compte.",
+    "accountsTitle": "4. Comptes utilisateur et responsabilités",
+    "accountsText": "Vous êtes responsable de la confidentialité de vos identifiants de compte et de toutes les activités menées via votre compte. Vous acceptez de fournir des informations exactes et à jour et de nous informer rapidement de toute utilisation non autorisée de votre compte.",
     
-    "subscriptionTitle": "Abonnements et paiements",
-    "subscriptionText": "Certaines fonctionnalités nécessitent un abonnement payant. Les prix et fonctionnalités sont indiqués lors du paiement. Les paiements sont traités de façon sécuritaire par des fournisseurs tels que Stripe ou PayPal.",
+    "acceptableUseTitle": "5. Utilisation acceptable et conduite interdite",
+    "acceptableUseText": "Vous acceptez de ne pas faire un usage abusif du Service, y compris, sans s'y limiter :\n- tenter d'interférer avec le Service ou sa sécurité ou de les perturber ;\n- procéder à la rétro-ingénierie, au scraping, au décompilage ou à l'exploitation du Service ou de son logiciel ;\n- utiliser des systèmes automatisés ou des robots sans autorisation ;\n- utiliser le Service à des fins illégales, trompeuses ou commerciales sans consentement ;\n- porter atteinte aux droits de propriété intellectuelle ou autres droits d'autrui.",
     
-    "affiliateTitle": "Liens affiliés",
-    "affiliateText": "PrepCart peut inclure des liens affiliés, y compris des liens d'achat d'épicerie en un clic avec des partenaires comme Instacart. Si vous utilisez ces liens, PrepCart peut recevoir une commission, sans frais supplémentaires pour vous.",
+    "ipTitle": "6. Propriété intellectuelle et licence",
+    "ipText": "Tout le contenu disponible via le Service, y compris le texte, les graphiques, les logiciels, les plans de repas, les résultats générés par l'IA, les marques de commerce et les logos, est la propriété de Prepcart ou de ses concédants de licence. Une licence limitée, non exclusive et non transférable vous est accordée pour utiliser le Service à des fins personnelles et non commerciales uniquement.",
     
-    "dataAccuracyTitle": "Exactitude des données",
-    "dataAccuracyText": "Les recettes, ingrédients et valeurs nutritionnelles sont des estimations et peuvent comporter des écarts. La disponibilité et les prix des produits dépendent des détaillants.",
+    "dataTitle": "7. Propriété des données utilisateur",
+    "dataText": "Vous conservez la propriété des renseignements personnels et des données que vous fournissez. Prepcart se voit accorder un droit limité d'utiliser, de stocker, de traiter, d'anonymiser et de supprimer ces données selon les besoins pour exploiter, maintenir et améliorer le Service, conformément à notre Politique de confidentialité.",
     
-    "acceptableUseTitle": "Utilisation acceptable",
-    "acceptableUseText": "Vous acceptez de ne pas utiliser le site de manière abusive, de ne pas compromettre la sécurité, de ne pas tenter d'accéder aux comptes d'autres utilisateurs ni d'utiliser le service à des fins illégales.",
+    "subscriptionTitle": "8. Abonnements, facturation et paiements",
+    "subscriptionText": "Certaines fonctionnalités du Service sont disponibles via des abonnements payants qui se renouvellent automatiquement sauf annulation. En souscrivant, vous autorisez Prepcart à facturer les frais applicables de manière récurrente en utilisant votre méthode de paiement sélectionnée. Vous êtes responsable du maintien d'informations de facturation exactes. Prepcart peut modifier les prix ou les conditions d'abonnement avec un préavis raisonnable.",
     
-    "terminationTitle": "Suspension ou résiliation",
-    "terminationText": "Nous pouvons suspendre ou résilier l'accès si nos politiques sont violées.",
+    "refundsTitle": "9. Remboursements et annulations",
+    "refundsText": "Sauf indication contraire au moment de l'achat, les frais d'abonnement ne sont pas remboursables. Vous pouvez annuler votre abonnement à tout moment, et l'annulation prendra effet à la fin de la période de facturation en cours.",
     
-    "liabilityTitle": "Limitation de responsabilité",
-    "liabilityText": "PrepCart est fourni « tel quel ». Dans la mesure permise par la loi canadienne, PrepCart n'est pas responsable des pertes, dommages, blessures, réactions allergiques ou conséquences liées aux recettes, ingrédients, achats ou à l'utilisation du contenu fourni.",
+    "thirdPartyTitle": "10. Services tiers et intégrations",
+    "thirdPartyText": "Le Service peut inclure des liens ou des intégrations avec des services tiers, y compris des plateformes d'épicerie telles qu'Instacart. Prepcart ne contrôle pas ces services et n'est pas responsable de leur contenu, de leurs prix, de leur disponibilité, de leur exactitude ou de leurs pratiques.",
     
-    "contactTitle": "Contact",
-    "contactText": "Pour toute question concernant ces Conditions d'utilisation, écrivez-nous à info@prepcart.ca."
+    "pricingTitle": "11. Clause de non-responsabilité concernant les prix et l'exactitude des données",
+    "pricingText": "Les prix, la disponibilité et les détails des produits affichés via des intégrations tierces sont fournis à titre de commodité seulement et peuvent différer des listes réelles. Prepcart ne garantit pas l'exactitude et décline toute responsabilité pour les écarts ou les décisions basées sur ces informations.",
+    
+    "medicalTitle": "12. Clause de non-responsabilité médicale et nutritionnelle",
+    "medicalText": "Le Service ne fournit pas de conseils médicaux, nutritionnels ou de santé. Consultez toujours un professionnel qualifié avant de prendre des décisions concernant votre alimentation ou votre santé.",
+    
+    "availabilityTitle": "13. Disponibilité du Service et support",
+    "availabilityText": "Prepcart ne garantit pas un fonctionnement ininterrompu ou sans erreur du Service. Des travaux de maintenance, des mises à jour ou des interruptions de service peuvent survenir sans préavis.",
+    
+    "warrantiesTitle": "14. Exclusion de garanties",
+    "warrantiesText": "Le Service est fourni 'tel quel' et 'selon disponibilité'. Prepcart exclut toutes garanties, expresses ou implicites, y compris les garanties de qualité marchande, d'adéquation à un usage particulier et d'exactitude.",
+    
+    "liabilityTitle": "15. Limitation de responsabilité",
+    "liabilityText": "Dans la mesure maximale permise par la loi, Prepcart ne sera pas responsable des dommages indirects, accessoires, spéciaux ou consécutifs. La responsabilité totale de Prepcart pour toute réclamation ne dépassera pas les frais payés par vous à Prepcart au cours des douze (12) mois précédant l'événement ayant donné lieu à la réclamation.",
+    
+    "indemnificationTitle": "16. Indemnisation",
+    "indemnificationText": "Vous acceptez d'indemniser et de dégager de toute responsabilité Prepcart et ses affiliés contre toute réclamation, perte, dommage, responsabilité ou dépense découlant de votre utilisation du Service ou de la violation de ces Conditions.",
+    
+    "terminationTitle": "17. Résiliation de compte et exportation des données",
+    "terminationText": "Prepcart peut suspendre ou résilier des comptes en cas de violation de ces Conditions. À la fermeture du compte, vous pouvez demander l'accès ou l'exportation de vos renseignements personnels, sous réserve des exigences légales et opérationnelles.",
+    
+    "outcomesTitle": "18. Aucune garantie de résultats",
+    "outcomesText": "Prepcart ne garantit aucun résultat ou conséquence spécifique découlant de l'utilisation du Service, y compris les résultats diététiques, financiers ou les résultats des services tiers.",
+    
+    "childrenTitle": "19. Confidentialité des enfants",
+    "childrenText": "Le Service n'est pas destiné aux personnes de moins de 14 ans. Prepcart ne recueille pas sciemment de renseignements personnels auprès d'enfants. Si de telles informations sont identifiées, elles seront supprimées rapidement.",
+    
+    "disputeTitle": "20. Résolution des différends",
+    "disputeText": "Tout différend découlant de ces Conditions sera d'abord traité par des négociations de bonne foi. En cas d'absence de résolution, les différends seront soumis à la compétence exclusive des tribunaux de la province de Québec, Canada.",
+    
+    "changesTitle": "21. Modifications des Conditions",
+    "changesText": "Prepcart peut mettre à jour ces Conditions de temps à autre. L'utilisation continue du Service après les modifications constitue l'acceptation des Conditions mises à jour.",
+    
+    "governingTitle": "22. Loi applicable",
+    "governingText": "Ces Conditions sont régies par les lois du Canada et de la province de Québec.",
+    
+    "contactTitle": "23. Coordonnées",
+    "contactText": "Si vous avez des questions concernant ces Conditions, veuillez nous contacter à l'adresse suivante :\nCourriel : info@prepcart.ca"
   },
   "privacy": {
     "title": "Politique de confidentialité",
-    "lastUpdated": "Dernière mise à jour : janvier 2025",
-    "intro": "La présente Politique de confidentialité explique comment PrepCart recueille, utilise et protège vos renseignements personnels conformément aux lois canadiennes, y compris la LPRPDE.",
+    "lastUpdated": "Dernière mise à jour : 31 décembre 2025",
+    "intro": "La présente Politique de confidentialité explique comment Prepcart ('Prepcart', 'nous', 'notre', 'nos') recueille, utilise, divulgue et protège les renseignements personnels conformément à la loi fédérale canadienne sur la protection de la vie privée (LPRPDE), la Loi 25 du Québec (projet de loi 64) et les meilleures pratiques de l'industrie.",
     
-    "personalInfoTitle": "Renseignements que nous recueillons",
-    "personalInfoText": "Nous pouvons recueillir votre nom, adresse courriel, information de compte, préférences, données d'utilisation, statut d'abonnement, type d'appareil et données analytiques de base.",
+    "accountabilityTitle": "1. Responsabilité et gouvernance",
+    "accountabilityText": "Prepcart est responsable de la protection des renseignements personnels sous son contrôle. Nous avons mis en œuvre des politiques de gouvernance, des procédures internes et des garanties pour assurer la conformité avec les lois sur la protection de la vie privée applicables. Un responsable de la protection de la vie privée désigné supervise nos pratiques de confidentialité et notre conformité.",
     
-    "foodInfoTitle": "Préférences alimentaires",
-    "foodInfoText": "Pour fournir le service, nous recueillons des informations concernant vos préférences de repas et d'épicerie, telles que les goûts, restrictions et contraintes de temps. Ces renseignements servent uniquement à générer des plans de repas et des listes d'épicerie.",
+    "collectionTitle": "2. Renseignements personnels que nous recueillons",
+    "collectionText": "Nous pouvons recueillir les catégories suivantes de renseignements personnels :\n- Nom et coordonnées (adresse courriel)\n- Identifiants de compte et détails d'abonnement\n- Préférences alimentaires et saisies fournies par l'utilisateur\n- Données d'utilisation (plans de repas générés, pages consultées)\n- Données techniques (adresse IP, informations sur l'appareil et le navigateur)\n- Données de témoins (cookies) et d'analyse\n\nNous recueillons uniquement les informations nécessaires pour exploiter et améliorer nos services.",
     
-    "paymentTitle": "Paiements",
-    "paymentText": "Les paiements sont traités de façon sécuritaire par des tiers comme Stripe ou PayPal. PrepCart ne conserve pas les détails complets de votre carte.",
+    "purposesTitle": "3. Finalités de la collecte",
+    "purposesText": "Les renseignements personnels sont recueillis pour :\n- Créer et gérer les comptes utilisateur\n- Générer des plans de repas personnalisés à l'aide de systèmes automatisés\n- Traiter les abonnements et les paiements\n- Communiquer des messages transactionnels et liés au service\n- Améliorer la fonctionnalité et la performance de la plateforme\n- Se conformer aux obligations légales et réglementaires",
     
-    "cookiesTitle": "Témoins (cookies) et analyse",
-    "cookiesText": "Nous pouvons utiliser des témoins et outils d'analyse afin d'améliorer le service et mémoriser vos préférences.",
+    "consentTitle": "4. Consentement et base légale",
+    "consentText": "Nous recueillons et traitons les renseignements personnels sur la base d'un consentement exprès, d'une nécessité contractuelle et d'obligations légales. Le consentement est obtenu clairement et peut être retiré à tout moment avec la même facilité avec laquelle il a été fourni.",
     
-    "instacartTitle": "Instacart et autres partenaires",
-    "instacartText": "Si vous choisissez d'acheter via Instacart ou un autre partenaire, certains renseignements peuvent être partagés avec ce partenaire afin de compléter votre commande. Leur politique de confidentialité s'applique alors.",
+    "automatedTitle": "5. Prise de décision automatisée et IA",
+    "automatedText": "Prepcart utilise des systèmes automatisés et l'intelligence artificielle pour analyser les saisies des utilisateurs et générer des plans de repas et des recommandations personnalisés. Les utilisateurs peuvent demander des informations sur les processus de prise de décision automatisée ou contester les résultats conformément à la Loi 25 du Québec.",
     
-    "storageTitle": "Sécurité et conservation des données",
-    "storageText": "Vos renseignements sont conservés de manière sécuritaire et l'accès est limité au personnel autorisé.",
+    "cookiesTitle": "6. Témoins (cookies) et technologies de suivi",
+    "cookiesText": "Nous utilisons des témoins et des technologies similaires pour assurer la fonctionnalité du site Web, analyser l'utilisation et améliorer l'expérience utilisateur.\n- Les témoins essentiels sont requis pour que le Service fonctionne.\n- Les témoins d'analyse nous aident à comprendre les interactions des utilisateurs et à améliorer les performances.\n\nLes utilisateurs peuvent gérer ou retirer leur consentement aux témoins via les paramètres de leur navigateur ou notre bannière de témoins. La désactivation de certains témoins peut affecter la fonctionnalité du site.",
     
-    "locationTitle": "Localisation des services",
-    "locationText": "PrepCart est conçu pour les utilisateurs situés au Canada. Certains traitements de données peuvent avoir lieu à l'extérieur du pays.",
+    "accuracyTitle": "7. Exactitude et minimisation des données",
+    "accuracyText": "Nous prenons des mesures raisonnables pour nous assurer que les renseignements personnels sont exacts, complets et à jour. Les utilisateurs sont encouragés à examiner et à mettre à jour leurs informations au besoin.",
     
-    "minorsTitle": "Mineurs",
-    "minorsText": "PrepCart ne s'adresse pas aux personnes de moins de 18 ans et nous ne recueillons pas sciemment leurs renseignements personnels.",
+    "sharingTitle": "8. Partage de données et tiers",
+    "sharingText": "Nous pouvons partager des renseignements personnels avec des fournisseurs de services de confiance (tels que les services de livraison de courriels, d'analyse et de traitement des paiements) strictement pour l'exploitation du service.\nLes renseignements personnels peuvent également être divulgués pour se conformer à des obligations légales, à des demandes des forces de l'ordre ou à des exigences réglementaires.",
     
-    "rightsTitle": "Vos droits",
-    "rightsText": "Vous pouvez demander l'accès, la correction ou la suppression de vos renseignements personnels, sous réserve des exigences légales. Veuillez écrire à info@prepcart.ca.",
+    "transfersTitle": "9. Transferts de données hors Québec ou Canada",
+    "transfersText": "Les renseignements personnels peuvent être traités ou stockés à l'extérieur du Québec ou du Canada. Lorsque de tels transferts se produisent, nous appliquons des garanties appropriées et effectuons des évaluations des facteurs relatifs à la vie privée lorsque la loi l'exige.",
     
-    "updatesTitle": "Modifications",
-    "updatesText": "Cette Politique de confidentialité peut être mise à jour à l'occasion. L'utilisation continue du service signifie que vous acceptez la version révisée.",
+    "retentionTitle": "10. Conservation des données",
+    "retentionText": "Nous conservons les renseignements personnels uniquement aussi longtemps que nécessaire :\n- Données de compte et d'abonnement : conservées pendant que le compte est actif et jusqu'à 24 mois après sa fermeture\n- Enregistrements transactionnels et de facturation : conservés comme l'exige la loi\n- Données d'analyse : conservées sous forme agrégée ou anonymisée",
     
-    "contactTitle": "Contact",
-    "contactText": "Pour toute question liée à la confidentialité, écrivez-nous à info@prepcart.ca."
+    "securityTitle": "11. Garanties de sécurité",
+    "securityText": "Nous appliquons des garanties administratives, techniques et organisationnelles pour protéger les renseignements personnels contre l'accès non autorisé, la perte, l'utilisation abusive ou la divulgation.",
+    
+    "breachTitle": "12. Gestion des atteintes à la protection des données",
+    "breachText": "Prepcart tient des registres internes de tous les incidents liés à la protection de la vie privée. En cas d'atteinte présentant un risque de préjudice grave, les personnes concernées et les autorités compétentes (y compris la CAI du Québec) seront informées conformément à la loi.",
+    
+    "rightsTitle": "13. Droits des individus (Canada et Québec)",
+    "rightsText": "Vous avez le droit de :\n- Accéder à vos renseignements personnels\n- Corriger des données inexactes\n- Retirer votre consentement\n- Demander la suppression ou le désindexation\n- Demander la portabilité des données (le cas échéant)\n\nLes demandes peuvent être soumises au responsable de la protection de la vie privée.",
+    
+    "withdrawalTitle": "14. Retrait du consentement",
+    "withdrawalText": "Le consentement peut être retiré à tout temps sans pénalité. Le retrait peut limiter l'accès à certaines fonctionnalités du Service.",
+    
+    "updatesTitle": "15. Mises à jour de la politique",
+    "updatesText": "Nous pouvons mettre à jour cette Politique de confidentialité de temps à autre. Les changements importants seront communiqués via le Service ou par courriel, le cas échéant.",
+    
+    "officerTitle": "16. Coordonnées du responsable de la protection de la vie privée",
+    "officerText": "Responsable de la protection de la vie privée :\nCourriel : info@prepcart.ca",
+    
+    "contactTitle": "17. Coordonnées",
+    "contactText": "Pour les questions ou demandes relatives à la protection de la vie privée :\nCourriel : info@prepcart.ca"
   }
-
-
 }
