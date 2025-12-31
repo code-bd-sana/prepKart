@@ -69,7 +69,12 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
         const allPlans = await response.json();
 
         // Filter only saved plans
-        const savedPlans = allPlans.filter((plan) => plan.isSaved === true);
+        const savedPlans = allPlans.filter((plan) => {
+          return (
+            plan.isSaved === true ||
+            (plan.title && plan.title.toLowerCase().includes("quick"))
+          );
+        });
 
         setSavedMealPlans(savedPlans);
       } catch (error) {
@@ -563,7 +568,13 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
                   The pantry feature is only available for Plus and Premium
                   users.
                 </p>
-                <button className="inline-block bg-green-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-green-700 transition">
+                <button
+                  onClick={() => {
+                    onClose();
+                    router.push(`/${locale}/#pricing`);
+                  }}
+                  className="inline-block bg-green-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-green-700 transition"
+                >
                   Upgrade Now
                 </button>
               </div>
@@ -909,9 +920,6 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
                   The pantry feature is only available for Plus and Premium
                   users.
                 </p>
-                <button className="inline-block bg-green-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-green-700 transition">
-                  Upgrade Now
-                </button>
               </div>
             ) : (
               <>
@@ -1010,6 +1018,16 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
         );
       case "Meal Plans":
       default:
+        const regularSavedPlans = savedMealPlans.filter(
+          (plan) =>
+            plan.isSaved === true &&
+            !plan.title?.toLowerCase().includes("quick")
+        );
+
+        const quickSavedPlans = savedMealPlans.filter((plan) =>
+          plan.title?.toLowerCase().includes("quick")
+        );
+
         return (
           <>
             <div>
@@ -1072,133 +1090,241 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
                   </div>
                 </div>
               </div>
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">
-                  Saved Meal Plans ({savedMealPlans.length})
-                </h2>
-              </div>
-            </div>
-            {loading || userLoading ? (
-              <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mx-auto"></div>
-                <p className="mt-4 text-gray-600">Loading your data...</p>
-              </div>
-            ) : savedMealPlans.length === 0 ? (
-              <div className="text-center py-12 bg-gray-50 rounded-xl">
-                <Bookmark className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-700 mb-2">
-                  No saved meal plans yet
-                </h3>
-                <p className="text-gray-500 mb-6">
-                  {currentTier === "free"
-                    ? "Free users cannot save meal plans. Upgrade to Plus or Premium to save your plans."
-                    : "Create and save your first meal plan to get started!"}
-                </p>
-                {currentTier === "free" ? (
-                  <button className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg font-medium">
-                    <Crown className="inline w-5 h-5 mr-2" />
-                    Upgrade to Save Plans
-                  </button>
-                ) : (
-                  <button className="bg-teal-600 text-white px-6 py-3 rounded-lg font-medium">
-                    Create First Plan to View
-                  </button>
-                )}
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {savedMealPlans.map((plan) => {
-                  const isExpired = isPlanExpired(plan);
 
-                  return (
-                    <div
-                      key={plan._id}
-                      className={`bg-white border rounded-xl p-6 hover:shadow-lg transition-shadow min-h-[400px] flex flex-col  mb-64 ${
-                        isExpired
-                          ? "border-red-300 bg-red-50"
-                          : "border-gray-200"
-                      }`}
-                    >
-                      {isExpired && (
-                        <div className="mb-3 px-3 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full inline-flex items-center">
-                          <span className="h-2 w-2 bg-red-500 rounded-full mr-2"></span>
-                          Expired
-                        </div>
-                      )}
+              {/* REGULAR SAVED PLANS SECTION */}
+              {regularSavedPlans.length > 0 && (
+                <div className="mb-8">
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-2xl font-bold text-gray-900">
+                      Regular Saved Plans ({regularSavedPlans.length})
+                    </h2>
+                  </div>
 
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex items-center gap-3">
-                          <div className="text-3xl">
-                            {getGoalEmoji(plan.inputs?.goal)}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {regularSavedPlans.map((plan) => {
+                      const isExpired = isPlanExpired(plan);
+                      return (
+                        <div
+                          key={plan._id}
+                          className={`bg-white border rounded-xl p-6 hover:shadow-lg transition-shadow min-h-[400px] flex flex-col mb-8 ${
+                            isExpired
+                              ? "border-red-300 bg-red-50"
+                              : "border-gray-200"
+                          }`}
+                        >
+                          {isExpired && (
+                            <div className="mb-3 px-3 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full inline-flex items-center">
+                              <span className="h-2 w-2 bg-red-500 rounded-full mr-2"></span>
+                              Expired
+                            </div>
+                          )}
+
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="flex items-center gap-3">
+                              <div className="text-3xl">
+                                {getGoalEmoji(plan.inputs?.goal)}
+                              </div>
+                              <div>
+                                <h3 className="text-xl font-semibold text-gray-900">
+                                  {plan.title}
+                                </h3>
+                                <span className="text-xs px-2 py-1 bg-teal-100 text-teal-800 rounded-full">
+                                  {plan.inputs?.goal || "Custom Plan"}
+                                </span>
+                              </div>
+                            </div>
+                            <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                              <Bookmark className="w-5 h-5 text-teal-600 fill-teal-600" />
+                            </button>
                           </div>
-                          <div>
-                            <h3 className="text-xl font-semibold text-gray-900">
-                              {plan.title}
-                            </h3>
-                            <span className="text-xs px-2 py-1 bg-teal-100 text-teal-800 rounded-full">
-                              {plan.inputs?.goal || "Custom Plan"}
+
+                          <div className="space-y-2 mb-6 grow">
+                            <p className="text-sm text-gray-600">
+                              Created: {formatDate(plan.createdAt)}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              {countTotalMeals(plan)} meals •{" "}
+                              {plan.days?.length || 0} days
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              Portions: {plan.inputs?.portions || 2} • Budget:{" "}
+                              {plan.inputs?.budget_level || "Medium"}
+                            </p>
+                            {plan.inputs?.cuisine && (
+                              <p className="text-sm text-gray-600">
+                                Cuisine: {plan.inputs.cuisine}
+                              </p>
+                            )}
+                          </div>
+
+                          <div className="mt-auto">
+                            <Link
+                              className="w-full block"
+                              href={`/${locale}/plans/${plan._id}${
+                                plan.groceryListId
+                                  ? `?groceryListId=${plan.groceryListId}`
+                                  : ""
+                              }`}
+                            >
+                              <button className="w-full bg-white border border-gray-300 text-gray-700 px-7 py-2.5 rounded-lg font-medium hover:bg-gray-50 transition-colors cursor-pointer">
+                                View Plan
+                              </button>
+                            </Link>
+                          </div>
+
+                          <div className="mt-4 pt-4 border-t border-gray-100 flex justify-between text-xs text-gray-500">
+                            <span>
+                              Swaps: {plan.swapsUsed || 0}/
+                              {plan.swapsAllowed || 3}
+                            </span>
+                            <span>Source: {plan.source || "OpenAI"}</span>
+                            <span>
+                              {isExpired ? (
+                                <span className="text-red-500">Expired</span>
+                              ) : plan.expiresAt ? (
+                                `Expires: ${formatDate(plan.expiresAt)}`
+                              ) : (
+                                "No expiry"
+                              )}
                             </span>
                           </div>
                         </div>
-                        <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                          <Bookmark className="w-5 h-5 text-teal-600 fill-teal-600" />
-                        </button>
-                      </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
-                      <div className="space-y-2 mb-6 grow">
-                        <p className="text-sm text-gray-600">
-                          Created: {formatDate(plan.createdAt)}
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          {countTotalMeals(plan)} meals •{" "}
-                          {plan.days?.length || 0} days
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          Portions: {plan.inputs?.portions || 2} • Budget:{" "}
-                          {plan.inputs?.budget_level || "Medium"}
-                        </p>
-                        {plan.inputs?.cuisine && (
-                          <p className="text-sm text-gray-600">
-                            Cuisine: {plan.inputs.cuisine}
-                          </p>
-                        )}
-                      </div>
+              {/* QUICK SAVED PLANS SECTION */}
+              {quickSavedPlans.length > 0 && (
+                <div className="mb-8">
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-2xl font-bold text-gray-900">
+                      Quick Saved Plans ({quickSavedPlans.length})
+                    </h2>
+                    <span className="text-sm text-gray-500">
+                      Generated from quick plan feature
+                    </span>
+                  </div>
 
-                      <div className="mt-auto">
-                        <Link
-                        className="w-full block"
-                          href={`/${locale}/plans/${plan._id}${
-                            plan.groceryListId
-                              ? `?groceryListId=${plan.groceryListId}`
-                              : ""
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {quickSavedPlans.map((plan) => {
+                      const isExpired = isPlanExpired(plan);
+                      return (
+                        <div
+                          key={plan._id}
+                          className={`bg-white border border-blue-200 rounded-xl p-6 hover:shadow-lg transition-shadow min-h-[400px] flex flex-col ${
+                            isExpired ? "border-red-300 bg-red-50" : ""
                           }`}
                         >
-                          <button className="w-full bg-white border border-gray-300 text-gray-700 px-7 py-2.5 rounded-lg font-medium hover:bg-gray-50 transition-colors cursor-pointer">
-                            View Plan
-                          </button>
-                        </Link>
-                      </div>
-
-                      <div className="mt-4 pt-4 border-t border-gray-100 flex justify-between text-xs text-gray-500">
-                        <span>
-                          Swaps: {plan.swapsUsed || 0}/{plan.swapsAllowed || 3}
-                        </span>
-                        <span>Source: {plan.source || "OpenAI"}</span>
-                        <span>
-                          {isExpired ? (
-                            <span className="text-red-500">Expired</span>
-                          ) : plan.expiresAt ? (
-                            `Expires: ${formatDate(plan.expiresAt)}`
-                          ) : (
-                            "No expiry"
+                          {isExpired && (
+                            <div className="mb-3 px-3 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full inline-flex items-center">
+                              <span className="h-2 w-2 bg-red-500 rounded-full mr-2"></span>
+                              Expired
+                            </div>
                           )}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="flex items-center gap-3">
+                              <div className="text-3xl">⚡</div>
+                              <div>
+                                <h3 className="text-xl font-semibold text-gray-900">
+                                  {plan.title}
+                                </h3>
+                                <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
+                                  Quick Plan
+                                </span>
+                              </div>
+                            </div>
+                            <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                              <Bookmark className="w-5 h-5 text-blue-600 fill-blue-600" />
+                            </button>
+                          </div>
+
+                          <div className="space-y-2 mb-6 grow">
+                            <p className="text-sm text-gray-600">
+                              Created: {formatDate(plan.createdAt)}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              {countTotalMeals(plan)} meals •{" "}
+                              {plan.days?.length || 0} days
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              {plan.swapsAllowed || 0} swaps available
+                            </p>
+                            {plan.source && (
+                              <p className="text-sm text-gray-600">
+                                Source: {plan.source}
+                              </p>
+                            )}
+                          </div>
+
+                          <div className="mt-auto">
+                            <Link
+                              className="w-full block"
+                              href={`/${locale}/plans/${plan._id}`}
+                            >
+                              <button className="w-full bg-blue-600 text-white px-7 py-2.5 rounded-lg font-medium hover:bg-blue-700 transition-colors cursor-pointer">
+                                View Quick Plan
+                              </button>
+                            </Link>
+                          </div>
+
+                          <div className="mt-4 pt-4 border-t border-gray-100 flex justify-between text-xs text-gray-500">
+                            <span>
+                              Swaps: {plan.swapsUsed || 0}/
+                              {plan.swapsAllowed || 3}
+                            </span>
+                            <span>Source: {plan.source || "OpenAI"}</span>
+                            <span>
+                              {isExpired ? (
+                                <span className="text-red-500">Expired</span>
+                              ) : plan.expiresAt ? (
+                                `Expires: ${formatDate(plan.expiresAt)}`
+                              ) : (
+                                "30 days from creation"
+                              )}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* EMPTY STATE */}
+              {regularSavedPlans.length === 0 &&
+                quickSavedPlans.length === 0 && (
+                  <div className="text-center py-12 bg-gray-50 rounded-xl">
+                    <Bookmark className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold text-gray-700 mb-2">
+                      No saved meal plans yet
+                    </h3>
+                    <p className="text-gray-500 mb-6">
+                      {currentTier === "free"
+                        ? "Free users cannot save meal plans. Upgrade to Plus or Premium to save your plans."
+                        : "Create and save your first meal plan to get started!"}
+                    </p>
+                    {currentTier === "free" ? (
+                      <button
+                        onClick={() => {
+                          onClose();
+                          router.push(`/${locale}/#pricing`);
+                        }}
+                        className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg font-medium"
+                      >
+                        <Crown className="inline w-5 h-5 mr-2" />
+                        Upgrade to Save Plans
+                      </button>
+                    ) : (
+                      <button className="bg-teal-600 text-white px-6 py-3 rounded-lg font-medium">
+                        Create First Plan to View
+                      </button>
+                    )}
+                  </div>
+                )}
+            </div>
           </>
         );
     }

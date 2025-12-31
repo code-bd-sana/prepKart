@@ -242,7 +242,7 @@ export default function GroceryListDemo() {
   const [items, setItems] = useState(initialItems);
   const [hidePantry, setHidePantry] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const t = useTranslations("groceryList")
+  const t = useTranslations("groceryList");
 
   const toggleItemChecked = (id) => {
     setItems(
@@ -281,10 +281,10 @@ export default function GroceryListDemo() {
       <div className="container mx-auto px-4 max-w-[1200px]">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-semibold text-[#1E1E1E] mb-3">
-             {t(`title`)}
+            {t(`title`)}
           </h2>
           <p className="text-base text-[#666666] max-w-[770px] mx-auto">
-             {t(`subtitle`)}
+            {t(`subtitle`)}
           </p>
         </div>
 
@@ -293,7 +293,7 @@ export default function GroceryListDemo() {
           <div className="p-6 px-4">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <h3 className="text-2xl font-semibold text-gray-900 md:-mx-3">
-                 {t(`listTitle`)}
+                {t(`listTitle`)}
               </h3>
               <div className="flex items-center gap-4 ">
                 <button
@@ -332,9 +332,7 @@ export default function GroceryListDemo() {
                       `}
                     />
                   </button>
-                  <span className="text-sm text-gray-600">
-                    t{`hidePantryToggle`}
-                  </span>
+                  <span className="text-sm text-gray-600">Pantry toggle</span>
                 </div>
               </div>
             </div>
