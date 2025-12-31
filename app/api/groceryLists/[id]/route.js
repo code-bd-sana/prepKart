@@ -186,65 +186,60 @@ export async function PATCH(request, { params }) {
       return NextResponse.json({ error: "Not authorized" }, { status: 403 });
     }
 
-    // ====== FIXED: Update items while preserving IDs ======
+    // ====== FIXED: REPLACE ENTIRE ITEMS ARRAY ======
     if (body.items) {
-      // Keep existing items and update their checked status
-      const updatedItems = existingList.items.map(existingItem => {
-        // Find the matching item from request
-        const updatedItem = body.items.find(item => 
-          item._id && item._id.toString() === existingItem._id.toString()
-        );
-        
-        if (updatedItem) {
-          // Update ONLY the checked status, preserve everything else
+      // COMPLETELY REPLACE the items array with what's sent from frontend
+      const finalItems = body.items.map(item => {
+        // If item has an existing ID, keep it
+        if (item._id && mongoose.Types.ObjectId.isValid(item._id)) {
           return {
-            ...existingItem.toObject(), // Keep all original properties
-            checked: updatedItem.checked === true, // Only update checked status
-            _id: existingItem._id // PRESERVE ORIGINAL ID
+            name: item.name || "Item",
+            quantity: item.quantity || 1,
+            unit: item.unit || "unit",
+            aisle: item.aisle || "Other",
+            category: item.category || "Other",
+            checked: item.checked === true,
+            estimatedPrice: item.estimatedPrice || 0,
+            normalizedName: item.normalizedName || item.name?.toLowerCase() || "",
+            recipeSources: item.recipeSources || [],
+            note: item.note || "",
+            _id: new mongoose.Types.ObjectId(item._id)
           };
         }
         
-        // Item not in request, keep as is
-        return existingItem;
+        // New item - create new ID
+        return {
+          name: item.name || "Item",
+          quantity: item.quantity || 1,
+          unit: item.unit || "unit",
+          aisle: item.aisle || "Other",
+          category: item.category || "Other",
+          checked: item.checked === true,
+          estimatedPrice: item.estimatedPrice || 0,
+          normalizedName: item.normalizedName || item.name?.toLowerCase() || "",
+          recipeSources: item.recipeSources || [],
+          note: item.note || "",
+          _id: new mongoose.Types.ObjectId(),
+        };
       });
 
-      // Also handle new items (if any were added in frontend)
-      const newItems = body.items.filter(requestItem => 
-        !existingList.items.some(existingItem => 
-          existingItem._id.toString() === requestItem._id?.toString()
-        )
-      ).map(newItem => ({
-        name: newItem.name || "Item",
-        quantity: newItem.quantity || 1,
-        unit: newItem.unit || "unit",
-        aisle: newItem.aisle || "Other",
-        category: newItem.category || "Other",
-        checked: newItem.checked === true,
-        estimatedPrice: newItem.estimatedPrice || 0,
-        normalizedName: newItem.normalizedName || newItem.name?.toLowerCase() || "",
-        recipeSources: newItem.recipeSources || [],
-        note: newItem.note || "",
-        _id: new mongoose.Types.ObjectId(), // New ID for new items
-      }));
-
-      const finalItems = [...updatedItems, ...newItems];
       const checkedCount = finalItems.filter(item => item.checked).length;
 
-      console.log("Updating:", {
-        existingItems: existingList.items.length,
-        updatedItems: updatedItems.length,
-        newItems: newItems.length,
-        totalItems: finalItems.length,
+      console.log("Replacing items:", {
+        oldItemCount: existingList.items.length,
+        newItemCount: finalItems.length,
+        itemsDeleted: existingList.items.length - finalItems.length,
         checkedCount
       });
 
-      // Update the list
+      // COMPLETELY REPLACE the items array
       const updatedList = await GroceryList.findByIdAndUpdate(
         id,
         {
-          items: finalItems,
+          items: finalItems, // <-- This REPLACES the entire array
           checkedItems: checkedCount,
           totalItems: finalItems.length,
+          estimatedTotal: body.estimatedTotal || existingList.estimatedTotal,
           updatedAt: new Date(),
         },
         { new: true, runValidators: true }

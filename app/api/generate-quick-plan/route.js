@@ -2,6 +2,13 @@ import { NextResponse } from "next/server";
 import { generateMealPlan } from "@/lib/openai";
 import { generateSpoonacularMealPlan } from "@/lib/spoonacular";
 
+
+// Monthly plan limits
+const MONTHLY_PLAN_LIMITS = {
+  free: 1,      // Free: 1 plan per month
+  tier2: 6,     // Plus: 6 plans per month
+  tier3: 999,   // Premium: unlimited
+};
 // quick plan
 const QUICK_PLAN_PRESETS = {
   vegetarian: {
@@ -150,7 +157,7 @@ const QUICK_PLAN_PRESETS = {
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { planType, userTier, locale, daysCount = 3 } = body;
+    const { planType, userTier, locale, daysCount = 3, userId } = body;
 
     if (!planType) {
       console.error("No planType provided");
@@ -159,6 +166,37 @@ export async function POST(request) {
         { status: 400 }
       );
     }
+
+    // ========== ADD THIS: MONTHLY PLAN LIMIT CHECK ==========
+    if (userId && userTier !== "tier3") {
+      await connectDB();
+      const user = await User.findById(userId);
+      
+      if (user) {
+        const monthlyLimit = MONTHLY_PLAN_LIMITS[userTier] || 1;
+        const planCountThisMonth = user.monthly_plan_count || 0;
+        
+        console.log(`User ${userId} (${userTier}): ${planCountThisMonth}/${monthlyLimit} plans used`);
+        
+        if (planCountThisMonth >= monthlyLimit) {
+          return NextResponse.json(
+            { 
+              error: "Monthly limit reached", 
+              message: `You have reached your monthly limit of ${monthlyLimit} plans. ${
+                userTier === "free" 
+                  ? "Upgrade to Plus or Premium for more plans."
+                  : "Upgrade to Premium for unlimited plans."
+              }`,
+              limit: monthlyLimit,
+              used: planCountThisMonth,
+              tier: userTier
+            },
+            { status: 403 }
+          );
+        }
+      }
+    }
+    // ========== END MONTHLY PLAN LIMIT CHECK ==========
 
     if (!QUICK_PLAN_PRESETS[planType]) {
       console.error(`Invalid planType: ${planType}`);
@@ -172,8 +210,6 @@ export async function POST(request) {
       );
     }
 
-    // const preset = QUICK_PLAN_PRESETS[planType];
-
     const basePreset = QUICK_PLAN_PRESETS[planType];
     const preset = {
       ...basePreset,
@@ -181,7 +217,7 @@ export async function POST(request) {
       daysCount: daysCount,
     };
 
-    console.log(`Generating ${daysCount}-day ${planType} plan`);
+    console.log(`Generating ${daysCount}-day ${planType} plan for user ${userId || 'guest'}`);
 
     let planData;
     // Generate based on user tier

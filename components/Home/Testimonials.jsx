@@ -20,7 +20,7 @@ const testimonials = [
     name: "Keiran Sloane",
     location: "Ottawa",
     rating: 5,
-    quote: "We're a household of five, and meal planning used to be chaos. PrepCart keeps everything organized — the budget tools and grocery lists are game changers.",
+    quote: "We're a household of five, and meal planning used to be chaos. Prepcart keeps everything organized — the budget tools and grocery lists are game changers.",
   },
 ];
 
