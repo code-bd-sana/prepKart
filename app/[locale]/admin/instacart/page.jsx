@@ -33,7 +33,7 @@ export default function InstacartAnalytics({ params }) {
       setError(null);
       const token = localStorage.getItem("token") || localStorage.getItem("accessToken");
       
-      console.log(`Fetching data for range: ${timeRange}`);
+      // console.log(`Fetching data for range: ${timeRange}`);
       const response = await fetch(`/api/admin/analytics/instacart?range=${timeRange}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -43,7 +43,7 @@ export default function InstacartAnalytics({ params }) {
       }
       
       const result = await response.json();
-      console.log('API Response:', result);
+      // console.log('API Response:', result);
       
       if (result.success) {
         setData(result.data);
@@ -110,7 +110,7 @@ export default function InstacartAnalytics({ params }) {
           <button
             key={option.value}
             onClick={() => {
-              console.log(`Changing time range to: ${option.value}`);
+              // console.log(`Changing time range to: ${option.value}`);
               setTimeRange(option.value);
             }}
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
@@ -130,11 +130,11 @@ export default function InstacartAnalytics({ params }) {
   const getChartData = () => {
     if (!data) return [];
     
-    console.log('Getting chart data for range:', timeRange, {
-      hasHourly: data?.hourlyData?.length,
-      hasDaily: data?.dailyData?.length,
-      hasMonthly: data?.monthlyData?.length
-    });
+    // console.log('Getting chart data for range:', timeRange, {
+    //   hasHourly: data?.hourlyData?.length,
+    //   hasDaily: data?.dailyData?.length,
+    //   hasMonthly: data?.monthlyData?.length
+    // });
     
     if (timeRange === 'today') {
       // For today, always return hourly data (even if empty)

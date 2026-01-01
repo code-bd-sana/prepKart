@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { register, clearError } from "@/store/slices/authSlice";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { toast } from "react-toastify";
 import { useTranslations } from "next-intl";
 
@@ -98,6 +98,7 @@ export default function RegisterPage() {
   const [dislikesText, setDislikesText] = useState("");
   const [customDietary, setCustomDietary] = useState("");
   const [customAllergy, setCustomAllergy] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   // validation function
   const isFormValid = () => {
@@ -317,11 +318,11 @@ export default function RegisterPage() {
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1">
                     {t("fullName")} <span className="text-red-500">*</span>
-                    {!formData.name.trim() && (
+                    {/* {!formData.name.trim() && (
                       <span className="text-red-500 text-xs ml-2">
                         Required
                       </span>
-                    )}
+                    )} */}
                   </label>
                   <input
                     name="name"
@@ -341,11 +342,11 @@ export default function RegisterPage() {
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1">
                     {t("email")} <span className="text-red-500">*</span>
-                    {!formData.email.trim() && (
+                    {/* {!formData.email.trim() && (
                       <span className="text-red-500 text-xs ml-2">
                         Required
                       </span>
-                    )}
+                    )} */}
                   </label>
                   <input
                     name="email"
@@ -367,26 +368,35 @@ export default function RegisterPage() {
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1">
                     {t("password")} <span className="text-red-500">*</span>
-                    {(!formData.password || formData.password.length < 6) && (
-                      <span className="text-red-500 text-xs ml-2">
-                        {formData.password ? "Min 6 characters" : "Required"}
-                      </span>
-                    )}
                   </label>
-                  <input
-                    name="password"
-                    type="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    className={`w-full px-3 py-2 text-sm border rounded focus:ring-1 focus:ring-[#4a9fd8] outline-none ${
-                      !formData.password || formData.password.length < 6
-                        ? "border-red-300"
-                        : "border-gray-300"
-                    }`}
-                    placeholder="At least 6 characters"
-                    minLength="6"
-                    required
-                  />
+                  <div className="relative">
+                    <input
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      value={formData.password}
+                      onChange={handleChange}
+                      className={`w-full px-3 py-2 text-sm border rounded focus:ring-1 focus:ring-[#4a9fd8] outline-none pr-10 ${
+                        !formData.password || formData.password.length < 6
+                          ? "border-red-300"
+                          : "border-gray-300"
+                      }`}
+                      placeholder="At least 6 characters"
+                      minLength="6"
+                      required
+                    />
+                    {/* ADD THIS BUTTON */}
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="w-4 h-4" />
+                      ) : (
+                        <Eye className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
                 </div>
 
                 <div>
