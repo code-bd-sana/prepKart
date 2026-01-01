@@ -80,6 +80,7 @@ export default function QuickPlanModal({ isOpen, onClose, planType, locale }) {
 
       setPlanData(enrichedData);
       if (daysCount === 7) setViewMode("7day");
+      if (daysCount === 5) setViewMode("5day");
     } catch (err) {
       console.error("Error:", err);
       setError(`Error: ${err.message}. Please try again.`);
@@ -88,7 +89,12 @@ export default function QuickPlanModal({ isOpen, onClose, planType, locale }) {
     }
   };
   const handleGet7DayPlan = () => {
+    setViewMode("7day");
     generatePlan(7);
+  };
+  const handleGet5DayPlan = () => {
+    setViewMode("5day");
+    generatePlan(5);
   };
 
   const handleSavePlan = async () => {
@@ -257,22 +263,6 @@ export default function QuickPlanModal({ isOpen, onClose, planType, locale }) {
     }
   }, [user, userTier]);
 
-  // // In your handleSavePlan, update monthlyStats after saving
-  // if (response.ok) {
-  //   toast.success("Plan saved successfully!");
-  //   setPlanData((prev) => ({
-  //     ...prev,
-  //     id: result.plan?._id || result.plan?.id,
-  //     isSaved: true,
-  //     needsUpdate: false,
-  //   }));
-
-  //   // Update monthly stats
-  //   if (result.monthlyStats) {
-  //     setMonthlyStats(result.monthlyStats);
-  //   }
-  // }
-
   const swapMeal = async (dayIndex, mealIndex) => {
     try {
       setIsSwapping(true);
@@ -356,10 +346,18 @@ export default function QuickPlanModal({ isOpen, onClose, planType, locale }) {
         <div className="sticky top-0 bg-white border-b p-6 flex justify-between items-center">
           <div>
             <h2 className="text-2xl font-bold text-gray-900">
-              {viewMode === "7day" ? "7-Day Plan" : "Quick Preview"}
+              {viewMode === "3day"
+                ? "Quick Preview"
+                : viewMode === "5day"
+                ? "5-Day Plan"
+                : "7-Day Plan"}
             </h2>
             <p className="text-gray-600 mt-1">
-              {viewMode === "7day" ? "Complete weekly plan" : "3-day preview"}
+              {viewMode === "3day"
+                ? "3-day preview"
+                : viewMode === "5day"
+                ? "Complete 5-day plan"
+                : "Complete weekly plan"}
               {planData && (
                 <span className="ml-2 text-sm font-medium">
                   • {planData.swaps.remaining} of {planData.swaps.allowed} swaps
@@ -500,13 +498,13 @@ export default function QuickPlanModal({ isOpen, onClose, planType, locale }) {
                             } Tier`}
                       </p>
                     </div>
-                    <button
+                    {/* <button
                       onClick={() => generatePlan(3)}
                       className="mt-4 md:mt-0 text-green-600 hover:text-green-700 font-medium flex items-center gap-2"
                     >
                       <FiRefreshCw className="w-4 h-4" />
                       Generate Another
-                    </button>
+                    </button> */}
                   </div>
 
                   {/* Meal Plan Days */}
@@ -751,13 +749,22 @@ export default function QuickPlanModal({ isOpen, onClose, planType, locale }) {
                       {t("fullPlanDescription")}
                     </p>
                   </div>
-                  <button
-                    onClick={handleGet7DayPlan}
-                    className="cursor-pointer bg-green-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-green-700 flex items-center gap-2"
-                  >
-                    Get 7-Day Plan
-                    <FiCheck className="w-4 h-4" />
-                  </button>
+                  <div className="flex justify-end gap-2">
+                    <button
+                      onClick={handleGet5DayPlan}
+                      className="cursor-pointer bg-[#4a9fd8] text-white px-6 py-3 rounded-lg font-medium hover:bg-[#3b8ec4] flex items-center gap-2"
+                    >
+                      Get 5-Day Plan
+                      <FiCheck className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={handleGet7DayPlan}
+                      className="cursor-pointer bg-green-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-green-700 flex items-center gap-2"
+                    >
+                      Get 7-Day Plan
+                      <FiCheck className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               )}
 

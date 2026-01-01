@@ -189,7 +189,7 @@ export default function QuickPlans({ locale }) {
               {t("ctaSubtitle")}
             </p>
             <Link href={"#pricing"}>
-              <button className="bg-white text-[#5a9e3a] py-3 px-8 rounded-lg font-semibold flex items-center gap-2 mx-auto hover:bg-gray-50 transition">
+              <button className="bg-white text-[#5a9e3a] py-3 px-8 rounded-lg font-semibold flex items-center gap-2 mx-auto hover:bg-gray-50 transition cursor-pointer">
                 {t("ctaButton")}
                 <FiArrowRight className="h-5 w-5" />
               </button>

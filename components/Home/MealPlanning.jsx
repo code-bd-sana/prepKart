@@ -53,7 +53,7 @@ export default function MealPlanning() {
         </div>
 
         {/* Plans Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8 md:gap-16 relative items-start justify-items-center">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6 relative items-start justify-items-center">
           {plans.map((plan, index) => (
             <div
               key={index}

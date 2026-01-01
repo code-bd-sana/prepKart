@@ -11,13 +11,13 @@ const planSchema = new mongoose.Schema(
     userId: {
       type: mongoose.Schema.Types.Mixed, // Accepts both String and ObjectId
       ref: "User",
-      index: true
+      index: true,
     },
-    
+
     // email
     userEmail: {
       type: String,
-      default: null
+      default: null,
     },
 
     // Tier info
@@ -36,24 +36,24 @@ const planSchema = new mongoose.Schema(
     generationMethod: {
       type: String,
       enum: ["openai", "spoonacular", "hybrid"],
-      default: "hybrid"
+      default: "hybrid",
     },
-    
+
     nutritionValidationStatus: {
       type: String,
       enum: ["pending", "partial", "complete", "failed"],
-      default: "pending"
+      default: "pending",
     },
-    
+
     recipeSources: {
       type: Map,
       of: String, // Stores which API generated which meal
-      default: {}
+      default: {},
     },
-    
+
     estimatedApiCost: {
       type: Number,
-      default: 0
+      default: 0,
     },
 
     // Plan data
@@ -63,17 +63,57 @@ const planSchema = new mongoose.Schema(
     // Swaps
     swapsAllowed: {
       type: Number,
-      default: 1
+      default: 1,
     },
     swapsUsed: {
       type: Number,
-      default: 0
+      default: 0,
     },
 
+    spoonacularData: {
+      verified: { type: Boolean, default: false },
+      nutrition: {
+        calories: Number,
+        protein_g: Number,
+        carbs_g: Number,
+        fat_g: Number,
+        fiber_g: Number,
+        sugar_g: Number,
+        sodium_mg: Number,
+        cholesterol_mg: Number,
+        estimated: Boolean,
+      },
+      totalEstimatedCost: Number,
+      costBreakdown: [
+        {
+          ingredient: String,
+          price: Number,
+          unit: String,
+        },
+      ],
+    },
+
+    // Repetition tracking
+    repetitionWarnings: [String],
+    mainProtein: String,
+    baseCarb: String,
+    cuisineType: String,
+
+    // Plan metadata
+    nutritionValidationStatus: {
+      type: String,
+      enum: ["pending", "verified", "estimated", "failed"],
+      default: "pending",
+    },
+    recipeSources: {
+      openai: Boolean,
+      spoonacular: Boolean,
+    },
+    estimatedApiCost: Number,
     // Status
     isSaved: {
       type: Boolean,
-      default: false
+      default: false,
     },
     expiresAt: Date,
     savedAt: Date,
@@ -85,6 +125,10 @@ const planSchema = new mongoose.Schema(
 
 // Clear the model cache to apply changes
 delete mongoose.models.MealPlan;
+
+planSchema.index({ userId: 1, createdAt: -1 });
+planSchema.index({ expiresAt: 1 });
+planSchema.index({ isSaved: 1 });
 
 // Create model
 const Plan = mongoose.model("MealPlan", planSchema);

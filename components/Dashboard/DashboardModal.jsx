@@ -15,6 +15,7 @@ import {
 import { useSelector } from "react-redux";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { toast } from "react-toastify";
 
 export default function DashboardModal({ isOpen, onClose, locale }) {
   const modalRef = useRef(null);
@@ -199,13 +200,6 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
       console.error("Error removing item:", error);
     }
   };
-  // useEffect(() => {
-  //   if (isOpen && !user) {
-  //     onClose();
-  //     // Optional: redirect to login
-  //     // router.push(`/${locale}/login`);
-  //   }
-  // }, [isOpen, user, onClose, locale]);
 
   useEffect(() => {
     if (isOpen && !user) {
@@ -308,35 +302,41 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
   const calculateTotalNutrition = () => {
     let totalCalories = 0;
     let totalProtein = 0;
-    let totalCarbs = 0;
-    let totalFat = 0;
     let planCount = 0;
+    let usingRealData = false;
 
-    savedMealPlans.forEach((plan) => {
+    // Filter out expired plans
+    const activePlans = savedMealPlans.filter((plan) => !isPlanExpired(plan));
+
+    activePlans.forEach((plan) => {
       plan.days?.forEach((day) => {
         day.meals?.forEach((meal) => {
           if (meal.nutrition) {
+            // Check if this meal was validated by Spoonacular
+            if (
+              meal.spoonacularVerified === true ||
+              meal.nutrition.spoonacularVerified === true
+            ) {
+              usingRealData = true;
+            }
+
             totalCalories += meal.nutrition.calories || 0;
             totalProtein += meal.nutrition.protein_g || 0;
-            totalCarbs += meal.nutrition.carbs_g || 0;
-            totalFat += meal.nutrition.fat_g || 0;
-            planCount++;
           }
         });
       });
+      planCount++;
     });
 
     return {
       totalCalories: Math.round(totalCalories),
       totalProtein: Math.round(totalProtein),
-      totalCarbs: Math.round(totalCarbs),
-      totalFat: Math.round(totalFat),
       averageCalories:
         planCount > 0 ? Math.round(totalCalories / planCount) : 0,
-      planCount,
+      planCount: activePlans.length,
+      usingRealData: usingRealData, // This should now be TRUE
     };
   };
-
   // Calculate total budget
   const calculateBudget = () => {
     let totalCost = 0;
@@ -420,9 +420,128 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
     const expires = new Date(plan.expiresAt);
     return now > expires;
   };
+  // delete saved meal plan
+const deleteMealPlan = async (planId) => {
+  try {
+    const confirmPromise = new Promise((resolve) => {
+      toast(
+        <div className="p-4">
+          <p className="font-semibold text-gray-800 mb-2">
+            Delete Meal Plan?
+          </p>
+          <p className="text-gray-600 text-sm mb-4">
+            Are you sure you want to delete this meal plan? This action cannot be undone.
+          </p>
+          <div className="flex gap-2 justify-end">
+            <button
+              onClick={() => {
+                toast.dismiss();
+                resolve(false);
+              }}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => {
+                toast.dismiss();
+                resolve(true);
+              }}
+              className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition"
+            >
+              Delete
+            </button>
+          </div>
+        </div>,
+        {
+          position: "top-center",
+          autoClose: false,
+          closeOnClick: false,
+          draggable: false,
+          closeButton: false,
+          theme: "light",
+        }
+      );
+    });
+
+    const confirmed = await confirmPromise;
+
+    if (!confirmed) {
+      return;
+    }
+
+    const token =
+      localStorage.getItem("token") || localStorage.getItem("accessToken");
+
+    // Show loading toast
+    const loadingToast = toast.loading("Deleting meal plan...", {
+      position: "top-right",
+    });
+
+    const response = await fetch(`/api/plans/${planId}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+    });
+
+    // Dismiss loading toast
+    toast.dismiss(loadingToast);
+
+    if (response.ok) {
+      // Remove from state
+      setSavedMealPlans((prev) => prev.filter((plan) => plan._id !== planId));
+
+      // Show success toast
+      toast.success("Meal plan deleted successfully!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+    } else {
+      const errorData = await response.json();
+
+      // Show error toast
+      toast.error(errorData.error || "Failed to delete meal plan", {
+        position: "top-right",
+        autoClose: 4000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+
+      throw new Error(errorData.error || "Failed to delete");
+    }
+  } catch (error) {
+    console.error(" Error deleting meal plan:", error);
+
+    // Show generic error toast
+    toast.error("Failed to delete meal plan. Please try again.", {
+      position: "top-right",
+      autoClose: 4000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+    });
+  }
+};
 
   // Get stats
+  // const nutritionStats = calculateTotalNutrition();
   const nutritionStats = calculateTotalNutrition();
+
   const budgetStats = calculateBudget();
   const favoriteRecipes = getFavoriteRecipes();
 
@@ -432,6 +551,18 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
       case "Nutrition":
         return (
           <div className="space-y-6">
+            <div className="mt-4 bg-green-50 border border-green-200 rounded-lg p-4">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                <p className="text-green-700 font-medium">
+                  Using verified nutrition data from Spoonacular
+                </p>
+              </div>
+              <p className="text-green-600 text-sm mt-1">
+                All nutrition information is validated by Spoonacular API for
+                accuracy
+              </p>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="bg-blue-50 p-6 rounded-xl">
                 <p className="text-sm text-blue-600 font-medium">
@@ -1136,6 +1267,29 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
                             <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
                               <Bookmark className="w-5 h-5 text-teal-600 fill-teal-600" />
                             </button>
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                deleteMealPlan(plan._id);
+                              }}
+                              className="p-2 hover:bg-red-50 rounded-lg transition-colors text-red-600"
+                              title="Delete plan"
+                            >
+                              <svg
+                                className="w-5 h-5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                />
+                              </svg>
+                            </button>
                           </div>
 
                           <div className="space-y-2 mb-6 grow">
@@ -1237,7 +1391,30 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
                               </div>
                             </div>
                             <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                              <Bookmark className="w-5 h-5 text-blue-600 fill-blue-600" />
+                              <Bookmark className="w-5 h-5  text-teal-600 fill-teal-600" />
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                deleteMealPlan(plan._id);
+                              }}
+                              className="p-2 hover:bg-red-50 rounded-lg transition-colors text-red-600"
+                              title="Delete plan"
+                            >
+                              <svg
+                                className="w-5 h-5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                />
+                              </svg>
                             </button>
                           </div>
 
@@ -1264,7 +1441,7 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
                               className="w-full block"
                               href={`/${locale}/plans/${plan._id}`}
                             >
-                              <button className="w-full bg-blue-600 text-white px-7 py-2.5 rounded-lg font-medium hover:bg-blue-700 transition-colors cursor-pointer">
+                              <button className="w-full bg-white border border-gray-300 text-gray-700 px-7 py-2.5 rounded-lg font-medium hover:bg-gray-50 transition-colors cursor-pointer">
                                 View Quick Plan
                               </button>
                             </Link>

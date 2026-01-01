@@ -115,75 +115,157 @@ export default function GroceryListPage({ params }) {
     }
   }, [groceryList]);
 
+  // const handleInstacartOrder = async () => {
+  //   if (!groceryList) {
+  //     toast.error("Grocery list not loaded");
+  //     return;
+  //   }
+
+  //   const checkedItems = groceryList.items.filter((item) => item.checked);
+
+  //   if (checkedItems.length === 0) {
+  //     toast.info("Please select items to order");
+  //     return;
+  //   }
+
+  //   // console.log("=== Processing Instacart Order ===");
+  //   // console.log(
+  //   //   "Selected items:",
+  //   //   checkedItems.map((item) => item.name)
+  //   // );
+
+  //   try {
+  //     // Show loading
+  //     toast.loading("Connecting to Instacart...");
+  //     const userId = user?._id || user?.id || "anonymous";
+
+  //     // Generate link
+  //     const result = await generateInstacartLink(
+  //       checkedItems,
+  //       user?.tier || "free",
+  //       process.env.INSTACART_IMPACT_ID,
+  //       userId, // Pass user ID here
+  //       groceryList._id
+  //     );
+
+  //     // console.log("Generated result:", result);
+
+  //     toast.dismiss();
+
+  //     if (result.method === "dictionary_search") {
+  //       toast.success("Opening Instacart...");
+  //     } else {
+  //       toast.info("Opening Instacart search...");
+  //     }
+
+  //     // Open link
+  //     setTimeout(() => {
+  //       window.open(result.link, "_blank", "noopener,noreferrer");
+  //     }, 500);
+  //   } catch (error) {
+  //     console.error("Instacart error:", error);
+  //     toast.dismiss();
+
+  //     // Fallback to simple link
+  //     const partnerId = process.env.INSTACART_IMPACT_ID || "6773996";
+  //     const simpleLink = generateSimpleInstacartLink(checkedItems, partnerId);
+
+  //     // Track fallback click
+  //     await trackInstacartClick({
+  //       userId: user?._id,
+  //       groceryListId: groceryList._id,
+  //       method: "fallback",
+  //       userTier: user?.tier || "free",
+  //       checkedItemsCount: checkedItems.length,
+  //       totalItems: checkedItems.length,
+  //     });
+
+  //     window.open(simpleLink, "_blank", "noopener,noreferrer");
+  //     toast.info("Opening Instacart...");
+  //   }
+  // };
+
   const handleInstacartOrder = async () => {
-    if (!groceryList) {
-      toast.error("Grocery list not loaded");
-      return;
-    }
+  if (!groceryList) {
+    toast.error("Grocery list not loaded");
+    return;
+  }
 
-    const checkedItems = groceryList.items.filter((item) => item.checked);
+  const checkedItems = groceryList.items.filter((item) => item.checked);
 
-    if (checkedItems.length === 0) {
-      toast.info("Please select items to order");
-      return;
-    }
+  if (checkedItems.length === 0) {
+    toast.info("Please select items to order");
+    return;
+  }
 
-    console.log("=== Processing Instacart Order ===");
-    console.log(
-      "Selected items:",
-      checkedItems.map((item) => item.name)
-    );
+  console.log("=== Processing Instacart Order ===");
+  console.log("Selected items:", checkedItems.map((item) => item.name));
 
-    try {
-      // Show loading
-      toast.loading("Connecting to Instacart...");
-      const userId = user?._id || user?.id || "anonymous";
+  try {
+    // Show loading
+    toast.loading("Adding items to Instacart cart...");
+    const userId = user?._id || user?.id || "anonymous";
 
-      // Generate link
-      const result = await generateInstacartLink(
-        checkedItems,
-        user?.tier || "free",
-        process.env.INSTACART_IMPACT_ID,
-        userId, // Pass user ID here
-        groceryList._id
-      );
-
-      console.log("Generated result:", result);
-
-      toast.dismiss();
-
-      if (result.method === "dictionary_search") {
-        toast.success("Opening Instacart...");
-      } else {
-        toast.info("Opening Instacart search...");
-      }
-
-      // Open link
-      setTimeout(() => {
-        window.open(result.link, "_blank", "noopener,noreferrer");
-      }, 500);
-    } catch (error) {
-      console.error("Instacart error:", error);
-      toast.dismiss();
-
-      // Fallback to simple link
-      const partnerId = process.env.INSTACART_IMPACT_ID || "6773996";
-      const simpleLink = generateSimpleInstacartLink(checkedItems, partnerId);
-
-      // Track fallback click
-      await trackInstacartClick({
-        userId: user?._id,
-        groceryListId: groceryList._id,
-        method: "fallback",
+    // Call the API endpoint that uses IDP
+    const response = await fetch("/api/instacart", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(getAuthToken() && { Authorization: `Bearer ${getAuthToken()}` }),
+      },
+      body: JSON.stringify({
+        groceryItems: checkedItems,
+        userId: userId,
         userTier: user?.tier || "free",
-        checkedItemsCount: checkedItems.length,
-        totalItems: checkedItems.length,
-      });
+        groceryListId: groceryList._id,
+      }),
+    });
 
-      window.open(simpleLink, "_blank", "noopener,noreferrer");
-      toast.info("Opening Instacart...");
+    const data = await response.json();
+    
+    toast.dismiss();
+
+    if (data.success) {
+      console.log("✅ Items added to cart! Opening:", data.link);
+      toast.success("Opening Instacart with items in cart...");
+      
+      // Open the Instacart cart URL
+      setTimeout(() => {
+        window.open(data.link, "_blank", "noopener,noreferrer");
+      }, 500);
+      
+    } else {
+      // If API failed but has fallback link
+      if (data.fallbackLink) {
+        console.log("Using fallback link:", data.fallbackLink);
+        toast.info("Opening Instacart search...");
+        
+        window.open(data.fallbackLink, "_blank", "noopener,noreferrer");
+      } else {
+        // Last resort: generate simple link
+        const partnerId = process.env.INSTACART_IMPACT_ID || "6773996";
+        const simpleLink = `https://www.instacart.ca/store/s?k=${encodeURIComponent(
+          checkedItems[0]?.name || "groceries"
+        )}&partner=${partnerId}&locale=en-CA`;
+        
+        toast.info("Opening Instacart...");
+        window.open(simpleLink, "_blank", "noopener,noreferrer");
+      }
     }
-  };
+    
+  } catch (error) {
+    console.error("Instacart error:", error);
+    toast.dismiss();
+    
+    // Emergency fallback
+    const partnerId = process.env.INSTACART_IMPACT_ID || "6773996";
+    const firstItem = checkedItems[0]?.name || "groceries";
+    const emergencyLink = `https://www.instacart.ca/store/s?k=${encodeURIComponent(firstItem)}&partner=${partnerId}&locale=en-CA`;
+    
+    toast.info("Opening Instacart...");
+    window.open(emergencyLink, "_blank", "noopener,noreferrer");
+  }
+};
   const categorizeItem = (itemName) => {
     const name = itemName.toLowerCase();
 
@@ -271,14 +353,14 @@ export default function GroceryListPage({ params }) {
           const pantryItems = pantryData.pantry?.items || [];
 
           // Debug log to see what's in pantry
-          console.log(
-            "Pantry items from API:",
-            pantryItems.map((p) => p.name)
-          );
-          console.log(
-            "Grocery items:",
-            groceryItems.map((g) => g.name)
-          );
+          // console.log(
+          //   "Pantry items from API:",
+          //   pantryItems.map((p) => p.name)
+          // );
+          // console.log(
+          //   "Grocery items:",
+          //   groceryItems.map((g) => g.name)
+          // );
 
           return groceryItems.map((item) => {
             // Clean and normalize names for matching
@@ -335,9 +417,9 @@ export default function GroceryListPage({ params }) {
 
             // Debug log for matches
             if (inPantry) {
-              console.log(
-                `Matched "${item.name}" with pantry item "${pantryItem?.name}"`
-              );
+              // console.log(
+              //   `Matched "${item.name}" with pantry item "${pantryItem?.name}"`
+              // );
             }
 
             return {
@@ -356,68 +438,6 @@ export default function GroceryListPage({ params }) {
     },
     [user]
   );
-
-  // Toggle select all function
-  // const toggleSelectAll = async () => {
-  //   if (!groceryList) return;
-
-  //   const visibleItems = hidePantry
-  //     ? groceryList.items.filter((item) => !item.inPantry)
-  //     : groceryList.items;
-
-  //   const shouldSelectAll = !isAllSelected;
-  //   const updatedItems = groceryList.items.map((item) => {
-  //     // Only update items that are currently visible
-  //     const isVisible = hidePantry ? !item.inPantry : true;
-  //     if (isVisible) {
-  //       return { ...item, checked: shouldSelectAll };
-  //     }
-  //     return item;
-  //   });
-
-  //   // Update local state
-  //   setGroceryList({
-  //     ...groceryList,
-  //     items: updatedItems,
-  //     checkedItems: updatedItems.filter((item) => item.checked).length,
-  //   });
-
-  //   // Save to database
-  //   try {
-  //     await fetchWithAuth(`/api/groceryLists/${groceryList._id}`, {
-  //       method: "PATCH",
-  //       body: JSON.stringify({
-  //         items: updatedItems,
-  //         checkedItems: updatedItems.filter((item) => item.checked).length,
-  //       }),
-  //     });
-  //     if (response.ok) {
-  //       const data = await response.json();
-  //       if (data.success) {
-  //         const updatedList = data.groceryList;
-  //         const checkedItems = updatedList.items.filter((item) => item.checked);
-  //         const checkedCount = checkedItems.length;
-
-  //         // ===== Save to localStorage =====
-  //         if (checkedCount > 0) {
-  //           const cartData = {
-  //             checkedCount: checkedCount,
-  //             listId: updatedList._id,
-  //             instacartLink: updatedList.instacartDeepLink,
-  //             timestamp: Date.now(),
-  //             items: checkedItems,
-  //           };
-  //           localStorage.setItem("prepcart_cart", JSON.stringify(cartData));
-  //         } else {
-  //           localStorage.removeItem("prepcart_cart");
-  //         }
-  //         // ===== END ADD =====
-  //       }
-  //     }
-  //   } catch (error) {
-  //     // toast.error("Failed to update selection");
-  //   }
-  // };
 
   const toggleSelectAll = async () => {
     if (!groceryList) return;
@@ -530,7 +550,7 @@ export default function GroceryListPage({ params }) {
     if (!groceryList || !id) return;
 
     try {
-      console.log("Refreshing pantry data...");
+      // console.log("Refreshing pantry data...");
 
       // First, refresh the entire grocery list
       await fetchGroceryList(id);
@@ -543,11 +563,11 @@ export default function GroceryListPage({ params }) {
       if (pantryResponse.ok) {
         const pantryData = await pantryResponse.json();
         if (pantryData.success && pantryData.pantry?.items) {
-          console.log(
-            "Pantry refreshed with",
-            pantryData.pantry.items.length,
-            "items"
-          );
+          // console.log(
+          //   "Pantry refreshed with",
+          //   pantryData.pantry.items.length,
+          //   "items"
+          // );
         }
       }
     } catch (error) {
@@ -843,22 +863,22 @@ export default function GroceryListPage({ params }) {
       const itemToDelete = groceryList.items.find(
         (item) => item._id === itemId
       );
-      console.log("Deleting item:", itemToDelete?.name, "with ID:", itemId);
-      console.log("Before deletion:", groceryList.items.length, "items");
+      // console.log("Deleting item:", itemToDelete?.name, "with ID:", itemId);
+      // console.log("Before deletion:", groceryList.items.length, "items");
 
       const updatedItems = groceryList.items.filter(
         (item) => item._id !== itemId
       );
 
-      console.log("After deletion:", updatedItems.length, "items");
-      console.log(
-        "Sending to server:",
-        JSON.stringify({
-          items: updatedItems,
-          totalItems: updatedItems.length,
-          checkedItems: updatedItems.filter((item) => item.checked).length,
-        })
-      );
+      // console.log("After deletion:", updatedItems.length, "items");
+      // console.log(
+      //   "Sending to server:",
+      //   JSON.stringify({
+      //     items: updatedItems,
+      //     totalItems: updatedItems.length,
+      //     checkedItems: updatedItems.filter((item) => item.checked).length,
+      //   })
+      // );
       // Make a DELETE request to remove just this item
       const response = await fetchWithAuth(
         `/api/groceryLists/${groceryList._id}/items/${itemId}`,
@@ -887,7 +907,7 @@ export default function GroceryListPage({ params }) {
         }
       } else {
         // Fallback: Use PATCH if DELETE endpoint doesn't exist
-        console.log("DELETE endpoint not found, using PATCH fallback...");
+        // console.log("DELETE endpoint not found, using PATCH fallback...");
         await removeItemFallback(itemId);
       }
     } catch (error) {
@@ -1110,7 +1130,7 @@ export default function GroceryListPage({ params }) {
     try {
       const itemsToSave = itemsToSaveParam || groceryList.items;
 
-      console.log("Saving changes for", itemsToSave.length, "items");
+      // console.log("Saving changes for", itemsToSave.length, "items");
 
       // Prepare items with all necessary fields
       const processedItems = itemsToSave.map((item) => ({
@@ -1143,11 +1163,11 @@ export default function GroceryListPage({ params }) {
         0
       );
 
-      console.log("Sending to server:", {
-        totalItems,
-        checkedItems,
-        estimatedTotal,
-      });
+      // console.log("Sending to server:", {
+      //   totalItems,
+      //   checkedItems,
+      //   estimatedTotal,
+      // });
 
       const response = await fetchWithAuth(
         `/api/groceryLists/${groceryList._id}`,
@@ -1164,7 +1184,7 @@ export default function GroceryListPage({ params }) {
       );
 
       const responseText = await response.text();
-      console.log("Server response:", responseText);
+      // console.log("Server response:", responseText);
 
       let data;
       try {
@@ -1175,7 +1195,7 @@ export default function GroceryListPage({ params }) {
       }
 
       if (response.ok && data.success) {
-        console.log("Save successful, updating local state");
+        // console.log("Save successful, updating local state");
         // Update with the server's response
         setGroceryList(data.groceryList);
         setIsEditing(false);
@@ -1262,10 +1282,12 @@ export default function GroceryListPage({ params }) {
                       </span>
                     </>
                   )}
-                  <span>•</span>
+
+                  {/* estimated price */}
+                  {/* <span>•</span>
                   <span className="font-semibold text-green-600">
                     Estimated: ${estimatedTotal.toFixed(2)}
-                  </span>
+                  </span> */}
                 </div>
               </div>
 
@@ -1512,7 +1534,8 @@ export default function GroceryListPage({ params }) {
                           </h3>
                         </div>
                         <div className="flex items-center gap-4">
-                          <span className="text-sm text-gray-600">
+                          {/* estimated price */}
+                          {/* <span className="text-sm text-gray-600">
                             $
                             {groupedItems[aisle]
                               .reduce(
@@ -1520,7 +1543,7 @@ export default function GroceryListPage({ params }) {
                                 0
                               )
                               .toFixed(2)}
-                          </span>
+                          </span> */}
                           <span className="text-sm text-gray-600">
                             ({groupedItems[aisle].length} items)
                           </span>
@@ -1569,9 +1592,10 @@ export default function GroceryListPage({ params }) {
                                   </span>
                                 )}
                               </div>
-                              <span className="text-gray-600 text-sm font-medium min-w-[60px] text-right">
+                              {/* estimated price */}
+                              {/* <span className="text-gray-600 text-sm font-medium min-w-[60px] text-right">
                                 ${(item.estimatedPrice || 0).toFixed(2)}
-                              </span>
+                              </span> */}
                               {isEditing ? (
                                 <div className="flex items-center gap-2">
                                   <button
@@ -1816,8 +1840,8 @@ function PantryModal({
               console.warn("Duplicate pantry items found:", duplicates);
             }
 
-            console.log("Pantry item count:", items.length);
-            console.log("Unique items:", [...new Set(itemNames)].length);
+            // console.log("Pantry item count:", items.length);
+            // console.log("Unique items:", [...new Set(itemNames)].length);
 
             setPantry(data.pantry);
           } else {
@@ -1897,7 +1921,6 @@ function PantryModal({
       toast.error("Failed to add item to pantry");
     }
   };
-
   const removePantryItem = async (itemName) => {
     if (!confirm("Remove this item from pantry?")) return;
 
