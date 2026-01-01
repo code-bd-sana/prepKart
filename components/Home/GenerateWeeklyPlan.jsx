@@ -23,6 +23,9 @@ export default function GenerateWeeklyPlan({ voiceText }) {
   const [isSwapping, setIsSwapping] = useState(false);
   const [generatingProgress, setGeneratingProgress] = useState(0);
   const [freeLimitReached, setFreeLimitReached] = useState(false);
+
+  const [swappingMeals, setSwappingMeals] = useState({});
+
   const t = useTranslations("generatePlan");
   const params = useParams();
   const locale = params.locale;
@@ -42,21 +45,53 @@ export default function GenerateWeeklyPlan({ voiceText }) {
     checkAuth();
   }, [user]);
   // Form state
-  const [form, setForm] = useState({
-    province: "Ontario",
-    cuisine: "",
-    goal: "",
-    budgetLevel: "Medium",
-    portions: 2,
-    mealsPerDay: 3,
-    likes: "",
-    dislikes: "",
-    cookingMethod: "",
-    maxCookingTime: 30,
-    skillLevel: "Beginner",
-    dietaryPreferences: [],
-    allergies: [],
-    days_count: !user || user?.tier === "free" ? 3 : 7,
+  // const [form, setForm] = useState({
+  //   province: user?.province || "Ontario", // Use user's province if available
+  //   cuisine: "",
+  //   goal: user?.goal || "", // Use user's goal if available
+  //   budgetLevel: user?.budgetLevel || "Medium", // Use user's budgetLevel
+  //   portions: 2,
+  //   mealsPerDay: 3,
+  //   likes: user?.likes?.join(", ") || "", // Convert array to comma-separated string
+  //   dislikes: user?.dislikes?.join(", ") || "", // Convert array to comma-separated string
+  //   cookingMethod: user?.cookingMethod?.join(", ") || "", // Convert array if needed
+  //   maxCookingTime: 30,
+  //   skillLevel: user?.skillLevel || "Beginner", // Use user's skillLevel
+  //   dietaryPreferences: user?.dietaryPreferences || [], // Use user's array
+  //   allergies: user?.allergies || [], // Use user's array
+  //   days_count: !user || user?.tier === "free" ? 3 : 7,
+  // });
+
+  const [form, setForm] = useState(() => {
+    // Access nested preferences
+    const preferences = user?.preferences || {};
+
+    return {
+      province: user?.province || "Ontario",
+      cuisine: "",
+      goal: preferences?.goal || "", // From preferences
+      budgetLevel: preferences?.budgetLevel || "medium", // From preferences
+      portions: 2,
+      mealsPerDay: 3,
+      likes: Array.isArray(preferences?.likes)
+        ? preferences.likes.join(", ")
+        : "",
+      dislikes: Array.isArray(preferences?.dislikes)
+        ? preferences.dislikes.join(", ")
+        : "",
+      cookingMethod: Array.isArray(preferences?.cookingMethod)
+        ? preferences.cookingMethod.join(", ")
+        : "",
+      maxCookingTime: 30,
+      skillLevel: preferences?.skillLevel || "Beginner", // From preferences
+      dietaryPreferences: Array.isArray(preferences?.dietaryPreferences)
+        ? preferences.dietaryPreferences
+        : [],
+      allergies: Array.isArray(preferences?.allergies)
+        ? preferences.allergies
+        : [],
+      days_count: !user || user?.tier === "free" ? 3 : 7,
+    };
   });
   useEffect(() => {
     if (!voiceText) return;
@@ -70,73 +105,73 @@ export default function GenerateWeeklyPlan({ voiceText }) {
       province: text.includes("alberta")
         ? "Alberta"
         : text.includes("british")
-          ? "British Columbia"
-          : text.includes("columbia")
-            ? "British Columbia"
-            : text.includes("manitoba")
-              ? "Manitoba"
-              : text.includes("New")
-                ? "New Brunswick"
-                : text.includes("Brunswick")
-                  ? "New Brunswick"
-                  : text.includes("yukon")
-                    ? "Yukon"
-                    : text.includes("nunavut")
-                      ? "Nunavut"
-                      : text.includes("quebec")
-                        ? "Quebec"
-                        : text.includes("columbia")
-                          ? "British Columbia"
-                          : prev.province,
+        ? "British Columbia"
+        : text.includes("columbia")
+        ? "British Columbia"
+        : text.includes("manitoba")
+        ? "Manitoba"
+        : text.includes("New")
+        ? "New Brunswick"
+        : text.includes("Brunswick")
+        ? "New Brunswick"
+        : text.includes("yukon")
+        ? "Yukon"
+        : text.includes("nunavut")
+        ? "Nunavut"
+        : text.includes("quebec")
+        ? "Quebec"
+        : text.includes("columbia")
+        ? "British Columbia"
+        : prev.province,
 
       // Goal
       goal: text.includes("lose")
         ? "Weigth Loss"
         : text.includes("weight")
-          ? "Weigth Loss"
-          : text.includes("muscle")
-            ? "Muscle Gain"
-            : text.includes("healthy")
-              ? "Healthy Eating"
-              : text.includes("quick")
-                ? "Quick Meals"
-                : text.includes("family")
-                  ? "Family Friendly"
-                  : prev.goal,
+        ? "Weigth Loss"
+        : text.includes("muscle")
+        ? "Muscle Gain"
+        : text.includes("healthy")
+        ? "Healthy Eating"
+        : text.includes("quick")
+        ? "Quick Meals"
+        : text.includes("family")
+        ? "Family Friendly"
+        : prev.goal,
 
       // level
       skillLevel: text.includes("beginner")
         ? "Beginner"
         : text.includes("intermediate")
-          ? "Intermediate"
-          : text.includes("expert")
-            ? "Advanced"
-            : text.includes("advanced")
-              ? "Advanced"
-              : prev.skillLevel,
+        ? "Intermediate"
+        : text.includes("expert")
+        ? "Advanced"
+        : text.includes("advanced")
+        ? "Advanced"
+        : prev.skillLevel,
 
       // Cuisine
       cuisine: text.includes("asian")
         ? "Asian"
         : text.includes("italian")
-          ? "Italian"
-          : text.includes("mexican")
-            ? "Mexican"
-            : text.includes("chinese")
-              ? "Chinese"
-              : text.includes("indian")
-                ? "Indian"
-                : prev.cuisine,
+        ? "Italian"
+        : text.includes("mexican")
+        ? "Mexican"
+        : text.includes("chinese")
+        ? "Chinese"
+        : text.includes("indian")
+        ? "Indian"
+        : prev.cuisine,
 
       // Budget
       budgetLevel:
         text.includes("cheap") || text.includes("low budget")
           ? "Low"
           : text.includes("medium") || text.includes("medium budget")
-            ? "Medium"
-            : text.includes("high") || text.includes("high budget")
-              ? "High"
-              : prev.budgetLevel,
+          ? "Medium"
+          : text.includes("high") || text.includes("high budget")
+          ? "High"
+          : prev.budgetLevel,
 
       // allergies
       allergies: [
@@ -166,6 +201,75 @@ export default function GenerateWeeklyPlan({ voiceText }) {
       ],
     }));
   }, [voiceText]);
+
+  // to auto-fill form with user preferences
+  useEffect(() => {
+    if (user && user.id) {
+      const preferences = user.preferences || {};
+      setForm((prev) => {
+        const updatedForm = {
+          ...prev,
+          // Direct user fields
+          province: user.province || prev.province,
+
+          // Fields from preferences object
+          goal: preferences.goal || prev.goal,
+          budgetLevel: preferences.budgetLevel || prev.budgetLevel,
+          skillLevel: preferences.skillLevel || prev.skillLevel,
+
+          // Convert arrays to strings
+          likes:
+            Array.isArray(preferences.likes) && preferences.likes.length > 0
+              ? preferences.likes.join(", ")
+              : prev.likes,
+
+          dislikes:
+            Array.isArray(preferences.dislikes) &&
+            preferences.dislikes.length > 0
+              ? preferences.dislikes.join(", ")
+              : prev.dislikes,
+
+          cookingMethod:
+            Array.isArray(preferences.cookingMethod) &&
+            preferences.cookingMethod.length > 0
+              ? preferences.cookingMethod.join(", ")
+              : prev.cookingMethod,
+
+          // Checkbox arrays
+          dietaryPreferences:
+            Array.isArray(preferences.dietaryPreferences) &&
+            preferences.dietaryPreferences.length > 0
+              ? preferences.dietaryPreferences
+              : prev.dietaryPreferences,
+
+          allergies:
+            Array.isArray(preferences.allergies) &&
+            preferences.allergies.length > 0
+              ? preferences.allergies
+              : prev.allergies,
+        };
+
+        return updatedForm;
+      });
+
+      // Only show toast if we actually filled something
+      const hasPreferences =
+        (Array.isArray(preferences.dietaryPreferences) &&
+          preferences.dietaryPreferences.length > 0) ||
+        (Array.isArray(preferences.allergies) &&
+          preferences.allergies.length > 0) ||
+        preferences.goal ||
+        preferences.budgetLevel ||
+        preferences.skillLevel;
+
+      if (hasPreferences) {
+        setTimeout(() => {
+          // toast.success("Your saved preferences have been auto-filled!");
+        }, 500);
+      }
+    }
+  }, [user]);
+
   // Generate plan handler
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -536,8 +640,12 @@ export default function GenerateWeeklyPlan({ voiceText }) {
   // };
   // swap meal
   const swapMeal = async (planId, mealIndex, dayIndex) => {
+    // Create a unique key for this specific meal
+    const mealKey = `${dayIndex}-${mealIndex}`;
     try {
-      setIsSwapping(true);
+      // setIsSwapping(true);
+
+      setSwappingMeals((prev) => ({ ...prev, [mealKey]: true }));
 
       if (!user) {
         toast.error("Please login to swap meals");
@@ -551,7 +659,9 @@ export default function GenerateWeeklyPlan({ voiceText }) {
 
       // Check current swaps
       if (plan.swaps.remaining <= 0) {
-        toast.error(`No swaps remaining! Used ${plan.swaps.used}/${plan.swaps.allowed}`);
+        toast.error(
+          `No swaps remaining! Used ${plan.swaps.used}/${plan.swaps.allowed}`
+        );
         return null;
       }
 
@@ -564,7 +674,7 @@ export default function GenerateWeeklyPlan({ voiceText }) {
         planData: plan,
       };
 
-      console.log("Sending swap request:", { planId, dayIndex, mealIndex });
+      // console.log("Sending swap request:", { planId, dayIndex, mealIndex });
 
       const response = await fetch(`/api/plans/${planId}/swap`, {
         method: "POST",
@@ -591,9 +701,15 @@ export default function GenerateWeeklyPlan({ voiceText }) {
           updatedDays[dayIndex].meals[mealIndex] = {
             ...data.newMeal,
             // Ensure all required fields
-            mealType: data.newMeal.mealType || prev.days[dayIndex].meals[mealIndex].mealType,
+            mealType:
+              data.newMeal.mealType ||
+              prev.days[dayIndex].meals[mealIndex].mealType,
             ingredients: data.newMeal.ingredients || [],
-            instructions: data.newMeal.instructions || ["Prepare", "Cook", "Serve"],
+            instructions: data.newMeal.instructions || [
+              "Prepare",
+              "Cook",
+              "Serve",
+            ],
             cookingTime: data.newMeal.cookingTime || 25,
             recipeSource: data.newMeal.recipeSource || "openai",
           };
@@ -627,7 +743,8 @@ export default function GenerateWeeklyPlan({ voiceText }) {
 
       return null;
     } finally {
-      setIsSwapping(false);
+      // setIsSwapping(false);
+      setSwappingMeals((prev) => ({ ...prev, [mealKey]: false }));
     }
   };
 
@@ -902,8 +1019,8 @@ export default function GenerateWeeklyPlan({ voiceText }) {
                       {!user
                         ? "Login to access 7-day plans"
                         : user?.tier === "free"
-                          ? "Free tier: 3-day limit"
-                          : "Premium: Up to 7-day plans"}
+                        ? "Free tier: 3-day limit"
+                        : "Premium: Up to 7-day plans"}
                     </p>
 
                     {(!user || user?.tier === "free") && (
@@ -1052,10 +1169,11 @@ export default function GenerateWeeklyPlan({ voiceText }) {
                     return (
                       <label
                         key={pref}
-                        className={`flex items-center space-x-2 px-3 py-2 rounded-lg ${isDisabled
-                          ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                          : "bg-gray-50 hover:bg-gray-100"
-                          }`}
+                        className={`flex items-center space-x-2 px-3 py-2 rounded-lg ${
+                          isDisabled
+                            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                            : "bg-gray-50 hover:bg-gray-100"
+                        }`}
                       >
                         <input
                           type="checkbox"
@@ -1072,14 +1190,16 @@ export default function GenerateWeeklyPlan({ voiceText }) {
                             handleChange(e);
                           }}
                           disabled={isDisabled}
-                          className={`h-4 w-4 rounded ${isDisabled
-                            ? "cursor-not-allowed opacity-50"
-                            : "text-blue-600"
-                            }`}
+                          className={`h-4 w-4 rounded ${
+                            isDisabled
+                              ? "cursor-not-allowed opacity-50"
+                              : "text-blue-600"
+                          }`}
                         />
                         <span
-                          className={`text-sm ${isDisabled ? "text-gray-400" : "text-gray-700"
-                            }`}
+                          className={`text-sm ${
+                            isDisabled ? "text-gray-400" : "text-gray-700"
+                          }`}
                         >
                           {pref} {isDisabled && "🔒"}
                         </span>
@@ -1139,8 +1259,8 @@ export default function GenerateWeeklyPlan({ voiceText }) {
                     {form.days_count <= 3
                       ? "30-60 seconds"
                       : form.days_count <= 5
-                        ? "1-2 minutes"
-                        : "2-3 minutes"}
+                      ? "1-2 minutes"
+                      : "2-3 minutes"}
                   </p>
                 )}
               </div>
@@ -1165,16 +1285,17 @@ export default function GenerateWeeklyPlan({ voiceText }) {
                     •{" "}
                     {plan.tier === "free"
                       ? "Free Plan"
-                      : `${plan.tier.charAt(0).toUpperCase() + plan.tier.slice(1)
-                      } Tier`}
+                      : `${
+                          plan.tier.charAt(0).toUpperCase() + plan.tier.slice(1)
+                        } Tier`}
                   </p>
                 </div>
-                <div
+                {/* <div
                   className="btn cursor-pointer text-[#8cc63c] hover:text-green-700 "
                   onClick={generateAnother}
                 >
                   Generate Another Plan
-                </div>
+                </div> */}
               </div>
 
               {/* Meal Plan Days */}
@@ -1203,14 +1324,15 @@ export default function GenerateWeeklyPlan({ voiceText }) {
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center min-w-0 flex-1">
                               <span
-                                className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-sm font-semibold mr-2 shrink-0 ${meal.mealType === "breakfast"
-                                  ? "bg-green-100 text-green-800"
-                                  : meal.mealType === "lunch"
+                                className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-sm font-semibold mr-2 shrink-0 ${
+                                  meal.mealType === "breakfast"
+                                    ? "bg-green-100 text-green-800"
+                                    : meal.mealType === "lunch"
                                     ? "bg-yellow-100 text-yellow-800"
                                     : meal.mealType === "dinner"
-                                      ? "bg-red-100 text-red-800"
-                                      : "bg-purple-100 text-purple-800"
-                                  }`}
+                                    ? "bg-red-100 text-red-800"
+                                    : "bg-purple-100 text-purple-800"
+                                }`}
                               >
                                 {meal.mealType.charAt(0).toUpperCase()}
                               </span>
@@ -1284,7 +1406,7 @@ export default function GenerateWeeklyPlan({ voiceText }) {
 
                           {/* Swap Button */}
                           <div className="pt-2 border-t border-gray-100">
-                            <button
+                            {/* <button
                               onClick={async () => {
                                 if (!user) {
                                   toast.error("Please login to swap meals");
@@ -1292,18 +1414,26 @@ export default function GenerateWeeklyPlan({ voiceText }) {
                                 }
 
                                 if (user.tier === "free") {
-                                  toast.error("Upgrade to Plus or Premium to swap meals");
+                                  toast.error(
+                                    "Upgrade to Plus or Premium to swap meals"
+                                  );
                                   // window.location.href = "/#pricing";
                                   return;
                                 }
 
                                 if (plan.swaps.remaining <= 0) {
-                                  toast.error(`No swaps remaining! Used ${plan.swaps.used}/${plan.swaps.allowed}`);
+                                  toast.error(
+                                    `No swaps remaining! Used ${plan.swaps.used}/${plan.swaps.allowed}`
+                                  );
                                   return;
                                 }
 
                                 setIsSwapping(true);
-                                const result = await swapMeal(plan.id, mealIndex, dayIndex);
+                                const result = await swapMeal(
+                                  plan.id,
+                                  mealIndex,
+                                  dayIndex
+                                );
 
                                 if (!result) {
                                   // Error already shown by swapMeal function
@@ -1311,12 +1441,56 @@ export default function GenerateWeeklyPlan({ voiceText }) {
                                 }
                               }}
                               disabled={isSwapping}
-                              className={`w-full text-sm font-medium py-2 rounded transition ${isSwapping
+                              className={`w-full text-sm font-medium py-2 rounded transition ${
+                                isSwapping
                                   ? "bg-gray-300 cursor-not-allowed"
                                   : "bg-[#4a9fd8] hover:bg-[#3a8ec8] text-white"
-                                }`}
+                              }`}
                             >
                               {isSwapping ? "Swapping..." : "Swap This Meal"}
+                            </button> */}
+
+                            <button
+                              onClick={async () => {
+                                const mealKey = `${dayIndex}-${mealIndex}`;
+                                const isThisMealSwapping =
+                                  swappingMeals[mealKey];
+
+                                if (isThisMealSwapping) return; // Already swapping
+
+                                if (!user) {
+                                  toast.error("Please login to swap meals");
+                                  return;
+                                }
+
+                                if (user.tier === "free") {
+                                  toast.error(
+                                    "Upgrade to Plus or Premium to swap meals"
+                                  );
+                                  return;
+                                }
+
+                                if (plan.swaps.remaining <= 0) {
+                                  toast.error(
+                                    `No swaps remaining! Used ${plan.swaps.used}/${plan.swaps.allowed}`
+                                  );
+                                  return;
+                                }
+
+                                await swapMeal(plan.id, mealIndex, dayIndex);
+                              }}
+                              disabled={
+                                swappingMeals[`${dayIndex}-${mealIndex}`]
+                              }
+                              className={`w-full text-sm font-medium py-2 rounded transition ${
+                                swappingMeals[`${dayIndex}-${mealIndex}`]
+                                  ? "bg-gray-300 cursor-not-allowed"
+                                  : "bg-[#4a9fd8] hover:bg-[#3a8ec8] text-white"
+                              }`}
+                            >
+                              {swappingMeals[`${dayIndex}-${mealIndex}`]
+                                ? "Swapping..."
+                                : "Swap This Meal"}
                             </button>
                             <p className="text-gray-600 mt-2">
                               {plan.days?.length || 7}-Day Plan •{" "}
@@ -1336,9 +1510,10 @@ export default function GenerateWeeklyPlan({ voiceText }) {
                               •{" "}
                               {plan.tier === "free"
                                 ? "Free Plan"
-                                : `${plan.tier.charAt(0).toUpperCase() +
-                                plan.tier.slice(1)
-                                } Tier`}
+                                : `${
+                                    plan.tier.charAt(0).toUpperCase() +
+                                    plan.tier.slice(1)
+                                  } Tier`}
                             </p>
                           </div>
                         </div>
@@ -1359,24 +1534,6 @@ export default function GenerateWeeklyPlan({ voiceText }) {
                   </div>
                 )}
                 <div className="flex flex-col md:flex-row gap-4">
-                  {/* <button
-                    onClick={savePlan}
-                    disabled={!plan || (plan.isSaved && !plan.needsUpdate)}
-                    className={`px-6 py-3 rounded-lg font-semibold transition-all flex-1 ${
-                      !plan || (plan.isSaved && !plan.needsUpdate)
-                        ? "bg-gray-300 cursor-not-allowed"
-                        : "bg-green-600 hover:bg-green-700 text-white"
-                    }`}
-                  >
-                    {!plan
-                      ? "Save Plan"
-                      : plan.needsUpdate
-                      ? "Update Plan"
-                      : plan.isSaved
-                      ? "Plan Saved"
-                      : "Save Plan"}
-                  </button> */}
-
                   <button
                     onClick={savePlan}
                     disabled={
@@ -1385,25 +1542,26 @@ export default function GenerateWeeklyPlan({ voiceText }) {
                       user?.tier === "free" ||
                       (plan.isSaved && !plan.needsUpdate)
                     }
-                    className={`px-6 py-3 rounded-lg font-semibold transition-all flex-1 ${!plan ||
+                    className={`px-6 py-3 rounded-lg font-semibold transition-all flex-1 ${
+                      !plan ||
                       !user ||
                       user?.tier === "free" ||
                       (plan.isSaved && !plan.needsUpdate)
-                      ? "bg-gray-300 cursor-not-allowed"
-                      : "bg-green-600 hover:bg-green-700 text-white"
-                      }`}
+                        ? "bg-gray-300 cursor-not-allowed"
+                        : "bg-green-600 hover:bg-green-700 text-white"
+                    }`}
                   >
                     {!plan
                       ? "Save Plan"
                       : !user
-                        ? "Login to Save"
-                        : user?.tier === "free"
-                          ? "Upgrade to Save"
-                          : plan.needsUpdate
-                            ? "Update Plan"
-                            : plan.isSaved
-                              ? "Plan Saved"
-                              : "Save Plan"}
+                      ? "Login to Save"
+                      : user?.tier === "free"
+                      ? "Upgrade to Save"
+                      : plan.needsUpdate
+                      ? "Update Plan"
+                      : plan.isSaved
+                      ? "Plan Saved"
+                      : "Save Plan"}
                   </button>
                   <button
                     onClick={() => {
@@ -1417,7 +1575,14 @@ export default function GenerateWeeklyPlan({ voiceText }) {
                     }}
                     className="flex-1 bg-green-600  text-white font-semibold py-4 rounded-xl hover:bg-green-400 hover:text-black transition flex items-center justify-center"
                   >
-                    Generate Grocery List
+                    {loading ? (
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Generating...
+                      </div>
+                    ) : (
+                      "Generate Grocery List"
+                    )}
                   </button>
                 </div>
               </div>

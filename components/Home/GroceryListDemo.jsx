@@ -342,7 +342,7 @@ export default function GroceryListDemo() {
           <div className="p-2 text-sm ">
             {/* Progress */}
             <div className="mb-6">
-              <div className="flex justify-between items-center mb-2">
+              <div className="flex justify-between  items-center mb-2">
                 <span className="text-sm font-medium text-gray-700">
                   {checkedCount} of {totalCount} items checked
                 </span>
@@ -353,7 +353,7 @@ export default function GroceryListDemo() {
             <div className="space-y-6">
               <div
                 className={`
-    grid gap-3 
+    grid gap-6 
     ${
       Object.keys(groupedItems).length === 1
         ? "grid-cols-1"

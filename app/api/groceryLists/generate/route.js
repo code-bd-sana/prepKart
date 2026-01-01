@@ -47,9 +47,7 @@ export async function POST(request) {
     let plan;
     let isTemporaryPlan = false;
 
-    // ====== CHECK IF IT'S A TEMPORARY PLAN ======
     if (planId.startsWith("temp_")) {
-      // TEMPORARY PLAN: Use plan data from request
       isTemporaryPlan = true;
 
       if (!planData) {
@@ -214,48 +212,205 @@ function extractIngredientsFromPlan(plan) {
 
   return ingredients;
 }
+
 /**
- * Process ingredients (deduplicate, normalize, subtract pantry)
+ * Standardize units to a common format
+ */
+function standardizeUnit(unit, quantity) {
+  if (!unit) return "unit";
+
+  const lowerUnit = unit.toLowerCase().trim();
+
+  // Unit conversion map
+  const unitMap = {
+    // Weight
+    g: "g",
+    gram: "g",
+    grams: "g",
+    kg: "kg",
+    kilogram: "kg",
+    kilograms: "kg",
+    oz: "oz",
+    ounce: "oz",
+    ounces: "oz",
+    lb: "lb",
+    pound: "lb",
+    pounds: "lb",
+
+    // Volume
+    ml: "ml",
+    milliliter: "ml",
+    milliliters: "ml",
+    l: "l",
+    liter: "l",
+    liters: "l",
+    tsp: "tsp",
+    teaspoon: "tsp",
+    teaspoons: "tsp",
+    tbsp: "tbsp",
+    tablespoon: "tbsp",
+    tablespoons: "tbsp",
+    cup: "cup",
+    cups: "cup",
+
+    // Count
+    unit: "unit",
+    units: "unit",
+    clove: "unit",
+    cloves: "unit",
+    piece: "unit",
+    pieces: "unit",
+    slice: "unit",
+    slices: "unit",
+    bunch: "unit",
+    bunches: "unit",
+    head: "unit",
+    heads: "unit",
+
+    // Small amounts
+    pinch: "tsp",
+    pinches: "tsp",
+    dash: "tsp",
+    dashes: "tsp",
+  };
+
+  return unitMap[lowerUnit] || "unit";
+}
+
+/**
+ * Convert all units to a standard unit for merging
+ */
+function convertToStandardUnit(quantity, fromUnit) {
+  const stdUnit = standardizeUnit(fromUnit);
+
+  // Convert to base units for comparison
+  switch (stdUnit) {
+    case "g":
+      return { quantity, unit: "g" };
+    case "kg":
+      return { quantity: quantity * 1000, unit: "g" };
+    case "oz":
+      return { quantity: quantity * 28.35, unit: "g" };
+    case "lb":
+      return { quantity: quantity * 453.592, unit: "g" };
+    case "ml":
+      return { quantity, unit: "ml" };
+    case "l":
+      return { quantity: quantity * 1000, unit: "ml" };
+    case "tsp":
+      return { quantity: quantity * 5, unit: "ml" };
+    case "tbsp":
+      return { quantity: quantity * 15, unit: "ml" };
+    case "cup":
+      return { quantity: quantity * 240, unit: "ml" };
+    default:
+      return { quantity, unit: stdUnit };
+  }
+}
+
+/**
+ * Convert back to purchase-friendly units
+ */
+function convertToPurchaseUnit(quantity, baseUnit) {
+  switch (baseUnit) {
+    case "g":
+      if (quantity >= 1000) {
+        return { quantity: quantity / 1000, unit: "kg" };
+      } else if (quantity >= 500) {
+        return { quantity: 0.5, unit: "kg" };
+      } else {
+        return { quantity: Math.ceil(quantity / 100) * 100, unit: "g" }; // Round up to nearest 100g
+      }
+    case "ml":
+      if (quantity >= 1000) {
+        return { quantity: quantity / 1000, unit: "l" };
+      } else if (quantity >= 500) {
+        return { quantity: 500, unit: "ml" }; // Standard bottle size
+      } else if (quantity >= 250) {
+        return { quantity: 250, unit: "ml" };
+      } else {
+        return { quantity: Math.ceil(quantity / 50) * 50, unit: "ml" }; // Round up
+      }
+    default:
+      return { quantity: Math.ceil(quantity), unit: baseUnit }; // Round up counts
+  }
+}
+
+/**
+ * Clean display name without truncating words
+ */
+function cleanDisplayName(name) {
+  if (!name) return "";
+
+  // First extract any quantity
+  const quantityMatch = name.match(/^(\d+(?:\.\d+)?)\s*/);
+  let quantity = quantityMatch ? quantityMatch[1] : "";
+  let cleaned = name.replace(/^\d+(?:\.\d+)?\s*/, "");
+
+  // Remove fractions
+  cleaned = cleaned.replace(/^\d+\s*\/\s*\d+\s*/, "");
+
+  // Remove units that are separate words (not single letters)
+  cleaned = cleaned.replace(
+    /\s+(?:cup|cups|tbsp|tablespoon|tablespoons|tsp|teaspoon|teaspoons|oz|ounce|ounces|lb|pound|pounds|kilogram|kilograms|milliliter|milliliters|liter|liters|clove|cloves|serving|servings|pinch|pinches|dash|dashes)\b/gi,
+    ""
+  );
+
+  // Remove preparation methods
+  cleaned = cleaned.replace(
+    /\s+(?:diced|chopped|minced|sliced|grated|shredded|fresh|frozen|canned|dried|organic|large|medium|small|extra large)\b/gi,
+    ""
+  );
+
+  // Remove anything in parentheses
+  cleaned = cleaned.replace(/\s*\([^)]*\)/g, "");
+
+  // Clean up
+  cleaned = cleaned.replace(/\s+/g, " ").trim();
+
+  // If we removed everything, return the original
+  if (!cleaned) {
+    return name.charAt(0).toUpperCase() + name.slice(1);
+  }
+
+  return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+}
+
+/**
+ * Process ingredients (deduplicate, normalize, convert units)
  */
 function processIngredients(ingredients, pantryItems, pantryToggle, planDays) {
   const ingredientMap = new Map();
-
-  // Normalize and aggregate ingredients
+  // Step 1: Normalize and aggregate
   for (const ing of ingredients) {
     const normalizedName = normalizeIngredientName(ing.name);
-    const key = normalizedName; // Just use normalized name as key
+
+    if (!normalizedName) continue;
+
+    // Standardize the unit
+    const stdUnit = standardizeUnit(ing.unit, ing.quantity);
+    const converted = convertToStandardUnit(ing.quantity || 1, stdUnit);
+
+    const key = `${normalizedName}_${converted.unit}`;
 
     if (ingredientMap.has(key)) {
-      // Add to existing
+      // Add to existing ingredient
       const existing = ingredientMap.get(key);
-      existing.quantity += ing.quantity || 0;
+      existing.baseQuantity += converted.quantity;
 
-      // Merge units if same ingredient
-      if (existing.unit === ing.unit) {
-        existing.quantity += ing.quantity;
-      } else {
-        // Keep track of different units
-        existing.alternativeUnits = existing.alternativeUnits || [];
-        existing.alternativeUnits.push({
-          quantity: ing.quantity,
-          unit: ing.unit,
-        });
-      }
-
-      // Add recipe source if not already present
+      // Add recipe source
       const source = `${ing.mealType}: ${ing.recipeName}`;
       if (source && !existing.recipeSources.includes(source)) {
         existing.recipeSources.push(source);
       }
     } else {
-      // Create new entry with standardized unit
-      const standardUnit = standardizeUnit(ing.unit || "unit");
-
+      // Create new entry
       ingredientMap.set(key, {
-        name: ing.name,
+        originalName: ing.name,
         normalizedName,
-        quantity: ing.quantity || 1,
-        unit: standardUnit,
+        baseQuantity: converted.quantity,
+        baseUnit: converted.unit,
+        originalUnit: stdUnit,
         aisle: mapToAisle(normalizedName),
         category: mapToAisle(normalizedName),
         recipeSources: ing.recipeName
@@ -266,19 +421,27 @@ function processIngredients(ingredients, pantryItems, pantryToggle, planDays) {
     }
   }
 
-  // Convert to array and estimate prices -
+  // Step 2: Convert to purchase-friendly units
   const result = Array.from(ingredientMap.values())
     .map((item) => {
-      // Clean up the name for display
-      const displayName = cleanDisplayName(item.name);
+      const purchase = convertToPurchaseUnit(item.baseQuantity, item.baseUnit);
+
+      // Create clean display name
+      const displayName = cleanDisplayName(item.originalName);
 
       return {
-        ...item,
-        name: displayName,
+        name: displayName || item.originalName,
+        normalizedName: item.normalizedName,
+        quantity: purchase.quantity,
+        unit: purchase.unit,
+        aisle: item.aisle,
+        category: item.category,
+        recipeSources: item.recipeSources,
+        checked: true,
         estimatedPrice: calculateItemPrice(
           item.normalizedName,
-          item.quantity,
-          item.unit
+          purchase.quantity,
+          purchase.unit
         ),
         _id: new mongoose.Types.ObjectId(),
       };
@@ -288,53 +451,6 @@ function processIngredients(ingredients, pantryItems, pantryToggle, planDays) {
   return result;
 }
 
-function standardizeUnit(unit) {
-  const unitMap = {
-    tb: "tbsp",
-    tablespoon: "tbsp",
-    tablespoons: "tbsp",
-    teaspoon: "tsp",
-    teaspoons: "tsp",
-    gram: "g",
-    grams: "g",
-    kilogram: "kg",
-    kilograms: "kg",
-    milliliter: "ml",
-    milliliters: "ml",
-    liter: "l",
-    liters: "l",
-    serving: "unit",
-    servings: "unit",
-    pinch: "tsp",
-    pinches: "tsp",
-    dash: "tsp",
-    clove: "unit",
-    cloves: "unit",
-    leaf: "unit",
-    leaves: "unit",
-    sprig: "unit",
-    sprigs: "unit",
-    bunch: "unit",
-    bunches: "unit",
-  };
-
-  const lowerUnit = unit.toLowerCase();
-  return unitMap[lowerUnit] || unit;
-}
-
-function cleanDisplayName(name) {
-  // Remove quantities and measurements from display name
-  let cleaned = name.replace(/\s*\d+\s*(?:\.\d+)?\s*/g, " ");
-  cleaned = cleaned.replace(/\s*\d+\s*\/\s*\d+\s*/g, " ");
-  cleaned = cleaned.replace(
-    /\s*(?:cup|tbsp|tsp|oz|lb|g|kg|ml|l|clove|serving|pinch|dash)s?\b/gi,
-    ""
-  );
-  cleaned = cleaned.replace(/\s+/g, " ").trim();
-
-  // Capitalize first letter
-  return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
-}
 /**
  * Calculate estimated total
  */
@@ -369,7 +485,7 @@ const calculateItemPrice = (name, quantity, unit) => {
   return parseFloat(estimated.toFixed(2));
 };
 
-// ADD THIS NEW FUNCTION for calculating total:
+// for calculating total:
 function calculateEstimatedTotal(items) {
   if (!items || !Array.isArray(items)) {
     return 0;

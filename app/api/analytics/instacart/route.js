@@ -6,7 +6,7 @@ let memoryStorage = [];
 let clickIdCounter = 1;
 
 export async function POST(request) {
-  console.log("📊 Instacart tracking API called");
+  console.log("Instacart tracking API called");
   
   try {
     // Parse the request body
@@ -90,17 +90,17 @@ export async function POST(request) {
         memoryStorage.push(trackingRecord);
         if (memoryStorage.length > 1000) memoryStorage.shift(); // Limit size
         savedRecord = trackingRecord;
-        console.log("✅ Saved to memory storage:", trackingRecord.id);
+        console.log("Saved to memory storage:", trackingRecord.id);
       }
     } catch (dbError) {
-      console.warn("⚠️ Database save failed, using memory:", dbError.message);
+      console.warn("Database save failed, using memory:", dbError.message);
       memoryStorage.push(trackingRecord);
       if (memoryStorage.length > 1000) memoryStorage.shift();
       savedRecord = trackingRecord;
     }
     
-    console.log(`📊 Instacart click tracked: ${savedRecord.id || savedRecord._id}`);
-    console.log(`   Method: ${trackingRecord.method}, Items: ${trackingRecord.totalItems}`);
+    // console.log(`Instacart click tracked: ${savedRecord.id || savedRecord._id}`);
+    // console.log(`   Method: ${trackingRecord.method}, Items: ${trackingRecord.totalItems}`);
     
     // Always return valid JSON
     return NextResponse.json({ 
@@ -112,7 +112,7 @@ export async function POST(request) {
     });
     
   } catch (error) {
-    console.error("❌ Tracking API error:", error);
+    console.error("Tracking API error:", error);
     
     // Return JSON even on error (not HTML)
     return NextResponse.json(
@@ -132,7 +132,7 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get('limit')) || 10;
     
-    console.log("📊 Getting tracking stats");
+    // console.log("Getting tracking stats");
     
     // Return memory storage if no DB
     let data = [];

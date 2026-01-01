@@ -1,4 +1,4 @@
-import { openai } from "@/lib/openai"; 
+import { openai } from "@/lib/openai";
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import User from "@/models/User";
@@ -9,10 +9,7 @@ import { authenticate } from "@/middleware/auth";
 // import HybridService from "@/lib/hybridService";
 // import { generateChatGPTRecipe } from "@/lib/openai";
 // import { computeNutritionForIngredients } from "@/lib/spoonacular";
-import {
-  extractPrimaryProtein,
-  extractBaseCarb,
-} from "@/lib/hybridUtils";
+import { extractPrimaryProtein, extractBaseCarb } from "@/lib/hybridUtils";
 
 // TIER CONFIGURATION
 const TIER_CONFIG = {
@@ -178,7 +175,7 @@ async function generateHybridRecipe(inputs, constraints, userInfo) {
     maxCookingTime = 45,
     servings = inputs.portions || 2,
     province = inputs.province || "Ontario",
-    cookingMethod = inputs.cooking_method || "grill"
+    cookingMethod = inputs.cooking_method || "grill",
   } = constraints;
 
   // Build a simpler prompt
@@ -211,55 +208,72 @@ Return ONLY JSON with this exact format:
     });
 
     console.log(`GPT-5-nano took ${Date.now() - startTime}ms`);
-    
+
     // DEBUG: Log the actual response structure
     console.log("DEBUG - Response keys:", Object.keys(response));
     console.log("DEBUG - Response.text type:", typeof response.text);
     console.log("DEBUG - Response.text value:", response.text);
-    
+
     let content = "";
-    
+
     // Check if text is a string
-    if (response.text && typeof response.text === 'string') {
+    if (response.text && typeof response.text === "string") {
       content = response.text.trim();
       console.log("Found string in response.text:", content.substring(0, 100));
     }
     // Check if text is an object with string content
-    else if (response.text && typeof response.text === 'object') {
-      console.log("response.text is object, checking structure:", response.text);
+    else if (response.text && typeof response.text === "object") {
+      console.log(
+        "response.text is object, checking structure:",
+        response.text
+      );
       // Try to extract string from object
       if (Array.isArray(response.text)) {
         // If it's an array, join all string elements
         content = response.text
-          .filter(item => typeof item === 'string')
-          .join(' ')
+          .filter((item) => typeof item === "string")
+          .join(" ")
           .trim();
         console.log("Extracted from text array:", content.substring(0, 100));
-      } else if (response.text.content && typeof response.text.content === 'string') {
+      } else if (
+        response.text.content &&
+        typeof response.text.content === "string"
+      ) {
         content = response.text.content.trim();
         console.log("Found content in text object:", content.substring(0, 100));
       }
     }
-    
+
     // Check output array (correct structure)
     if (!content && response.output && Array.isArray(response.output)) {
       console.log("Checking output array structure...");
       for (const item of response.output) {
         console.log("Output item type:", item.type);
-        
+
         // FIX: GPT-5-nano returns output items with 'text' as string
-        if (item.type === 'text' && item.text && typeof item.text === 'string') {
+        if (
+          item.type === "text" &&
+          item.text &&
+          typeof item.text === "string"
+        ) {
           content = item.text.trim();
           console.log("Found text in output item:", content.substring(0, 100));
           break;
         }
-        
+
         // might be in content array
         if (item.content && Array.isArray(item.content)) {
           for (const contentItem of item.content) {
-            if (contentItem.type === 'text' && contentItem.text && typeof contentItem.text === 'string') {
+            if (
+              contentItem.type === "text" &&
+              contentItem.text &&
+              typeof contentItem.text === "string"
+            ) {
               content = contentItem.text.trim();
-              console.log("Found text in content array:", content.substring(0, 100));
+              console.log(
+                "Found text in content array:",
+                content.substring(0, 100)
+              );
               break;
             }
           }
@@ -267,37 +281,48 @@ Return ONLY JSON with this exact format:
         }
       }
     }
-    
+
     // Check output_text (if it exists)
-    if (!content && response.output_text && typeof response.output_text === 'string') {
+    if (
+      !content &&
+      response.output_text &&
+      typeof response.output_text === "string"
+    ) {
       content = response.output_text.trim();
       console.log("Found output_text:", content.substring(0, 100));
     }
 
     if (!content) {
       console.log("ERROR: No extractable content found");
-      console.log("Full response structure:", JSON.stringify(response, null, 2).substring(0, 1000));
+      console.log(
+        "Full response structure:",
+        JSON.stringify(response, null, 2).substring(0, 1000)
+      );
       throw new Error("No content in response");
     }
 
-    console.log("Extracted content (first 200 chars):", content.substring(0, 200));
-    
+    console.log(
+      "Extracted content (first 200 chars):",
+      content.substring(0, 200)
+    );
+
     // Clean and extract JSON
     content = content.trim();
-    
+
     // Remove markdown code blocks
-    content = content.replace(/```json\s*/gi, '')
-                    .replace(/```\s*/gi, '')
-                    .trim();
-    
+    content = content
+      .replace(/```json\s*/gi, "")
+      .replace(/```\s*/gi, "")
+      .trim();
+
     // Extract JSON if wrapped in text
     const jsonMatch = content.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
       content = jsonMatch[0];
     }
-    
+
     console.log("JSON to parse (first 200 chars):", content.substring(0, 200));
-    
+
     // Parse JSON
     let recipeData;
     try {
@@ -305,13 +330,13 @@ Return ONLY JSON with this exact format:
     } catch (parseError) {
       console.error("JSON parse error:", parseError.message);
       console.error("Content that failed:", content);
-      
+
       // Try to fix common JSON issues
       let fixedContent = content
-        .replace(/,\s*}/g, '}')
-        .replace(/,\s*]/g, ']')
+        .replace(/,\s*}/g, "}")
+        .replace(/,\s*]/g, "]")
         .replace(/'/g, '"');
-      
+
       try {
         recipeData = JSON.parse(fixedContent);
         console.log("Fixed JSON successfully");
@@ -320,7 +345,7 @@ Return ONLY JSON with this exact format:
         throw new Error("Invalid JSON response from AI");
       }
     }
-    
+
     // Validate recipe
     if (!recipeData.title || !Array.isArray(recipeData.ingredients)) {
       console.error("Invalid recipe structure:", recipeData);
@@ -328,31 +353,30 @@ Return ONLY JSON with this exact format:
     }
 
     console.log(`Generated: ${recipeData.title}`);
-    
+
     // Return formatted recipe
     return {
       mealType: mealType,
       recipeName: recipeData.title,
-      ingredients: recipeData.ingredients.map(ing => ({
+      ingredients: recipeData.ingredients.map((ing) => ({
         name: ing.name || "Ingredient",
         quantity: ing.quantity || 1,
-        unit: ing.unit || "unit"
+        unit: ing.unit || "unit",
       })),
       cookingTime: recipeData.cookingTime || 30,
-      instructions: Array.isArray(recipeData.instructions) 
-        ? recipeData.instructions 
+      instructions: Array.isArray(recipeData.instructions)
+        ? recipeData.instructions
         : ["Prepare ingredients", "Cook", "Serve"],
       recipeSource: "hybrid",
       nutrition: recipeData.nutrition || {
         calories: 450,
         protein_g: 25,
         carbs_g: 50,
-        fat_g: 12
+        fat_g: 12,
       },
       cuisine: cuisine ? [cuisine] : ["Asian"],
-      tags: ["vegan", "high-protein", "muscle-gain"]
+      tags: ["vegan", "high-protein", "muscle-gain"],
     };
-
   } catch (error) {
     console.error("Recipe generation failed:", error.message);
     // Don't use fallback - throw the error so we can see what's wrong
@@ -361,23 +385,24 @@ Return ONLY JSON with this exact format:
 }
 // Helper function for fallback recipes
 function createFallbackRecipe(constraints) {
-  const { 
-    mealType, 
-    cuisine = "Asian", 
-    servings = 2, 
-    cookingMethod = "grill" 
+  const {
+    mealType,
+    cuisine = "Asian",
+    servings = 2,
+    cookingMethod = "grill",
   } = constraints;
-  
+
   const veganProteins = ["Tofu", "Tempeh", "Lentils", "Chickpeas", "Edamame"];
-  const protein = veganProteins[Math.floor(Math.random() * veganProteins.length)];
-  
+  const protein =
+    veganProteins[Math.floor(Math.random() * veganProteins.length)];
+
   return {
     mealType,
     recipeName: `${cuisine} ${protein} ${cookingMethod} ${mealType}`,
     ingredients: [
       { name: protein, quantity: servings * 150, unit: "grams" },
       { name: "Mixed Vegetables", quantity: 2, unit: "cups" },
-      { name: "Quinoa", quantity: 1, unit: "cup" }
+      { name: "Quinoa", quantity: 1, unit: "cup" },
     ],
     cookingTime: 35,
     instructions: [
@@ -385,17 +410,17 @@ function createFallbackRecipe(constraints) {
       `Preheat ${cookingMethod}`,
       `Cook ${protein} for 15-20 minutes`,
       "Steam vegetables",
-      "Serve with quinoa"
+      "Serve with quinoa",
     ],
     recipeSource: "fallback",
     nutrition: {
       calories: 480,
       protein_g: 28,
       carbs_g: 55,
-      fat_g: 10
+      fat_g: 10,
     },
     cuisine: [cuisine],
-    tags: ["vegan", "high-protein", cookingMethod]
+    tags: ["vegan", "high-protein", cookingMethod],
   };
 }
 
@@ -404,45 +429,48 @@ function createFallbackMeal(mealType, inputs) {
   const maxCookingTime = parseInt(inputs.max_cooking_time) || 30;
   const dietaryPreferences = inputs.dietaryPreferences || [];
   const allergies = inputs.allergies || [];
-  
-  const cuisinePrefix = cuisine === "any" 
-    ? "" 
-    : `${cuisine.charAt(0).toUpperCase() + cuisine.slice(1)} `;
+
+  const cuisinePrefix =
+    cuisine === "any"
+      ? ""
+      : `${cuisine.charAt(0).toUpperCase() + cuisine.slice(1)} `;
 
   // Simple fallback meals - NO external function calls
   let baseMeal;
-  
-  if (dietaryPreferences.includes("Vegan") || dietaryPreferences.includes("vegan")) {
+
+  if (
+    dietaryPreferences.includes("Vegan") ||
+    dietaryPreferences.includes("vegan")
+  ) {
     // Vegan fallback
     baseMeal = {
       recipeName: `${cuisinePrefix}Vegan ${mealType}`,
       ingredients: [
         { name: "Tofu", quantity: 1, unit: "block" },
         { name: "Mixed Vegetables", quantity: 2, unit: "cups" },
-        { name: "Brown Rice", quantity: 1, unit: "cup" }
+        { name: "Brown Rice", quantity: 1, unit: "cup" },
       ],
       cookingTime: Math.min(25, maxCookingTime),
       instructions: [
         "Prepare tofu and vegetables",
         "Cook according to recipe",
-        "Serve with rice"
-      ]
+        "Serve with rice",
+      ],
     };
-  } else if (dietaryPreferences.includes("Vegetarian") || dietaryPreferences.includes("vegetarian")) {
+  } else if (
+    dietaryPreferences.includes("Vegetarian") ||
+    dietaryPreferences.includes("vegetarian")
+  ) {
     // Vegetarian fallback
     baseMeal = {
       recipeName: `${cuisinePrefix}Vegetarian ${mealType}`,
       ingredients: [
         { name: "Paneer", quantity: 200, unit: "grams" },
         { name: "Vegetables", quantity: 2, unit: "cups" },
-        { name: "Naan", quantity: 2, unit: "pieces" }
+        { name: "Naan", quantity: 2, unit: "pieces" },
       ],
       cookingTime: Math.min(30, maxCookingTime),
-      instructions: [
-        "Prepare ingredients",
-        "Cook as desired",
-        "Serve hot"
-      ]
+      instructions: ["Prepare ingredients", "Cook as desired", "Serve hot"],
     };
   } else {
     // Standard fallback
@@ -451,32 +479,35 @@ function createFallbackMeal(mealType, inputs) {
       ingredients: [
         { name: "Protein", quantity: 1, unit: "serving" },
         { name: "Vegetables", quantity: 2, unit: "cups" },
-        { name: "Grains", quantity: 1, unit: "cup" }
+        { name: "Grains", quantity: 1, unit: "cup" },
       ],
       cookingTime: Math.min(25, maxCookingTime),
       instructions: [
         "Prepare all ingredients",
         "Cook according to preference",
-        "Serve and enjoy"
-      ]
+        "Serve and enjoy",
+      ],
     };
   }
-  
+
   // Filter out allergens (simple check)
-  const safeIngredients = baseMeal.ingredients.filter(ingredient => {
+  const safeIngredients = baseMeal.ingredients.filter((ingredient) => {
     if (!allergies.length) return true;
     const ingName = ingredient.name.toLowerCase();
-    return !allergies.some(allergy => ingName.includes(allergy.toLowerCase()));
+    return !allergies.some((allergy) =>
+      ingName.includes(allergy.toLowerCase())
+    );
   });
 
   return {
     mealType: mealType,
     recipeName: baseMeal.recipeName,
-    ingredients: safeIngredients.length > 0 ? safeIngredients : baseMeal.ingredients,
+    ingredients:
+      safeIngredients.length > 0 ? safeIngredients : baseMeal.ingredients,
     cookingTime: baseMeal.cookingTime,
     instructions: baseMeal.instructions,
     recipeSource: "openai-fallback",
-    notes: "Created with your preferences in mind"
+    notes: "Created with your preferences in mind",
   };
 }
 
@@ -491,12 +522,12 @@ function getCalorieTarget(goal, mealType) {
   const base = {
     "Muscle Gain": { breakfast: 500, lunch: 600, dinner: 600, snack: 200 },
     "Weight Loss": { breakfast: 300, lunch: 400, dinner: 400, snack: 100 },
-    default: { breakfast: 400, lunch: 500, dinner: 500, snack: 150 }
+    default: { breakfast: 400, lunch: 500, dinner: 500, snack: 150 },
   };
-  
+
   const targets = base[goal] || base.default;
   const cal = targets[mealType] || targets.lunch;
-  
+
   return { min: Math.round(cal * 0.8), max: Math.round(cal * 1.2) };
 }
 
@@ -504,12 +535,12 @@ function getProteinTarget(goal, mealType) {
   const base = {
     "Muscle Gain": { breakfast: 30, lunch: 35, dinner: 35, snack: 10 },
     "Weight Loss": { breakfast: 20, lunch: 25, dinner: 25, snack: 5 },
-    default: { breakfast: 20, lunch: 25, dinner: 25, snack: 5 }
+    default: { breakfast: 20, lunch: 25, dinner: 25, snack: 5 },
   };
-  
+
   const targets = base[goal] || base.default;
   const prot = targets[mealType] || targets.lunch;
-  
+
   return { min: Math.round(prot * 0.8), max: Math.round(prot * 1.2) };
 }
 
@@ -517,8 +548,10 @@ function getProteinTarget(goal, mealType) {
 async function generateHybridMealPlan(inputs, userTier, userInfo) {
   const daysCount = Math.min(parseInt(inputs.days_count) || 3, 7);
   const mealsPerDay = Math.min(parseInt(inputs.meals_per_day) || 1, 4);
-  
-  console.log(`Hybrid plan: ${daysCount} days, ${mealsPerDay} meals/day - GENERATING ALL AT ONCE`);
+
+  console.log(
+    `Hybrid plan: ${daysCount} days, ${mealsPerDay} meals/day - GENERATING ALL AT ONCE`
+  );
 
   // Build ONE prompt for ALL meals
   const prompt = `Generate ${daysCount} vegan lunch recipes for muscle gain.
@@ -554,29 +587,32 @@ Return ONLY JSON array with ${daysCount} recipes in this exact format:
       messages: [
         {
           role: "system",
-          content: "You are a vegan chef. Return ONLY valid JSON array. No explanations."
+          content:
+            "You are a vegan chef. Return ONLY valid JSON array. No explanations.",
         },
         {
           role: "user",
-          content: prompt
-        }
+          content: prompt,
+        },
       ],
       max_completion_tokens: 2000, // Enough for all recipes
       temperature: 0.7,
-      response_format: { type: "json_object" }
+      response_format: { type: "json_object" },
     });
 
     console.log(`BATCH generation took ${Date.now() - startTime}ms`);
-    
+
     const content = response.choices[0].message.content;
     console.log("Raw response length:", content.length);
-    
+
     // Parse the response
     let recipesData;
     try {
       const parsed = JSON.parse(content);
       // Check if it's an array or object with array
-      recipesData = Array.isArray(parsed) ? parsed : parsed.recipes || parsed.data || [];
+      recipesData = Array.isArray(parsed)
+        ? parsed
+        : parsed.recipes || parsed.data || [];
     } catch (parseError) {
       console.error("JSON parse error:", parseError.message);
       // Try to extract array from text
@@ -591,71 +627,79 @@ Return ONLY JSON array with ${daysCount} recipes in this exact format:
         throw new Error("No recipes array found");
       }
     }
-    
+
     if (!Array.isArray(recipesData) || recipesData.length === 0) {
       throw new Error("No valid recipes generated");
     }
-    
+
     console.log(`✅ Generated ${recipesData.length} recipes at once`);
-    
+
     // Build days from recipes
     const days = [];
-    const dayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-    
+    const dayNames = [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday",
+    ];
+
     for (let day = 0; day < daysCount; day++) {
       const recipeIndex = day % recipesData.length;
       const recipeData = recipesData[recipeIndex];
-      
+
       // Format each recipe
       const recipe = {
         mealType: "lunch", // Since you only want 1 meal/day
-        recipeName: recipeData.title || `${inputs.cuisine || "Asian"} Vegan Lunch ${day + 1}`,
-        ingredients: Array.isArray(recipeData.ingredients) 
-          ? recipeData.ingredients.map(ing => ({
+        recipeName:
+          recipeData.title ||
+          `${inputs.cuisine || "Asian"} Vegan Lunch ${day + 1}`,
+        ingredients: Array.isArray(recipeData.ingredients)
+          ? recipeData.ingredients.map((ing) => ({
               name: ing.name || "Ingredient",
               quantity: ing.quantity || 1,
-              unit: ing.unit || "unit"
+              unit: ing.unit || "unit",
             }))
           : [{ name: "Tofu", quantity: 200, unit: "grams" }],
         cookingTime: recipeData.cookingTime || 30,
-        instructions: Array.isArray(recipeData.instructions) 
-          ? recipeData.instructions 
+        instructions: Array.isArray(recipeData.instructions)
+          ? recipeData.instructions
           : ["Prepare ingredients", "Cook", "Serve"],
         recipeSource: "hybrid-batch",
         nutrition: recipeData.nutrition || {
           calories: 450,
           protein_g: 25,
           carbs_g: 50,
-          fat_g: 12
+          fat_g: 12,
         },
         cuisine: inputs.cuisine ? [inputs.cuisine] : ["Asian"],
-        tags: ["vegan", "high-protein", "muscle-gain"]
+        tags: ["vegan", "high-protein", "muscle-gain"],
       };
-      
+
       days.push({
         dayIndex: day + 1,
         dayName: dayNames[day % 7],
-        meals: [recipe]
+        meals: [recipe],
       });
     }
-    
+
     console.log(`Built ${days.length} days from batch generation`);
-    
+
     return {
       days,
       generationMethod: "hybrid-batch",
-      nutritionValidationStatus: "complete"
+      nutritionValidationStatus: "complete",
     };
-
   } catch (error) {
     console.error("Batch generation failed:", error.message);
-    
+
     // FALLBACK: Use your existing OpenAI meal plan function
     console.log("Falling back to OpenAI meal plan...");
     return await generateMealPlan(inputs, userTier);
   }
 }
-
 
 export async function POST(request) {
   const acceptLanguage = request.headers.get("accept-language");
@@ -736,23 +780,26 @@ export async function POST(request) {
 
     // FORCE USE YOUR WORKING OPENAI FUNCTION
     console.log("Generating meal plan with working OpenAI function...");
-    const planData = await generateMealPlan({
-      // Ensure all fields are properly formatted
-      days_count: inputs.days_count || 3,
-      meals_per_day: inputs.meals_per_day || 1,
-      max_cooking_time: inputs.max_cooking_time || 45,
-      cuisine: inputs.cuisine || "Asian",
-      portions: inputs.portions || 2,
-      goal: inputs.goal || "Muscle Gain",
-      province: inputs.province || "Ontario",
-      budgetLevel: inputs.budget_level || "Medium",
-      likes: inputs.likes || "",
-      dislikes: inputs.dislikes || "",
-      cookingMethod: inputs.cooking_method || "",
-      skillLevel: inputs.skill_level || "Beginner",
-      dietaryPreferences: inputs.dietary_preferences || [],
-      allergies: inputs.allergies || [],
-    }, userTier);
+    const planData = await generateMealPlan(
+      {
+        // Ensure all fields are properly formatted
+        days_count: inputs.days_count || 3,
+        meals_per_day: inputs.meals_per_day || 1,
+        max_cooking_time: inputs.max_cooking_time || 45,
+        cuisine: inputs.cuisine || "Asian",
+        portions: inputs.portions || 2,
+        goal: inputs.goal || "Muscle Gain",
+        province: inputs.province || "Ontario",
+        budgetLevel: inputs.budget_level || "Medium",
+        likes: inputs.likes || "",
+        dislikes: inputs.dislikes || "",
+        cookingMethod: inputs.cooking_method || "",
+        skillLevel: inputs.skill_level || "Beginner",
+        dietaryPreferences: inputs.dietary_preferences || [],
+        allergies: inputs.allergies || [],
+      },
+      userTier
+    );
 
     console.log("Meal plan generated successfully");
 
@@ -835,4 +882,3 @@ export async function POST(request) {
     );
   }
 }
-

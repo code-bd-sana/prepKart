@@ -63,7 +63,6 @@
 //     ...planStyles[index],
 //   }));
 
-  
 //   const handleCancel = async (plan) => {
 //     const message =
 //       plan.name === "Free"
@@ -468,7 +467,6 @@ export default function PricingSection() {
     ...planStyles[index],
   }));
 
-  
   const handleCancel = async (plan) => {
     const message = `Are you sure you want to cancel your ${plan.name} and switch to Free? This will take effect immediately.`;
 
@@ -552,7 +550,7 @@ export default function PricingSection() {
         return;
       }
 
-      window.location.href =`/${locale}`;
+      window.location.href = `/${locale}`;
       return;
     }
 
@@ -614,7 +612,7 @@ export default function PricingSection() {
 
     const planTierMap = {
       "Free plan": "free",
-      "Plus plan": "tier2", 
+      "Plus plan": "tier2",
       "Premium plan": "tier3",
     };
 
@@ -630,52 +628,54 @@ export default function PricingSection() {
     if (userTier === "free") {
       if (plan.name === "Free plan") {
         buttonText = t("messages.currentPlan");
-        buttonClass = "bg-gray-100 text-gray-700 border border-gray-300 cursor-default";
+        buttonClass =
+          "bg-gray-100 text-gray-700 border border-gray-300 cursor-default";
         disabled = true;
         showCancel = false;
       }
       // Plus and Premium plans remain enabled
     }
-    
+
     // ========== PLUS USER LOGIC ==========
     else if (userTier === "tier2") {
       if (plan.name === "Free plan") {
         buttonText = t("messages.freePlan");
-        buttonClass = "bg-gray-100 text-gray-700 border border-gray-300 cursor-not-allowed";
+        buttonClass =
+          "bg-gray-100 text-gray-700 border border-gray-300 cursor-not-allowed";
         disabled = true;
         showCancel = false;
-      } 
-      else if (plan.name === "Plus plan") {
+      } else if (plan.name === "Plus plan") {
         buttonText = t("messages.currentPlan");
-        buttonClass = "bg-gray-100 text-gray-700 border border-gray-300 cursor-default";
+        buttonClass =
+          "bg-gray-100 text-gray-700 border border-gray-300 cursor-default";
         disabled = true;
         showCancel = true; // Show cancel button for Plus plan
-      } 
-      else if (plan.name === "Premium plan") {
+      } else if (plan.name === "Premium plan") {
         buttonText = t("messages.upgradePremium");
         buttonClass = plan.buttonColor;
         disabled = false;
         showCancel = false;
       }
     }
-    
+
     // ========== PREMIUM USER LOGIC ==========
     else if (userTier === "tier3") {
       if (plan.name === "Free plan") {
         buttonText = t("messages.freePlan");
-        buttonClass = "bg-gray-100 text-gray-700 border border-gray-300 cursor-not-allowed";
+        buttonClass =
+          "bg-gray-100 text-gray-700 border border-gray-300 cursor-not-allowed";
         disabled = true;
         showCancel = false;
-      } 
-      else if (plan.name === "Plus plan") {
+      } else if (plan.name === "Plus plan") {
         buttonText = t("messages.plusPlan");
-        buttonClass = "bg-gray-100 text-gray-700 border border-gray-300 cursor-not-allowed";
+        buttonClass =
+          "bg-gray-100 text-gray-700 border border-gray-300 cursor-not-allowed";
         disabled = true;
         showCancel = false;
-      } 
-      else if (plan.name === "Premium plan") {
+      } else if (plan.name === "Premium plan") {
         buttonText = t("messages.currentPlan");
-        buttonClass = "bg-gray-100 text-gray-700 border border-gray-300 cursor-default";
+        buttonClass =
+          "bg-gray-100 text-gray-700 border border-gray-300 cursor-default";
         disabled = true;
         showCancel = true; // Show cancel button for Premium plan
       }
@@ -776,6 +776,17 @@ export default function PricingSection() {
 
                   {/* Action Button Area */}
                   <div className="mt-auto space-y-2">
+                    {isLoggedIn && buttonState.showCancel && (
+                      <button
+                        onClick={() => handleCancel(plan)}
+                        disabled={cancelling}
+                        className="w-full py-1.5 text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded transition-colors duration-150"
+                      >
+                        {cancelling
+                          ? t("messages.cancelling")
+                          : t("messages.cancelPlan")}
+                      </button>
+                    )}
                     {/* Main Plan Button */}
                     <button
                       onClick={() => handlePayment(plan)}
@@ -792,15 +803,6 @@ export default function PricingSection() {
                     </button>
 
                     {/* Small, Subtle Cancel Button */}
-                    {isLoggedIn && buttonState.showCancel && (
-                      <button
-                        onClick={() => handleCancel(plan)}
-                        disabled={cancelling}
-                        className="w-full py-1.5 text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded transition-colors duration-150"
-                      >
-                        {cancelling ? t("messages.cancelling") : t("messages.cancelPlan")}
-                      </button>
-                    )}
                   </div>
                 </div>
               </div>
@@ -826,13 +828,15 @@ export default function PricingSection() {
                 <span className="font-semibold">{user.swapsAllowed || 1}</span>
               </div>
             </div>
-            
+
             {/* Auto-renewal status */}
-            {userTier !== 'free' && user.subscription?.currentPeriodEnd && (
+            {userTier !== "free" && user.subscription?.currentPeriodEnd && (
               <div className="mt-2 text-center text-xs text-gray-500">
                 <span className="font-medium">Next billing:</span>{" "}
-                {new Date(user.subscription.currentPeriodEnd).toLocaleDateString()}
-                {" "}• Auto-renewal enabled
+                {new Date(
+                  user.subscription.currentPeriodEnd
+                ).toLocaleDateString()}{" "}
+                • Auto-renewal enabled
               </div>
             )}
           </div>

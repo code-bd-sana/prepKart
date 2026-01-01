@@ -57,16 +57,14 @@ export async function GET(request) {
 
     // Case 2: Fetch plans for a user
     if (userId) {
-  // Since authenticate() already verified the user, we can trust the userId param
-  // Remove the strict check or make it more flexible
-  const plans = await Plan.find({ userId: userId }).lean();
-  
-  // Debug logging
-  console.log(`User ${authResult.userId} requesting plans for ${userId}`);
-  console.log(`Found ${plans.length} plans`);
-  
-  return NextResponse.json(plans);
-}
+      const plans = await Plan.find({ userId: userId }).lean();
+
+      // Debug logging
+      console.log(`User ${authResult.userId} requesting plans for ${userId}`);
+      console.log(`Found ${plans.length} plans`);
+
+      return NextResponse.json(plans);
+    }
 
     // Case 3: No parameters
     return NextResponse.json({ error: "Parameter required" }, { status: 400 });
