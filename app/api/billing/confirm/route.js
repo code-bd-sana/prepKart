@@ -3,7 +3,6 @@
 // import { connectDB } from "@/lib/db";
 // import User from "@/models/User";
 
-
 // export async function GET(request) {
 //   try {
 //     const { searchParams } = new URL(request.url);
@@ -31,7 +30,7 @@
 //     // Calculate swaps
 //     const swapsAllowed = tier === "tier2" ? 2 : 3;
 
-//     // Update database 
+//     // Update database
 //     await User.findByIdAndUpdate(
 //       userId,
 //       {
@@ -87,9 +86,11 @@ export async function GET(request) {
 
     // Get subscription details for accurate period end
     let periodEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // Default 30 days
-    
+
     if (session.subscription) {
-      const subscription = await stripe.subscriptions.retrieve(session.subscription);
+      const subscription = await stripe.subscriptions.retrieve(
+        session.subscription
+      );
       periodEnd = new Date(subscription.current_period_end * 1000);
     }
 
@@ -99,28 +100,48 @@ export async function GET(request) {
     // Calculate swaps
     const swapsAllowed = tier === "tier2" ? 2 : 3;
 
-    // Update database 
+    // Update database
+    // await User.findByIdAndUpdate(
+    //   userId,
+    //   {
+    //     tier: tier,
+    //     swapsAllowed: swapsAllowed,
+    //     "subscription.status": "active",
+    //     "subscription.tier": tier,
+    //     "subscription.stripeSubscriptionId": session.subscription,
+    //     "subscription.stripeCustomerId": session.customer,
+    //     "subscription.currentPeriodEnd": periodEnd,
+    //     "subscription.startDate": new Date(),
+    //   },
+    //   { new: true }
+    // );
+
     await User.findByIdAndUpdate(
       userId,
       {
         tier: tier,
-        swapsAllowed: swapsAllowed,
+        swapsAllowed: tier === "tier2" ? 2 : 3,
+        swapsUsed: 0,
         "subscription.status": "active",
         "subscription.tier": tier,
         "subscription.stripeSubscriptionId": session.subscription,
         "subscription.stripeCustomerId": session.customer,
-        "subscription.currentPeriodEnd": periodEnd,
+        "subscription.currentPeriodEnd": new Date(
+          Date.now() + 30 * 24 * 60 * 60 * 1000
+        ),
         "subscription.startDate": new Date(),
+        "subscription.cancelAtPeriodEnd": false,
       },
       { new: true }
     );
-
     // Redirect to dashboard
     const userLocale = "en";
 
-    return NextResponse.redirect(
-      `${origin}/${userLocale}/dashboard?subscription=success`
-    );
+    // return NextResponse.redirect(
+    //   `${origin}/${userLocale}/dashboard?subscription=success`
+    // );
+
+    return NextResponse.redirect(`${origin}/${userLocale}`);
   } catch (error) {
     const origin = request.nextUrl.origin || "http://localhost:3000";
     return NextResponse.redirect(`${origin}/#pricing?error=${error.message}`);

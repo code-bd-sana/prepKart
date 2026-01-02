@@ -146,6 +146,8 @@
 //   }
 // }
 
+
+
 import { NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
 import { connectDB } from '@/lib/db';
@@ -158,7 +160,6 @@ export async function POST(request) {
   let event;
   
   try {
-    // Verify webhook signature
     event = stripe.webhooks.constructEvent(
       payload,
       signature,
@@ -175,7 +176,7 @@ export async function POST(request) {
   await connectDB();
 
   try {
-    console.log(`📦 Processing webhook: ${event.type}`); // Added log
+    console.log(`WEBHOOK RECEIVED: ${event.type} at ${new Date().toISOString()}`);
     
     switch (event.type) {
       case 'checkout.session.completed': {
@@ -185,23 +186,45 @@ export async function POST(request) {
         const customerId = session.customer;
         const subscriptionId = session.subscription;
         
-        console.log(`✅ Checkout completed for user ${userId}, tier: ${tier}`);
+        // console.log(`CHECKOUT COMPLETE: User ${userId}, Tier: ${tier}`);
+        // console.log(`   Session ID: ${session.id}`);
+        // console.log(`   Payment status: ${session.payment_status}`);
+        // console.log(`   Subscription ID: ${subscriptionId}`);
         
-        if (userId) {
-          // Get subscription to get accurate period end
-          let periodEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // Default 30 days
-          
-          if (subscriptionId) {
-            try {
-              const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-              periodEnd = new Date(subscription.current_period_end * 1000);
-            } catch (error) {
-              console.error('Error fetching subscription:', error);
-            }
+        if (!userId) {
+          console.error('NO USER ID IN METADATA');
+          break;
+        }
+        
+        if (session.payment_status !== 'paid') {
+          console.error('PAYMENT NOT PAID, SKIPPING');
+          break;
+        }
+        
+        // Get actual subscription end date
+        let periodEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+        
+        if (subscriptionId) {
+          try {
+            const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+            periodEnd = new Date(subscription.current_period_end * 1000);
+            console.log(`   Actual period ends: ${periodEnd}`);
+          } catch (error) {
+            console.error('Error getting subscription:', error);
           }
-          
-          const updates = {
+        }
+        
+        // Calculate swaps
+        const swapsAllowed = tier === 'tier2' ? 2 : 3;
+        
+        // Update user in database
+        const result = await User.findByIdAndUpdate(
+          userId,
+          {
             tier: tier,
+            swapsAllowed: swapsAllowed,
+            swapsUsed: 0,
+            stripeCustomerId: customerId,
             'subscription.status': 'active',
             'subscription.tier': tier,
             'subscription.stripeSubscriptionId': subscriptionId,
@@ -209,81 +232,93 @@ export async function POST(request) {
             'subscription.currentPeriodEnd': periodEnd,
             'subscription.cancelAtPeriodEnd': false,
             'subscription.startDate': new Date(),
-          };
-          
-          // Update swaps based on tier
-          if (tier === 'tier2') {
-            updates.swapsAllowed = 2;
-          } else if (tier === 'tier3') {
-            updates.swapsAllowed = 3;
-          }
-          
-          const updatedUser = await User.findByIdAndUpdate(
-            userId,
-            { $set: updates },
-            { new: true }
-          );
-          
-          console.log(`✅ User ${userId} activated on ${tier} tier until ${periodEnd}`);
+          },
+          { new: true }
+        );
+        
+        if (result) {
+          // console.log(`DATABASE UPDATED: User ${userId} -> Tier ${tier}`);
+          // console.log(`   Swaps allowed: ${swapsAllowed}`);
+          console.log(`   Period ends: ${periodEnd}`);
+        } else {
+          console.error(`USER NOT FOUND: ${userId}`);
         }
         break;
       }
 
-      // ====== ADD THIS CRITICAL HANDLER FOR AUTO-RENEWAL ======
       case 'invoice.payment_succeeded': {
         const invoice = event.data.object;
-        const subscriptionId = invoice.subscription;
-        const customerId = invoice.customer;
+        // console.log(`💰 INVOICE PAID: ${invoice.id}`);
+        // console.log(`   Billing reason: ${invoice.billing_reason}`);
+        // console.log(`   Subscription: ${invoice.subscription}`);
         
-        console.log(`💰 Payment succeeded for invoice: ${invoice.id}`);
+        // IMPORTANT: Skip initial invoice (handled by checkout.session.completed)
+        if (invoice.billing_reason === 'subscription_create') {
+          console.log('Initial invoice - skipping (handled by checkout.session.completed)');
+          break;
+        }
         
-        if (subscriptionId) {
-          // Get subscription to know new period end
+        // Only process auto-renewals
+        if (invoice.billing_reason === 'subscription_cycle' && invoice.subscription) {
+          console.log(`AUTO-RENEWAL DETECTED`);
+          
           try {
-            const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+            const subscription = await stripe.subscriptions.retrieve(invoice.subscription);
             const periodEnd = new Date(subscription.current_period_end * 1000);
             
-            // Find user by subscription ID or customer ID
-            let user = await User.findOne({
-              'subscription.stripeSubscriptionId': subscriptionId
+            // Find user by subscription ID
+            const user = await User.findOne({
+              'subscription.stripeSubscriptionId': invoice.subscription
             });
-            
-            if (!user && customerId) {
-              user = await User.findOne({
-                'subscription.stripeCustomerId': customerId
-              });
-            }
             
             if (user) {
               await User.findByIdAndUpdate(user._id, {
                 $set: {
-                  'subscription.status': 'active',
                   'subscription.currentPeriodEnd': periodEnd,
-                  'subscription.lastPaymentDate': new Date(),
-                  'subscription.renewalCount': (user.subscription?.renewalCount || 0) + 1,
-                  // Reset monthly usage
-                  swapsUsed: 0,
+                  'subscription.lastRenewalDate': new Date(),
+                  swapsUsed: 0, // Reset for new month
                 }
               });
               
-              console.log(`🔄 Subscription renewed for ${user.email}`);
-              console.log(`   New period end: ${periodEnd}`);
-              console.log(`   Renewal count: ${(user.subscription?.renewalCount || 0) + 1}`);
+              console.log(`${user.email} renewed until ${periodEnd}`);
+              console.log(`Swaps reset to 0`);
+            } else {
+              console.error(`No user found for subscription ${invoice.subscription}`);
             }
           } catch (error) {
-            console.error('Error processing invoice.payment_succeeded:', error);
+            console.error('Error processing renewal:', error);
           }
         }
         break;
       }
-      // ====== END OF CRITICAL ADDITION ======
 
+      case 'invoice.paid': {
+        // Similar logic to invoice.payment_succeeded
+        const invoice = event.data.object;
+        console.log(`INVOICE.PAID: ${invoice.id}`);
+        
+        if (invoice.billing_reason === 'subscription_cycle' && invoice.subscription) {
+          console.log(`Also an auto-renewal`);
+        }
+        break;
+      }
+
+      case 'customer.subscription.created': {
+        const subscription = event.data.object;
+        // console.log(`SUBSCRIPTION CREATED: ${subscription.id}`);
+        // console.log(`   Customer: ${subscription.customer}`);
+        // console.log(`   Status: ${subscription.status}`);
+        // The checkout.session.completed should handle this
+        break;
+      }
+
+      // Handle other events
       case 'customer.subscription.updated': {
         const subscription = event.data.object;
         const customerId = subscription.customer;
         const status = subscription.status;
         
-        console.log(`📝 Subscription updated: ${subscription.id}, status: ${status}`);
+        console.log(`SUBSCRIPTION UPDATED: ${subscription.id} -> ${status}`);
         
         if (customerId) {
           const user = await User.findOne({ 
@@ -299,90 +334,27 @@ export async function POST(request) {
               'subscription.cancelAtPeriodEnd': subscription.cancel_at_period_end,
             };
             
-            // If subscription is canceled or unpaid, downgrade to free
-            if (status === 'canceled' || status === 'unpaid' || status === 'past_due') {
+            if (status !== 'active') {
               updates.tier = 'free';
               updates.swapsAllowed = 1;
-              updates['subscription.cancelledAt'] = new Date();
+              updates.swapsUsed = 0;
             }
             
-            await User.findByIdAndUpdate(user._id, { $set: updates });
-            
-            console.log(`📝 Updated ${user.email} subscription status to ${status}`);
+            await User.findByIdAndUpdate(user._id, updates);
+            console.log(`Updated ${user.email} to status: ${status}`);
           }
         }
-        break;
-      }
-
-      case 'customer.subscription.deleted': {
-        const subscription = event.data.object;
-        const customerId = subscription.customer;
-        
-        console.log(`🗑️ Subscription deleted: ${subscription.id}`);
-        
-        if (customerId) {
-          await User.findOneAndUpdate(
-            { 'subscription.stripeCustomerId': customerId },
-            {
-              $set: {
-                tier: 'free',
-                swapsAllowed: 1,
-                'subscription.status': 'canceled',
-                'subscription.currentPeriodEnd': null,
-                'subscription.cancelledAt': new Date(),
-              }
-            }
-          );
-          
-          console.log(`🗑️ Downgraded user to free tier`);
-        }
-        break;
-      }
-
-      case 'invoice.payment_failed': {
-        const invoice = event.data.object;
-        const subscriptionId = invoice.subscription;
-        const customerId = invoice.customer;
-        
-        console.log(`❌ Payment failed for invoice: ${invoice.id}`);
-        
-        if (subscriptionId) {
-          const user = await User.findOne({
-            'subscription.stripeSubscriptionId': subscriptionId
-          }) || await User.findOne({
-            'subscription.stripeCustomerId': customerId
-          });
-          
-          if (user) {
-            await User.findByIdAndUpdate(user._id, {
-              $set: {
-                'subscription.status': 'past_due',
-                'subscription.lastFailedPayment': new Date(),
-              }
-            });
-            
-            console.log(`❌ Marked ${user.email} subscription as past_due`);
-          }
-        }
-        break;
-      }
-
-      // ====== OPTIONAL: Also handle invoice.paid ======
-      case 'invoice.paid': {
-        const invoice = event.data.object;
-        console.log(`✅ Invoice paid: ${invoice.id}`);
-        // You can add similar logic here if needed
         break;
       }
 
       default:
-        console.log(`ℹ️ Unhandled event type: ${event.type}`);
+        console.log(`Other event: ${event.type}`);
     }
 
     return NextResponse.json({ received: true });
     
   } catch (error) {
-    console.error('Webhook processing error:', error);
+    console.error('WEBHOOK ERROR:', error);
     return NextResponse.json(
       { error: 'Webhook processing failed' },
       { status: 500 }
