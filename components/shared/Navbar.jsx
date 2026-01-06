@@ -165,10 +165,11 @@ export default function Navbar() {
                   key={item.href}
                   href={item.href}
                   onClick={() => handleNavClick(item.href)}
-                  className={`relative transition font-medium whitespace-nowrap ${isActive
+                  className={`relative transition font-medium whitespace-nowrap ${
+                    isActive
                       ? "text-[#4a9fd8]"
                       : "text-black hover:text-[#4a9fd8]"
-                    }`}
+                  }`}
                 >
                   {item.label}
                   {isActive && (
@@ -276,6 +277,24 @@ export default function Navbar() {
           />
         </Link>
 
+        <div className="-mr-28">
+          {user && user.tier === "admin" && (
+          <Link
+            href={`/${locale}/admin`}
+            className="px-3 py-2 text-white font-medium rounded-md bg-[#4a9fd8] hover:bg-[#3b8ec4] transition-colors duration-200 cursor-pointer text-sm lg:text-base whitespace-nowrap"
+          >
+            Admin Dashboard
+          </Link>
+        )}
+        {user && user.tier !== "admin" && (
+          <button
+            onClick={() => setShowDashboardModal(true)}
+            className="px-3 lg:px-4 xl:px-5 py-2 lg:py-2.5 text-white font-medium rounded-md bg-[#4a9fd8] hover:bg-[#3b8ec4] transition-colors duration-200 cursor-pointer text-sm lg:text-base whitespace-nowrap"
+          >
+            Dashboard
+          </button>
+        )}
+        </div>
         {/* MENU BUTTON */}
         <div className="flex items-center gap-4">
           {open ? (
@@ -305,10 +324,11 @@ export default function Navbar() {
                   key={item.href}
                   href={item.href}
                   onClick={() => handleNavClick(item.href)}
-                  className={`text-sm sm:text-[15px] font-medium ${isActive
+                  className={`text-sm sm:text-[15px] font-medium ${
+                    isActive
                       ? "text-[#4a9fd8]"
                       : "text-black hover:text-[#4a9fd8]"
-                    }`}
+                  }`}
                 >
                   {item.label}
                   {isActive && (
@@ -334,7 +354,7 @@ export default function Navbar() {
                     {user.name || user.email?.split("@")[0]}
                   </span>
                 </div>
-                {user && (user.tier === "tier3" || user.tier === "admin") && (
+                {user && user.tier === "admin" && (
                   <Link
                     href={`/${locale}/admin`}
                     className="w-full text-center px-4 sm:px-5 py-2.5 text-white font-medium rounded-md bg-[#4a9fd8] cursor-pointer text-sm sm:text-base"
@@ -381,7 +401,7 @@ export default function Navbar() {
           </div>
         </div>
       )}
-       {/* Dashboard Modal */}
+      {/* Dashboard Modal */}
       <DashboardModal
         isOpen={showDashboardModal}
         onClose={() => setShowDashboardModal(false)}

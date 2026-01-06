@@ -421,94 +421,112 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
     return now > expires;
   };
   // delete saved meal plan
-const deleteMealPlan = async (planId) => {
-  try {
-    const confirmPromise = new Promise((resolve) => {
-      toast(
-        <div className="p-4">
-          <p className="font-semibold text-gray-800 mb-2">
-            Delete Meal Plan?
-          </p>
-          <p className="text-gray-600 text-sm mb-4">
-            Are you sure you want to delete this meal plan? This action cannot be undone.
-          </p>
-          <div className="flex gap-2 justify-end">
-            <button
-              onClick={() => {
-                toast.dismiss();
-                resolve(false);
-              }}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={() => {
-                toast.dismiss();
-                resolve(true);
-              }}
-              className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition"
-            >
-              Delete
-            </button>
-          </div>
-        </div>,
-        {
-          position: "top-center",
-          autoClose: false,
-          closeOnClick: false,
-          draggable: false,
-          closeButton: false,
-          theme: "light",
-        }
-      );
-    });
-
-    const confirmed = await confirmPromise;
-
-    if (!confirmed) {
-      return;
-    }
-
-    const token =
-      localStorage.getItem("token") || localStorage.getItem("accessToken");
-
-    // Show loading toast
-    const loadingToast = toast.loading("Deleting meal plan...", {
-      position: "top-right",
-    });
-
-    const response = await fetch(`/api/plans/${planId}`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        ...(token && { Authorization: `Bearer ${token}` }),
-      },
-    });
-
-    // Dismiss loading toast
-    toast.dismiss(loadingToast);
-
-    if (response.ok) {
-      // Remove from state
-      setSavedMealPlans((prev) => prev.filter((plan) => plan._id !== planId));
-
-      // Show success toast
-      toast.success("Meal plan deleted successfully!", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
+  const deleteMealPlan = async (planId) => {
+    try {
+      const confirmPromise = new Promise((resolve) => {
+        toast(
+          <div className="p-4">
+            <p className="font-semibold text-gray-800 mb-2">
+              Delete Meal Plan?
+            </p>
+            <p className="text-gray-600 text-sm mb-4">
+              Are you sure you want to delete this meal plan? This action cannot
+              be undone.
+            </p>
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => {
+                  toast.dismiss();
+                  resolve(false);
+                }}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  toast.dismiss();
+                  resolve(true);
+                }}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition"
+              >
+                Delete
+              </button>
+            </div>
+          </div>,
+          {
+            position: "top-center",
+            autoClose: false,
+            closeOnClick: false,
+            draggable: false,
+            closeButton: false,
+            theme: "light",
+          }
+        );
       });
-    } else {
-      const errorData = await response.json();
 
-      // Show error toast
-      toast.error(errorData.error || "Failed to delete meal plan", {
+      const confirmed = await confirmPromise;
+
+      if (!confirmed) {
+        return;
+      }
+
+      const token =
+        localStorage.getItem("token") || localStorage.getItem("accessToken");
+
+      // Show loading toast
+      const loadingToast = toast.loading("Deleting meal plan...", {
+        position: "top-right",
+      });
+
+      const response = await fetch(`/api/plans/${planId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+      });
+
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
+
+      if (response.ok) {
+        // Remove from state
+        setSavedMealPlans((prev) => prev.filter((plan) => plan._id !== planId));
+
+        // Show success toast
+        toast.success("Meal plan deleted successfully!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        });
+      } else {
+        const errorData = await response.json();
+
+        // Show error toast
+        toast.error(errorData.error || "Failed to delete meal plan", {
+          position: "top-right",
+          autoClose: 4000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        });
+
+        throw new Error(errorData.error || "Failed to delete");
+      }
+    } catch (error) {
+      console.error(" Error deleting meal plan:", error);
+
+      // Show generic error toast
+      toast.error("Failed to delete meal plan. Please try again.", {
         position: "top-right",
         autoClose: 4000,
         hideProgressBar: false,
@@ -518,25 +536,8 @@ const deleteMealPlan = async (planId) => {
         progress: undefined,
         theme: "light",
       });
-
-      throw new Error(errorData.error || "Failed to delete");
     }
-  } catch (error) {
-    console.error(" Error deleting meal plan:", error);
-
-    // Show generic error toast
-    toast.error("Failed to delete meal plan. Please try again.", {
-      position: "top-right",
-      autoClose: 4000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      progress: undefined,
-      theme: "light",
-    });
-  }
-};
+  };
 
   // Get stats
   // const nutritionStats = calculateTotalNutrition();
@@ -550,7 +551,7 @@ const deleteMealPlan = async (planId) => {
     switch (activeTab) {
       case "Nutrition":
         return (
-          <div className="space-y-6">
+          <div className="space-y-6 mb-72">
             <div className="mt-4 bg-green-50 border border-green-200 rounded-lg p-4">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 bg-green-500 rounded-full"></div>
@@ -563,7 +564,7 @@ const deleteMealPlan = async (planId) => {
                 accuracy
               </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
               <div className="bg-blue-50 p-6 rounded-xl">
                 <p className="text-sm text-blue-600 font-medium">
                   Total Calories
@@ -679,7 +680,7 @@ const deleteMealPlan = async (planId) => {
 
       case "Pantry":
         return (
-          <div className="space-y-6">
+          <div className="space-y-6 mb-72">
             {/* Header */}
             <div>
               <h1 className="text-2xl font-bold text-gray-900">My Pantry</h1>
@@ -864,7 +865,7 @@ const deleteMealPlan = async (planId) => {
 
       case "Calendar":
         return (
-          <div className="space-y-6">
+          <div className="space-y-6 mb-72">
             <div className="bg-white border border-gray-200 rounded-xl p-6">
               <h3 className="text-xl font-semibold text-gray-900 mb-4">
                 Meal Plan Calendar
@@ -883,7 +884,7 @@ const deleteMealPlan = async (planId) => {
                 {Array.from({ length: 35 }).map((_, index) => (
                   <div
                     key={index}
-                    className="h-24 border border-gray-200 rounded-lg p-2 hover:bg-gray-50"
+                    className="md:h-20 border border-gray-200 rounded-lg p-2 hover:bg-gray-50"
                   >
                     <div className="text-sm font-medium text-gray-700">
                       {index + 1}
@@ -921,7 +922,7 @@ const deleteMealPlan = async (planId) => {
 
       case "Budget":
         return (
-          <div className="space-y-6">
+          <div className="space-y-6 mb-72">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-green-50 p-6 rounded-xl">
                 <div className="flex items-center gap-3 mb-3">
@@ -1040,7 +1041,7 @@ const deleteMealPlan = async (planId) => {
         );
       case "Pantry":
         return (
-          <div className="space-y-6">
+          <div className="space-y-6 mb-72">
             {/* Upgrade message for free users */}
             {user?.tier === "free" ? (
               <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6 text-center">
@@ -1161,7 +1162,7 @@ const deleteMealPlan = async (planId) => {
 
         return (
           <>
-            <div>
+            <div className="mb-72">
               {/* Plan Status Card - Always show */}
               <div className="mb-8 bg-white border border-gray-200 rounded-xl p-6">
                 <div className="flex items-center justify-between mb-4">
@@ -1231,7 +1232,7 @@ const deleteMealPlan = async (planId) => {
                     </h2>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                     {regularSavedPlans.map((plan) => {
                       const isExpired = isPlanExpired(plan);
                       return (
@@ -1515,11 +1516,11 @@ const deleteMealPlan = async (planId) => {
       {/* Modal Content */}
       <div
         ref={modalRef}
-        className="relative bg-white rounded-2xl w-full max-w-[1400px] max-h-[95vh] overflow-hidden flex flex-col shadow-2xl"
+        className="relative bg-white rounded-none md:rounded-2xl w-full h-screen max-h-[95vh]  md:max-w-[1400px] md:max-h-[95vh] md:h-auto overflow-hidden flex flex-col shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header with gradient background */}
-        <div className="bg-linear-to-r from-teal-500 to-emerald-400 px-8 py-6 relative">
+        <div className="bg-linear-to-r from-teal-500 to-emerald-400 px-4 md:px-8 py-4 md:py-6 relative">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-white mb-1">
@@ -1566,13 +1567,13 @@ const deleteMealPlan = async (planId) => {
         </div>
 
         {/* Tabs */}
-        <div className="bg-gray-50 border-b border-gray-200 px-8">
-          <div className="flex gap-8">
+        <div className="bg-gray-50 border-b border-gray-200 px-4 md:px-8">
+          <div className="flex overflow-x-auto gap-4 md:gap-8 scrollbar-hide py-2">
             {tabs.map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-4 py-4 font-medium transition-colors relative ${
+                className={`px-3 py-3 font-medium transition-colors relative whitespace-nowrap shrink-0 ${
                   activeTab === tab
                     ? "text-teal-600"
                     : "text-gray-600 hover:text-gray-900"
@@ -1588,7 +1589,7 @@ const deleteMealPlan = async (planId) => {
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 overflow-y-auto p-8 min-h-[600px]">
+        <div className="flex-1 overflow-y-auto p-8 max-h-[650px]">
           <div className="max-w-7xl mx-auto h-full">{renderTabContent()}</div>
         </div>
       </div>
