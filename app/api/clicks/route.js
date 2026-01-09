@@ -1,4 +1,3 @@
-// app/api/clicks/route.js
 import { NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db';
 

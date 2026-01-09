@@ -15,7 +15,7 @@ import { useTranslations } from "next-intl";
 import { useParams } from "next/navigation";
 import { IoIosArrowDown } from "react-icons/io";
 
-export default function GenerateWeeklyPlan({ voiceText }) {
+export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
   const [loading, setLoading] = useState(false);
   const [plan, setPlan] = useState(null);
   const [error, setError] = useState("");
@@ -337,6 +337,9 @@ export default function GenerateWeeklyPlan({ voiceText }) {
       setPlan(data.plan);
       clearInterval(progressInterval);
       setGeneratingProgress(100);
+      if (typeof onPlanGenerated === "function") {
+        onPlanGenerated(true);
+      }
 
       setPlan(data.plan);
       clearInterval(progressInterval);
@@ -754,7 +757,17 @@ export default function GenerateWeeklyPlan({ voiceText }) {
         <p className="text-center text-3xl md:text-4xl font-semibold text-gray-900 mb-3">
           {t("title")}
         </p>
-
+        {plan && (
+          <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+            <p className="text-amber-800 font-semibold flex items-center">
+              Don‘t forget to save!
+            </p>
+            <p className="text-amber-700 text-sm mt-1">
+              If you close this window without clicking ‘Save Plan’, your meal
+              plan will be lost forever.
+            </p>
+          </div>
+        )}
         {/* Error Message */}
         {error && (
           <div className="max-w-6xl mx-auto mb-8">
