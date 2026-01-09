@@ -3,7 +3,6 @@ import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import GroceryList from "@/models/GroceryList";
 import { authenticate } from "@/middleware/auth";
-import { generateInstacartLink } from "@/lib/instacart";
 import User from "@/models/User";
 
 export async function GET(request, { params }) {
@@ -77,88 +76,6 @@ export async function GET(request, { params }) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
-
-// export async function PATCH(request, { params }) {
-//   try {
-//     await connectDB();
-
-//     const auth = await authenticate(request);
-//     if (!auth.success) {
-//       return NextResponse.json({ error: "Authentication required" }, { status: 401 });
-//     }
-
-//     const { userId } = auth;
-//     const { id } = await params;
-//     const body = await request.json();
-
-//     // Find the grocery list
-//     const existingList = await GroceryList.findById(id);
-//     if (!existingList) {
-//       return NextResponse.json({ error: "Grocery list not found" }, { status: 404 });
-//     }
-
-//     // Check ownership
-//     if (existingList.userId.toString() !== userId.toString()) {
-//       return NextResponse.json({ error: "Not authorized" }, { status: 403 });
-//     }
-
-//     // ====== SIMPLE UPDATE LOGIC ======
-//     // If updating items, just save them - NO INSTACART LINK REGENERATION
-//     if (body.items) {
-//       // Clean items (keep your existing cleaning logic)
-//       const cleanedItems = body.items.map((item) => ({
-//         ...item,
-//         checked: item.checked === true, // Ensure boolean
-//         _id: item._id && mongoose.Types.ObjectId.isValid(item._id) 
-//           ? new mongoose.Types.ObjectId(item._id) 
-//           : new mongoose.Types.ObjectId(),
-//       }));
-
-//       // Count checked items
-//       const checkedCount = cleanedItems.filter(item => item.checked).length;
-
-//       // Update WITHOUT regenerating Instacart link
-//       const updatedList = await GroceryList.findByIdAndUpdate(
-//         id,
-//         {
-//           items: cleanedItems,
-//           checkedItems: checkedCount,
-//           totalItems: cleanedItems.length,
-//           updatedAt: new Date(),
-//         },
-//         { new: true }
-//       );
-
-//       return NextResponse.json({
-//         success: true,
-//         groceryList: updatedList,
-//         message: "Grocery list updated",
-//       });
-//     }
-
-//     // If no items, update other fields
-//     const updatedList = await GroceryList.findByIdAndUpdate(
-//       id,
-//       {
-//         totalItems: body.totalItems || existingList.totalItems,
-//         checkedItems: body.checkedItems || existingList.checkedItems,
-//         estimatedTotal: body.estimatedTotal || existingList.estimatedTotal,
-//         updatedAt: new Date(),
-//       },
-//       { new: true }
-//     );
-
-//     return NextResponse.json({
-//       success: true,
-//       groceryList: updatedList,
-//       message: "Grocery list updated",
-//     });
-
-//   } catch (error) {
-//     console.error("Update error:", error);
-//     return NextResponse.json({ error: error.message }, { status: 500 });
-//   }
-// }
 
 export async function PATCH(request, { params }) {
   try {
