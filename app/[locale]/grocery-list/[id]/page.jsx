@@ -115,158 +115,95 @@ export default function GroceryListPage({ params }) {
     }
   }, [groceryList]);
 
-  // const handleInstacartOrder = async () => {
-  //   if (!groceryList) {
-  //     toast.error("Grocery list not loaded");
-  //     return;
-  //   }
-
-  //   const checkedItems = groceryList.items.filter((item) => item.checked);
-
-  //   if (checkedItems.length === 0) {
-  //     toast.info("Please select items to order");
-  //     return;
-  //   }
-
-  //   // console.log("=== Processing Instacart Order ===");
-  //   // console.log(
-  //   //   "Selected items:",
-  //   //   checkedItems.map((item) => item.name)
-  //   // );
-
-  //   try {
-  //     // Show loading
-  //     toast.loading("Connecting to Instacart...");
-  //     const userId = user?._id || user?.id || "anonymous";
-
-  //     // Generate link
-  //     const result = await generateInstacartLink(
-  //       checkedItems,
-  //       user?.tier || "free",
-  //       process.env.INSTACART_IMPACT_ID,
-  //       userId, // Pass user ID here
-  //       groceryList._id
-  //     );
-
-  //     // console.log("Generated result:", result);
-
-  //     toast.dismiss();
-
-  //     if (result.method === "dictionary_search") {
-  //       toast.success("Opening Instacart...");
-  //     } else {
-  //       toast.info("Opening Instacart search...");
-  //     }
-
-  //     // Open link
-  //     setTimeout(() => {
-  //       window.open(result.link, "_blank", "noopener,noreferrer");
-  //     }, 500);
-  //   } catch (error) {
-  //     console.error("Instacart error:", error);
-  //     toast.dismiss();
-
-  //     // Fallback to simple link
-  //     const partnerId = process.env.INSTACART_IMPACT_ID || "6773996";
-  //     const simpleLink = generateSimpleInstacartLink(checkedItems, partnerId);
-
-  //     // Track fallback click
-  //     await trackInstacartClick({
-  //       userId: user?._id,
-  //       groceryListId: groceryList._id,
-  //       method: "fallback",
-  //       userTier: user?.tier || "free",
-  //       checkedItemsCount: checkedItems.length,
-  //       totalItems: checkedItems.length,
-  //     });
-
-  //     window.open(simpleLink, "_blank", "noopener,noreferrer");
-  //     toast.info("Opening Instacart...");
-  //   }
-  // };
-
-  const handleInstacartOrder = async () => {
+const handleInstacartOrder = async () => {
   if (!groceryList) {
     toast.error("Grocery list not loaded");
     return;
   }
 
-  const checkedItems = groceryList.items.filter((item) => item.checked);
+  // Get checked items WITH PROPER FORMAT
+  const checkedItems = groceryList.items
+    .filter((item) => item.checked)
+    .map(item => ({
+      name: item.name,
+      quantity: item.quantity || 1,
+      unit: item.unit || 'unit',
+      checked: true  // Explicitly set
+    }));
 
   if (checkedItems.length === 0) {
     toast.info("Please select items to order");
     return;
   }
 
-  console.log("=== Processing Instacart Order ===");
-  console.log("Selected items:", checkedItems.map((item) => item.name));
+  console.log("=== CREATING INSTACART SHOPPING LIST ===");
+  console.log("Selected items:", checkedItems);
 
   try {
-    // Show loading
-    toast.loading("Adding items to Instacart cart...");
+    toast.loading("Creating Instacart shopping list...");
     const userId = user?._id || user?.id || "anonymous";
 
-    // Call the API endpoint that uses IDP
+    // Call the REAL Instacart API
     const response = await fetch("/api/instacart", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...(getAuthToken() && { Authorization: `Bearer ${getAuthToken()}` }),
       },
       body: JSON.stringify({
-        groceryItems: checkedItems,
+        groceryItems: checkedItems,  // Send objects, not strings
         userId: userId,
-        userTier: user?.tier || "free",
         groceryListId: groceryList._id,
       }),
     });
 
-    const data = await response.json();
-    
-    toast.dismiss();
+    // Check response status
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`API Error: ${errorData.error || response.status}`);
+    }
 
+    const data = await response.json();
+    toast.dismiss();
+    
     if (data.success) {
-      console.log("✅ Items added to cart! Opening:", data.link);
-      toast.success("Opening Instacart with items in cart...");
+      const instacartUrl = data.url;
+      const shoppingListId = data.shopping_list_id;
       
-      // Open the Instacart cart URL
+      console.log("INSTACART SHOPPING LIST CREATED!");
+      console.log("Shopping List ID:", shoppingListId);
+      console.log("Instacart URL:", instacartUrl);
+      
+      toast.success(
+        <div className="max-w-md">
+          <div className="font-bold text-green-700 mb-2">
+            Instacart Shopping List Created
+          </div>
+          <div className="text-xs bg-green-50 p-2 rounded break-all mb-2">
+            {instacartUrl}
+          </div>
+          <div className="text-xs text-gray-600">
+            Opening shopping list...
+          </div>
+        </div>,
+        { autoClose: 5000 }
+      );
+      
       setTimeout(() => {
-        window.open(data.link, "_blank", "noopener,noreferrer");
-      }, 500);
+        window.open(instacartUrl, "_blank", "noopener,noreferrer");
+      }, 1000);
       
     } else {
-      // If API failed but has fallback link
-      if (data.fallbackLink) {
-        console.log("Using fallback link:", data.fallbackLink);
-        toast.info("Opening Instacart search...");
-        
-        window.open(data.fallbackLink, "_blank", "noopener,noreferrer");
-      } else {
-        // Last resort: generate simple link
-        const partnerId = process.env.INSTACART_IMPACT_ID || "6773996";
-        const simpleLink = `https://www.instacart.ca/store/s?k=${encodeURIComponent(
-          checkedItems[0]?.name || "groceries"
-        )}&partner=${partnerId}&locale=en-CA`;
-        
-        toast.info("Opening Instacart...");
-        window.open(simpleLink, "_blank", "noopener,noreferrer");
-      }
+      toast.error(`Failed: ${data.error || "Unknown error"}`);
     }
     
   } catch (error) {
     console.error("Instacart error:", error);
     toast.dismiss();
-    
-    // Emergency fallback
-    const partnerId = process.env.INSTACART_IMPACT_ID || "6773996";
-    const firstItem = checkedItems[0]?.name || "groceries";
-    const emergencyLink = `https://www.instacart.ca/store/s?k=${encodeURIComponent(firstItem)}&partner=${partnerId}&locale=en-CA`;
-    
-    toast.info("Opening Instacart...");
-    window.open(emergencyLink, "_blank", "noopener,noreferrer");
+    toast.error(`Error: ${error.message}`);
   }
 };
-  const categorizeItem = (itemName) => {
+
+const categorizeItem = (itemName) => {
     const name = itemName.toLowerCase();
 
     if (name.includes("sausage")) return "Meat";
@@ -1163,11 +1100,6 @@ export default function GroceryListPage({ params }) {
         0
       );
 
-      // console.log("Sending to server:", {
-      //   totalItems,
-      //   checkedItems,
-      //   estimatedTotal,
-      // });
 
       const response = await fetchWithAuth(
         `/api/groceryLists/${groceryList._id}`,
