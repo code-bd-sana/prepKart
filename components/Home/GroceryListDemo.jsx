@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { Edit2, ShoppingCart, Check } from "lucide-react";
 import { useTranslations } from "next-intl";
+import Image from "next/image";
+import instacartImg from "../../public/Instacart_Carrot.png";
 
 const initialItems = [
   // Produce
@@ -277,28 +279,28 @@ export default function GroceryListDemo() {
   const totalCount = items.length;
 
   return (
-    <section className="py-8 md:py-16" id="recipes">
-      <div className="container mx-auto px-4 max-w-[1200px]">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-semibold text-[#1E1E1E] mb-3">
+    <section className='py-8 md:py-16' id='recipes'>
+      <div className='container mx-auto px-4 max-w-[1200px]'>
+        <div className='text-center mb-12'>
+          <h2 className='text-3xl md:text-4xl font-semibold text-[#1E1E1E] mb-3'>
             {t(`title`)}
           </h2>
-          <p className="text-base text-[#666666] max-w-[770px] mx-auto">
+          <p className='text-base text-[#666666] max-w-[770px] mx-auto'>
             {t(`subtitle`)}
           </p>
         </div>
 
-        <div className="rounded-xl mx-auto max-w-[1200px]">
+        <div className='rounded-xl mx-auto max-w-[1200px]'>
           {/* Card Header */}
-          <div className="p-6 px-4">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <h3 className="text-2xl font-semibold text-gray-900 md:-mx-3">
+          <div className='p-6 px-4'>
+            <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4'>
+              <h3 className='text-2xl font-semibold text-gray-900 md:-mx-3'>
                 {t(`listTitle`)}
               </h3>
-              <div className="flex items-center gap-4 ">
+              <div className='flex items-center gap-4 '>
                 <button
                   onClick={() => setIsEditing(!isEditing)}
-                  className="
+                  className='
                     h-9 px-4
                     rounded-lg
                     
@@ -307,24 +309,22 @@ export default function GroceryListDemo() {
                     transition-colors
                     text-sm font-medium text-gray-700
                     flex items-center gap-2
-                  "
-                >
-                  <Edit2 className="h-4 w-4" />
+                  '>
+                  <Edit2 className='h-4 w-4' />
                   {isEditing ? t("doneEditingButton") : t("editButton")}
                 </button>
 
-                <div className="flex items-center gap-2">
+                <div className='flex items-center gap-2'>
                   <button
-                    type="button"
-                    role="switch"
+                    type='button'
+                    role='switch'
                     aria-checked={hidePantry}
                     onClick={() => setHidePantry(!hidePantry)}
                     className={`
                       relative inline-flex h-6 w-11 items-center rounded-full transition-colors
                       ${hidePantry ? "bg-teal-600" : "bg-gray-200"}
                       focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2
-                    `}
-                  >
+                    `}>
                     <span
                       className={`
                         inline-block h-4 w-4 transform rounded-full bg-white transition-transform
@@ -332,25 +332,25 @@ export default function GroceryListDemo() {
                       `}
                     />
                   </button>
-                  <span className="text-sm text-gray-600">Pantry toggle</span>
+                  <span className='text-sm text-gray-600'>Pantry toggle</span>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Card Content */}
-          <div className="p-2 text-sm ">
+          <div className='p-2 text-sm '>
             {/* Progress */}
-            <div className="mb-6">
-              <div className="flex justify-between  items-center mb-2">
-                <span className="text-sm font-medium text-gray-700">
+            <div className='mb-6'>
+              <div className='flex justify-between  items-center mb-2'>
+                <span className='text-sm font-medium text-gray-700'>
                   {checkedCount} of {totalCount} items checked
                 </span>
               </div>
             </div>
 
             {/* Weekly Grocery List */}
-            <div className="space-y-6">
+            <div className='space-y-6'>
               <div
                 className={`
     grid gap-6 
@@ -365,32 +365,29 @@ export default function GroceryListDemo() {
         ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-2"
         : "grid-cols-1"
     }
-  `}
-              >
+  `}>
                 {Object.entries(groupedItems).map(([aisle, aisleItems]) => (
                   <div
                     key={aisle}
-                    className="border border-gray-200 rounded-lg overflow-hidden"
-                  >
-                    <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
-                      <div className="flex justify-between items-center">
-                        <h3 className="font-semibold text-[#568515]">
+                    className='border border-gray-200 rounded-lg overflow-hidden'>
+                    <div className='bg-gray-50 px-4 py-3 border-b border-gray-200'>
+                      <div className='flex justify-between items-center'>
+                        <h3 className='font-semibold text-[#568515]'>
                           {aisle}
                         </h3>
-                        <span className="text-sm text-gray-600">
+                        <span className='text-sm text-gray-600'>
                           ({aisleItems.length} items)
                         </span>
                       </div>
                     </div>
 
-                    <div className="divide-y divide-gray-100">
+                    <div className='divide-y divide-gray-100'>
                       {aisleItems.map((item) => (
                         <div
                           key={item.id}
                           className={`px-4 py-3 flex items-center gap-4 ${
                             item.checked ? "bg-green-50" : ""
-                          }`}
-                        >
+                          }`}>
                           <button
                             onClick={() => toggleItemChecked(item.id)}
                             className={`
@@ -401,69 +398,65 @@ export default function GroceryListDemo() {
                                 ? "bg-green-500 border-green-500"
                                 : "border-gray-300 hover:border-gray-400"
                             }
-                          `}
-                          >
+                          `}>
                             {item.checked && (
-                              <Check className="h-3 w-3 text-white" />
+                              <Check className='h-3 w-3 text-white' />
                             )}
                           </button>
 
-                          <div className="flex-1 flex items-center">
+                          <div className='flex-1 flex items-center'>
                             <span
                               className={`font-medium ${
                                 item.checked
                                   ? "text-green-700 line-through"
                                   : "text-gray-900"
-                              }`}
-                            >
+                              }`}>
                               {item.name}
                             </span>
                             {item.inPantry && (
-                              <span className="ml-2 inline-flex items-center rounded-full border border-[#4a9fd8] px-2 py-0.5 text-xs font-medium text-[#4a9fd8]">
+                              <span className='ml-2 inline-flex items-center rounded-full border border-[#4a9fd8] px-2 py-0.5 text-xs font-medium text-[#4a9fd8]'>
                                 {t(`inPantryBadge`)}
                               </span>
                             )}
                           </div>
 
                           {isEditing ? (
-                            <div className="flex items-center gap-2">
+                            <div className='flex items-center gap-2'>
                               <button
                                 onClick={() =>
                                   updateQuantity(item.id, item.quantity - 1)
                                 }
-                                className="
+                                className='
                                 h-6 w-6 rounded border border-gray-300 
                                 flex items-center justify-center
                                 hover:bg-gray-50 transition-colors
                                 text-gray-600
-                              "
-                              >
+                              '>
                                 -
                               </button>
-                              <span className="w-8 text-center font-medium text-gray-900">
+                              <span className='w-8 text-center font-medium text-gray-900'>
                                 {item.quantity}
                               </span>
                               <button
                                 onClick={() =>
                                   updateQuantity(item.id, item.quantity + 1)
                                 }
-                                className="
+                                className='
                                 h-6 w-6 rounded border border-gray-300 
                                 flex items-center justify-center
                                 hover:bg-gray-50 transition-colors
                                 text-gray-600
-                              "
-                              >
+                              '>
                                 +
                               </button>
                               {item.unit && (
-                                <span className="text-gray-600 text-sm w-12">
+                                <span className='text-gray-600 text-sm w-12'>
                                   {item.unit}
                                 </span>
                               )}
                             </div>
                           ) : (
-                            <span className="text-gray-600 text-sm">
+                            <span className='text-gray-600 text-sm'>
                               {item.quantity} {item.unit}
                             </span>
                           )}
@@ -476,26 +469,38 @@ export default function GroceryListDemo() {
             </div>
 
             {/* Bottom Section */}
-            <div className="mt-16 bg-linear-to-r from-[#5a9e3a] to-[#4a9fd8] rounded-2xl px-8 md:px-16 py-8 text-center text-white max-w-[1500px] mx-auto">
-              <div className="text-center">
-                <h3 className="text-xl md:text-3xl font-semibold mb-3">
+            <div className='mt-16 bg-linear-to-r from-[#5a9e3a] to-[#4a9fd8] rounded-2xl px-8 md:px-16 py-8 text-center text-white max-w-[1500px] mx-auto'>
+              <div className='text-center'>
+                <h3 className='text-xl md:text-3xl font-semibold mb-3'>
                   {t(`readyToShopTitle`)}
                 </h3>
-                <p className="text-base md:text-sm mb-6 opacity-95">
+                <p className='text-base md:text-sm mb-6 opacity-95'>
                   {t(`readyToShopDescription`)}
                 </p>
                 <button
-                  className="
-    bg-white text-[#5a9e3a] py-3 px-8 rounded-lg font-semibold flex items-center gap-2 mx-auto 
-    hover:bg-[#317512] hover:text-white transition-colors
-    flash-dark
-  "
-                >
-                  <ShoppingCart className="h-5 w-5" />
-                  {t(`instacartButton`)}
+                  className='font-semibold text-base flex items-center justify-center mx-auto cursor-pointer rounded-lg hover:opacity-90 transition-opacity'
+                  style={{
+                    height: "46px",
+                    backgroundColor: "#FAF1E5",
+                    color: "#003D29",
+                    border: "0.5px solid #EFE9E1",
+                    padding: "16px 18px",
+                    width: "fit-content",
+                    minWidth: "200px",
+                  }}>
+                  <div className='flex items-center gap-3'>
+                    <Image
+                      src={instacartImg}
+                      alt='Instacart'
+                      width={20}
+                      height={20}
+                      className='object-contain'
+                    />
+                    {t(`instacartButton`)}
+                  </div>
                 </button>
 
-                <p className="text-base md:text-sm my-3 opacity-95 flash-dark">
+                <p className='text-base md:text-sm my-3 opacity-95 flash-dark'>
                   {t(`cartLoadsText`)}
                 </p>
               </div>

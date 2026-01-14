@@ -1,7 +1,7 @@
 {
   "homeBanner": {
     "title": "From Kitchen Stress to Grocery Success",
-     "subtitle": "Prepcart creates <highlight>custom weekly meal plans, easy grocery lists, and budget-friendly recipe suggestions</highlight> tailored to your taste, diet, and lifestyle — so you save time, money, and mental energy.",
+    "subtitle": "Prepcart creates <highlight>custom weekly meal plans, easy grocery lists, and budget-friendly recipe suggestions</highlight> tailored to your taste, diet, and lifestyle — so you save time, money, and mental energy.",
     "inputPlaceholder": "Your preferences",
     "voiceButtonListening": "Listening...",
     "voiceButtonDefault": "Voice",
@@ -179,80 +179,80 @@
     ]
   },
   "quickPlans": {
-  "title": "Quick, Curated Meals You'll Love",
-  "subtitle": "Short on time? Get healthy, curated meals designed for your lifestyle and budget — effortless cooking, every day.",
-  "ctaTitle": "Unlock Premium Recipe Collections",
-  "ctaSubtitle": "Subscribe for the premium plans, unlimited and exclusive recipes",
-  "ctaButton": "Try now!",
-  "premium": "Premium",
-  "viewPlan": "View plan",
-  "plans": [
-    {
-      "key": "keto", 
-      "title": "Keto",
-      "description": "Low-carb, high-fat meals",
-      "icon": "🥑",
-      "premium": true
-    },
-    {
-      "key": "vegan",
-      "title": "Vegan",
-      "description": "100% plant-based",
-      "icon": "🌱",
-      "premium": false
-    },
-    {
-      "key": "vegetarian", 
-      "title": "Vegetarian",
-      "description": "Meat-free, protein-rich",
-      "icon": "🍆",
-      "premium": false
-    },
-    {
-      "key": "halal", 
-      "title": "Halal",
-      "description": "Halal-certified",
-      "iconType": "image",
-      "icon": "/halalll.jpg",
-      "premium": true
-    },
-    {
-      "key": "glutenFree",  
-      "title": "Gluten-Free",
-      "description": "No gluten, full flavour",
-      "icon": "🌾",
-      "premium": false
-    },
-    {
-      "key": "highProtein", 
-      "title": "High-Protein",
-      "description": "Muscle-building meals",
-      "icon": "💪",
-      "premium": true
-    },
-    {
-      "key": "lowCarb", 
-      "title": "Low-Carb",
-      "description": "Reduced carbs",
-      "icon": "🍎",
-      "premium": false
-    },
-    {
-      "key": "familyFriendly", 
-      "title": "Family-Friendly",
-      "description": "Kid-approved",
-      "icon": "👨‍👩‍👧",
-      "premium": true
-    },
-    {
-      "key": "budgetFriendly",
-      "title": "Budget-Friendly",
-      "description": "Under $75/week",
-      "icon": "💰",
-      "premium": false
-    }
-  ]
-},
+    "title": "Quick, Curated Meals You'll Love",
+    "subtitle": "Short on time? Get healthy, curated meals designed for your lifestyle and budget — effortless cooking, every day.",
+    "ctaTitle": "Unlock Premium Recipe Collections",
+    "ctaSubtitle": "Subscribe for the premium plans, unlimited and exclusive recipes",
+    "ctaButton": "Try now!",
+    "premium": "Premium",
+    "viewPlan": "View plan",
+    "plans": [
+      {
+        "key": "keto",
+        "title": "Keto",
+        "description": "Low-carb, high-fat meals",
+        "icon": "🥑",
+        "premium": true
+      },
+      {
+        "key": "vegan",
+        "title": "Vegan",
+        "description": "100% plant-based",
+        "icon": "🌱",
+        "premium": false
+      },
+      {
+        "key": "vegetarian",
+        "title": "Vegetarian",
+        "description": "Meat-free, protein-rich",
+        "icon": "🍆",
+        "premium": false
+      },
+      {
+        "key": "halal",
+        "title": "Halal",
+        "description": "Halal-certified",
+        "iconType": "image",
+        "icon": "/halalll.jpg",
+        "premium": true
+      },
+      {
+        "key": "glutenFree",
+        "title": "Gluten-Free",
+        "description": "No gluten, full flavour",
+        "icon": "🌾",
+        "premium": false
+      },
+      {
+        "key": "highProtein",
+        "title": "High-Protein",
+        "description": "Muscle-building meals",
+        "icon": "💪",
+        "premium": true
+      },
+      {
+        "key": "lowCarb",
+        "title": "Low-Carb",
+        "description": "Reduced carbs",
+        "icon": "🍎",
+        "premium": false
+      },
+      {
+        "key": "familyFriendly",
+        "title": "Family-Friendly",
+        "description": "Kid-approved",
+        "icon": "👨‍👩‍👧",
+        "premium": true
+      },
+      {
+        "key": "budgetFriendly",
+        "title": "Budget-Friendly",
+        "description": "Under $75/week",
+        "icon": "💰",
+        "premium": false
+      }
+    ]
+  },
   "quickPlanModal": {
     "title": "Your Quick Plan",
     "subtitle": "Generated for {tier} tier",
@@ -289,83 +289,83 @@
     ]
   },
   "pricing": {
-  "title": "Select Your Plan",
-  "subtitle": "Simple, flexible, commitment-free plans designed for you.",
-  "plans": [
-    {
-      "name": "Free",
-      "tagline": "Try Prepcart with the basics",
-      "badge": "Try Now",
-      "buttonText": "Get Started Free",
-      "features": [
-        "1 meal plan per month",
-        "Non-customized",
-        "No Swap (blur)",
-        "Grocery list generation – Instacart ready",
-        "Lists/plans cannot be saved",
-        "NO Pantry toggle",
-        "NO history"
-      ]
-    },
-    {
-      "name": "Plus",
-      "tagline": "More flexibility, more control",
-      "badge": "Most Popular",
-      "buttonText": "Start Plus Plan",
-      "features": [
-        "Max 6 meals per month",
-        "Customized",
-        "Swap available",
-        "Grocery list generation – Instacart ready",
-        "Lists can be saved",
-        "Pantry toggle",
-        "History saved",
-        "Full dashboard",
-        "Full nutrition & macro insights",
-        "New weekly recipes"
-      ]
-    },
-    {
-      "name": "Premium",
-      "tagline": "The full Prepcart experience",
-      "badge": "Unlimited Access",
-      "buttonText": "Go Premium",
-      "features": [
-        "Unlimited meals",
-        "Customized",
-        "Swap available",
-        "Grocery list generation – Instacart ready",
-        "Lists can be saved",
-        "Pantry toggle",
-        "History saved",
-        "Full dashboard access",
-        "Full nutrition & macro insights",
-        "New weekly recipes",
-        "Early access to future features"
-      ]
-    }
-  ],
+    "title": "Select Your Plan",
+    "subtitle": "Simple, flexible, commitment-free plans designed for you.",
+    "plans": [
+      {
+        "name": "Free",
+        "tagline": "Try Prepcart with the basics",
+        "badge": "Try Now",
+        "buttonText": "Get Started Free",
+        "features": [
+          "1 meal plan per month",
+          "Non-customized",
+          "No Swap (blur)",
+          "Grocery list generation – Instacart ready",
+          "Lists/plans cannot be saved",
+          "NO Pantry toggle",
+          "NO history"
+        ]
+      },
+      {
+        "name": "Plus",
+        "tagline": "More flexibility, more control",
+        "badge": "Most Popular",
+        "buttonText": "Start Plus Plan",
+        "features": [
+          "Max 6 meals per month",
+          "Customized",
+          "Swap available",
+          "Grocery list generation – Instacart ready",
+          "Lists can be saved",
+          "Pantry toggle",
+          "History saved",
+          "Full dashboard",
+          "Full nutrition & macro insights",
+          "New weekly recipes"
+        ]
+      },
+      {
+        "name": "Premium",
+        "tagline": "The full Prepcart experience",
+        "badge": "Unlimited Access",
+        "buttonText": "Go Premium",
+        "features": [
+          "Unlimited meals",
+          "Customized",
+          "Swap available",
+          "Grocery list generation – Instacart ready",
+          "Lists can be saved",
+          "Pantry toggle",
+          "History saved",
+          "Full dashboard access",
+          "Full nutrition & macro insights",
+          "New weekly recipes",
+          "Early access to future features"
+        ]
+      }
+    ],
     "messages": {
-    "currentPlan": "Current Plan",
-    "freePlan": "Free Plan",
-    "plusPlan": "Plus Plan",
-    "upgradePremium": "Upgrade to Premium",
-    "processing": "Processing...",
-    "cancelling": "Cancelling...",
-    "cancelPlan": "Cancel plan",
-    "launchDeal": "Special Launch Deal" 
+      "currentPlan": "Current Plan",
+      "freePlan": "Free Plan",
+      "plusPlan": "Plus Plan",
+      "upgradePremium": "Upgrade to Premium",
+      "processing": "Processing...",
+      "cancelling": "Cancelling...",
+      "cancelPlan": "Cancel plan",
+      "launchDeal": "Special Launch Deal"
+    },
+    "alerts": {
+      "cancellationSuccess": "cancelled successfully",
+      "cancellationFailed": "Cancellation failed:",
+      "somethingWrong": "Something went wrong",
+      "paymentError": "Payment error:",
+      "paymentSuccess": "Payment successful!"
+    },
+    "currentAccount": "Current Account:",
+    "plan": "Plan:",
+    "swaps": "Swaps:"
   },
-  "alerts": {
-    "cancellationSuccess": "cancelled successfully",
-    "cancellationFailed": "Cancellation failed:",
-    "somethingWrong": "Something went wrong",
-    "paymentError": "Payment error:",
-    "paymentSuccess": "Payment successful!"
-  },
-  "currentAccount": "Current Account:",
-  "plan": "Plan:",
-  "swaps": "Swaps:"
-},
   "groceryList": {
     "title": "Generate My Grocery List →",
     "subtitle": "🍁 Canada-ready, 🧺 auto-grouped, ✏️ fully editable, 🧂 pantry-aware, and 🛒 order-ready — everything you need for a smarter, stress-free grocery list in one place.",
@@ -378,7 +378,7 @@
     "itemsCount": "items",
     "readyToShopTitle": "Ready to Shop?",
     "readyToShopDescription": "Your grocery list is organized and ready — tap to get everything delivered.",
-    "instacartButton": "Order Ingredients on Instacart →",
+    "instacartButton": "Order with Instacart →",
     "cartLoadsText": "Cart loads instantly"
   },
   "testimonials": {
@@ -401,15 +401,15 @@
     "successMessage": "Successfully subscribed!",
     "errorMessage": "Failed to subscribe. Please try again."
   },
-"contactUs": {
-  "title": "Contact Us",
-  "subtitle": "Have questions or need assistance? We're here to help!",
-  "emailTitle": "Email Support",
-  "emailDescription": "Send us an email and we'll respond within 24 hours",
-  "phoneTitle": "Phone Support",
-  "phoneDescription": "Call us during business hours (9 AM - 5 PM EST)",
-  "availabilityNote": "Monday - Friday, 9AM - 6PM EST"
-},
+  "contactUs": {
+    "title": "Contact Us",
+    "subtitle": "Have questions or need assistance? We're here to help!",
+    "emailTitle": "Email Support",
+    "emailDescription": "Send us an email and we'll respond within 24 hours",
+    "phoneTitle": "Phone Support",
+    "phoneDescription": "Call us during business hours (9 AM - 5 PM EST)",
+    "availabilityNote": "Monday - Friday, 9AM - 6PM EST"
+  },
   "footer": {
     "tagline": "\"Made for real Canadian households🍁\"",
     "company": "Company",
@@ -500,73 +500,50 @@
     "title": "Terms and Conditions",
     "lastUpdated": "Last Updated: 31st December, 2025",
     "intro": "These Terms and Conditions ('Terms') govern your access to and use of the Prepcart website and services (the 'Service'), operated by Prepcart ('Prepcart', 'we', 'our', 'us') at https://Prepcart.ca. These Terms are drafted in accordance with applicable Canadian federal laws, including the Personal Information Protection and Electronic Documents Act (PIPEDA), Canada's Anti-Spam Legislation (CASL), and Québec's Act respecting the protection of personal information in the private sector (Law 25).",
-    
     "acceptanceTitle": "1. Acceptance of the Terms",
     "acceptanceText": "By accessing or using the Service, you confirm that you are at least 18 years old and that you agree to be bound by these Terms and our Privacy Policy. If you do not agree, you must not use the Service.",
-    
     "serviceTitle": "2. Description of the Service",
     "serviceText": "Prepcart is a digital meal-planning platform that uses automated systems and artificial intelligence to generate meal plans, grocery suggestions, and food-related recommendations based on information provided by users. Prepcart does not sell food, groceries, meal kits, or delivery services.",
-    
     "aiTitle": "3. Use of Artificial Intelligence",
     "aiText": "The Service relies on automated processing and artificial intelligence to personalize content. AI-generated outputs are provided for informational purposes only and are not intended to replace professional medical, nutritional, or dietary advice.",
-    
     "accountsTitle": "4. User Accounts and Responsibilities",
     "accountsText": "You are responsible for maintaining the confidentiality of your account credentials and for all activities conducted through your account. You agree to provide accurate and current information and to notify us promptly of any unauthorized use of your account.",
-    
     "acceptableUseTitle": "5. Acceptable Use and Prohibited Conduct",
     "acceptableUseText": "You agree not to misuse the Service, including but not limited to:\n- attempting to interfere with or disrupt the Service or its security;\n- reverse-engineering, scraping, decompiling, or exploiting the Service or its software;\n- using automated systems or bots without authorization;\n- using the Service for unlawful, misleading, or commercial purposes without consent;\n- infringing on intellectual property or other rights of others.",
-    
     "ipTitle": "6. Intellectual Property and License",
     "ipText": "All content available through the Service, including text, graphics, software, meal plans, AI-generated outputs, trademarks, and logos, is owned by Prepcart or its licensors. You are granted a limited, non-exclusive, non-transferable license to use the Service for personal, non-commercial purposes only.",
-    
     "dataTitle": "7. User Data Ownership",
     "dataText": "You retain ownership of the personal information and data you provide. Prepcart is granted a limited right to use, store, process, anonymize, and delete such data as necessary to operate, maintain, and improve the Service, in accordance with our Privacy Policy.",
-    
     "subscriptionTitle": "8. Subscriptions, Billing, and Payments",
     "subscriptionText": "Certain features of the Service are available through paid subscriptions that renew automatically unless canceled. By subscribing, you authorize Prepcart to charge applicable fees on a recurring basis using your selected payment method. You are responsible for maintaining accurate billing information. Prepcart may modify pricing or subscription terms with reasonable notice.",
-    
     "refundsTitle": "9. Refunds and Cancellations",
     "refundsText": "Unless otherwise stated at the time of purchase, subscription fees are non-refundable. You may cancel your subscription at any time, and cancellation will take effect at the end of the current billing period.",
-    
     "thirdPartyTitle": "10. Third-Party Services and Integrations",
     "thirdPartyText": "The Service may include links or integrations with third-party services, including grocery platforms such as Instacart. Prepcart does not control these services and is not responsible for their content, pricing, availability, accuracy, or practices.",
-    
     "pricingTitle": "11. Pricing and Data Accuracy Disclaimer",
     "pricingText": "Prices, availability, and product details displayed through third-party integrations are provided for convenience only and may differ from actual listings. Prepcart does not guarantee accuracy and disclaims responsibility for discrepancies or decisions based on such information.",
-    
     "medicalTitle": "12. Medical and Nutritional Disclaimer",
     "medicalText": "The Service does not provide medical, nutritional, or health advice. Always consult a qualified professional before making dietary or health-related decisions.",
-    
     "availabilityTitle": "13. Service Availability and Support",
     "availabilityText": "Prepcart does not guarantee uninterrupted or error-free operation of the Service. Maintenance, updates, or service interruptions may occur without prior notice.",
-    
     "warrantiesTitle": "14. Disclaimer of Warranties",
     "warrantiesText": "The Service is provided on an 'as is' and 'as available' basis. Prepcart disclaims all warranties, express or implied, including warranties of merchantability, fitness for a particular purpose, and accuracy.",
-    
     "liabilityTitle": "15. Limitation of Liability",
     "liabilityText": "To the maximum extent permitted by law, Prepcart shall not be liable for indirect, incidental, special, or consequential damages. Prepcart's total liability for any claim shall not exceed the fees paid by you to Prepcart in the twelve (12) months preceding the event giving rise to the claim.",
-    
     "indemnificationTitle": "16. Indemnification",
     "indemnificationText": "You agree to indemnify and hold harmless Prepcart and its affiliates from any claims, losses, damages, liabilities, or expenses arising from your use of the Service or violation of these Terms.",
-    
     "terminationTitle": "17. Account Termination and Data Export",
     "terminationText": "Prepcart may suspend or terminate accounts for violations of these Terms. Upon account closure, you may request access to or export of your personal information, subject to legal and operational requirements.",
-    
     "outcomesTitle": "18. No Guarantee of Outcomes",
     "outcomesText": "Prepcart does not guarantee any specific results or outcomes from use of the Service, including dietary, financial, or third-party service outcomes.",
-    
     "childrenTitle": "19. Children's Privacy",
     "childrenText": "The Service is not intended for individuals under the age of 14. Prepcart does not knowingly collect personal information from children. If such information is identified, it will be deleted promptly.",
-    
     "disputeTitle": "20. Dispute Resolution",
     "disputeText": "Any dispute arising from these Terms shall first be addressed through good-faith negotiations. If unresolved, disputes shall be subject to the exclusive jurisdiction of the courts of the Province of Québec, Canada.",
-    
     "changesTitle": "21. Changes to the Terms",
     "changesText": "Prepcart may update these Terms from time to time. Continued use of the Service after changes constitutes acceptance of the updated Terms.",
-    
     "governingTitle": "22. Governing Law",
     "governingText": "These Terms are governed by the laws of Canada and the Province of Québec.",
-    
     "contactTitle": "23. Contact Information",
     "contactText": "If you have questions regarding these Terms, please contact us at:\nEmail: info@prepcart.ca"
   },
@@ -574,55 +551,38 @@
     "title": "Privacy Policy",
     "lastUpdated": "Last Updated: 31st December, 2025",
     "intro": "This Privacy Policy explains how Prepcart ('Prepcart', 'we', 'our', 'us') collects, uses, discloses, and protects personal information in compliance with Canadian federal privacy law (PIPEDA), Quebec's Law 25 (Bill 64), and industry best practices.",
-    
     "accountabilityTitle": "1. Accountability & Governance",
     "accountabilityText": "Prepcart is responsible for protecting personal information under its control. We have implemented governance policies, internal procedures, and safeguards to ensure compliance with applicable privacy laws. A designated Privacy Officer oversees our privacy practices and compliance.",
-    
     "collectionTitle": "2. Personal Information We Collect",
     "collectionText": "We may collect the following categories of personal information:\n- Name and contact information (email address)\n- Account credentials and subscription details\n- Dietary preferences and user-provided inputs\n- Usage data (meal plans generated, pages viewed)\n- Technical data (IP address, device and browser information)\n- Cookie and analytics data\n\nWe collect only information necessary to operate and improve our services.",
-    
     "purposesTitle": "3. Purposes of Collection",
     "purposesText": "Personal information is collected to:\n- Create and manage user accounts\n- Generate personalized meal plans using automated systems\n- Process subscriptions and payments\n- Communicate transactional and service-related messages\n- Improve platform functionality and performance\n- Comply with legal and regulatory obligations",
-    
     "consentTitle": "4. Consent & Legal Basis",
     "consentText": "We collect and process personal information based on express consent, contractual necessity, and legal obligations. Consent is obtained clearly and may be withdrawn at any time using the same ease with which it was provided.",
-    
     "automatedTitle": "5. Automated Decision-Making & AI",
     "automatedText": "Prepcart uses automated systems and artificial intelligence to analyze user inputs and generate personalized meal plans and recommendations. Users may request information about automated decision-making processes or contest outcomes in accordance with Quebec Law 25.",
-    
     "cookiesTitle": "6. Cookies & Tracking Technologies",
     "cookiesText": "We use cookies and similar technologies to ensure website functionality, analyze usage, and improve user experience.\n- Essential cookies are required for the Service to operate.\n- Analytics cookies help us understand user interactions and improve performance.\n\nUsers may manage or withdraw cookie consent through browser settings or our cookie banner. Disabling certain cookies may impact site functionality.",
-    
     "accuracyTitle": "7. Data Accuracy & Minimization",
     "accuracyText": "We take reasonable steps to ensure personal information is accurate, complete, and up to date. Users are encouraged to review and update their information as needed.",
-    
     "sharingTitle": "8. Data Sharing & Third Parties",
     "sharingText": "We may share personal information with trusted service providers (such as email delivery, analytics, and payment processors) strictly for service operation.\nPersonal information may also be disclosed to comply with legal obligations, law enforcement requests, or regulatory requirements.",
-    
     "transfersTitle": "9. Data Transfers Outside Quebec or Canada",
     "transfersText": "Personal information may be processed or stored outside Quebec or Canada. When such transfers occur, we apply appropriate safeguards and conduct Privacy Impact Assessments when required by law.",
-    
     "retentionTitle": "10. Data Retention",
     "retentionText": "We retain personal information only as long as necessary:\n- Account and subscription data: retained while the account is active and for up to 24 months after closure\n- Transactional and billing records: retained as required by law\n- Analytics data: retained in aggregated or anonymized form",
-    
     "securityTitle": "11. Security Safeguards",
     "securityText": "We apply administrative, technical, and organizational safeguards to protect personal information against unauthorized access, loss, misuse, or disclosure.",
-    
     "breachTitle": "12. Privacy Breach Management",
     "breachText": "Prepcart maintains internal records of all privacy incidents. In the event of a breach posing a risk of serious harm, affected individuals and relevant authorities (including Quebec's CAI) will be notified as required by law.",
-    
     "rightsTitle": "13. Individual Rights (Canada & Quebec)",
     "rightsText": "You have the right to:\n- Access your personal information\n- Correct inaccurate data\n- Withdraw consent\n- Request deletion or de-indexation\n- Request data portability (where applicable)\n\nRequests may be submitted to the Privacy Officer.",
-    
     "withdrawalTitle": "14. Withdrawal of Consent",
     "withdrawalText": "Consent may be withdrawn at any time without penalty. Withdrawal may limit access to certain features of the Service.",
-    
     "updatesTitle": "15. Policy Updates",
     "updatesText": "We may update this Privacy Policy from time to time. Material changes will be communicated through the Service or by email where appropriate.",
-    
     "officerTitle": "16. Privacy Officer Contact",
     "officerText": "Privacy Officer:\nEmail: info@prepcart.ca",
-    
     "contactTitle": "17. Contact Information",
     "contactText": "For privacy-related questions or requests:\nEmail: info@prepcart.ca"
   }

@@ -1,4 +1,4 @@
-{  
+{
   "homeBanner": {
     "title": "Du Stress de la Cuisine au Succès de l'Épicerie",
     "subtitle": "Prepcart crée <highlight>des plans de repas hebdomadaires personnalisés, des listes de courses faciles et des suggestions de recettes économiques</highlight> adaptés à vos goûts, votre régime et votre mode de vie — pour vous faire gagner du temps, de l’argent et de l’énergie mentale.",
@@ -15,8 +15,7 @@
       "budget": "Options économiques",
       "noCommitment": "Sans engagement"
     }
-  
-},
+  },
   "register": {
     "title": "Créer un Compte",
     "backToHome": "Retour à l'Accueil",
@@ -180,93 +179,93 @@
     ]
   },
   "quickPlans": {
-  "title": "Repas Rapides et Curatés Que Vous Adorerez",
-  "subtitle": "Manquez de temps ? Obtenez des repas sains et curatés conçus pour votre style de vie et votre budget — cuisine sans effort, chaque jour.",
-  "ctaTitle": "Débloquez les Collections de Recettes Premium",
-  "ctaSubtitle": "Abonnez-vous pour tous les plans premium, générations IA illimitées et recettes exclusives",
-  "ctaButton": "Essayez maintenant",
-  "premium": "Premium",
-  "viewPlan": "Voir le Plan",
-  "plans": [
-    {
-      "key": "keto", 
-      "title": "Kéto",
-      "description": "Repas faibles en glucides, riches en graisses",
-      "icon": "🥑",
-      "premium": true
-    },
-    {
-      "key": "vegan",  
-      "title": "Végan",
-      "description": "100% végétalien",
-      "icon": "🌱",
-      "premium": false
-    },
-    {
-      "key": "vegetarian", 
-      "title": "Végétarien",
-      "description": "Sans viande, riche en protéines",
-      "icon": "🍆",
-      "premium": false
-    },
-    {
-      "key": "halal", 
-      "title": "Halal",
-      "description": "Certifié halal",
-      "icon": "👨‍👩‍👧‍👦",
-      "premium": true
-    },
-    {
-      "key": "glutenFree", 
-      "title": "Sans Gluten",
-      "description": "Pas de gluten, plein de saveur",
-      "icon": "🌾",
-      "premium": false
-    },
-    {
-      "key": "highProtein", 
-      "title": "Riche en Protéines",
-      "description": "Repas pour développer les muscles",
-      "icon": "💪",
-      "premium": true
-    },
-    {
-      "key": "lowCarb",  
-      "title": "Faible en Glucides",
-      "description": "Glucides réduits",
-      "icon": "🍓",
-      "premium": false
-    },
-    {
-      "key": "familyFriendly", 
-      "title": "Adapté aux Familles",
-      "description": "Approuvé par les enfants",
-      "icon": "👨‍👩‍👧",
-      "premium": true
-    },
-    {
-      "key": "budgetFriendly", 
-      "title": "Économique",
-      "description": "Moins de 75 $/semaine",
-      "icon": "💰",
-      "premium": false
-    }
-  ]
-},
+    "title": "Repas Rapides et Curatés Que Vous Adorerez",
+    "subtitle": "Manquez de temps ? Obtenez des repas sains et curatés conçus pour votre style de vie et votre budget — cuisine sans effort, chaque jour.",
+    "ctaTitle": "Débloquez les Collections de Recettes Premium",
+    "ctaSubtitle": "Abonnez-vous pour tous les plans premium, générations IA illimitées et recettes exclusives",
+    "ctaButton": "Essayez maintenant",
+    "premium": "Premium",
+    "viewPlan": "Voir le Plan",
+    "plans": [
+      {
+        "key": "keto",
+        "title": "Kéto",
+        "description": "Repas faibles en glucides, riches en graisses",
+        "icon": "🥑",
+        "premium": true
+      },
+      {
+        "key": "vegan",
+        "title": "Végan",
+        "description": "100% végétalien",
+        "icon": "🌱",
+        "premium": false
+      },
+      {
+        "key": "vegetarian",
+        "title": "Végétarien",
+        "description": "Sans viande, riche en protéines",
+        "icon": "🍆",
+        "premium": false
+      },
+      {
+        "key": "halal",
+        "title": "Halal",
+        "description": "Certifié halal",
+        "icon": "👨‍👩‍👧‍👦",
+        "premium": true
+      },
+      {
+        "key": "glutenFree",
+        "title": "Sans Gluten",
+        "description": "Pas de gluten, plein de saveur",
+        "icon": "🌾",
+        "premium": false
+      },
+      {
+        "key": "highProtein",
+        "title": "Riche en Protéines",
+        "description": "Repas pour développer les muscles",
+        "icon": "💪",
+        "premium": true
+      },
+      {
+        "key": "lowCarb",
+        "title": "Faible en Glucides",
+        "description": "Glucides réduits",
+        "icon": "🍓",
+        "premium": false
+      },
+      {
+        "key": "familyFriendly",
+        "title": "Adapté aux Familles",
+        "description": "Approuvé par les enfants",
+        "icon": "👨‍👩‍👧",
+        "premium": true
+      },
+      {
+        "key": "budgetFriendly",
+        "title": "Économique",
+        "description": "Moins de 75 $/semaine",
+        "icon": "💰",
+        "premium": false
+      }
+    ]
+  },
   "quickPlanModal": {
-  "title": "Votre plan rapide",
-  "subtitle": "Généré pour l’offre {tier}",
-  "generating": "Création de votre plan de repas intelligent...",
-  "retry": "Réessayer",
-  "yourQuickPlan": "Voici votre plan sur 3 jours",
-  "upgradeTitle": "Passez à une offre supérieure",
-  "upgradeDescription": "Obtenez des plans sur 7 jours, des listes de courses et des recettes premium",
-  "upgradeButton": "Mettre à niveau",
-  "fullPlanTitle": "Vous voulez plus de précision ?",
-  "fullPlanDescription": "Générez un plan complet avec toutes vos préférences et enregistrez-le!",
-  "fullPlanButton": "Générer le plan complet"
-},
-   "mealPlanning": {
+    "title": "Votre plan rapide",
+    "subtitle": "Généré pour l’offre {tier}",
+    "generating": "Création de votre plan de repas intelligent...",
+    "retry": "Réessayer",
+    "yourQuickPlan": "Voici votre plan sur 3 jours",
+    "upgradeTitle": "Passez à une offre supérieure",
+    "upgradeDescription": "Obtenez des plans sur 7 jours, des listes de courses et des recettes premium",
+    "upgradeButton": "Mettre à niveau",
+    "fullPlanTitle": "Vous voulez plus de précision ?",
+    "fullPlanDescription": "Générez un plan complet avec toutes vos préférences et enregistrez-le!",
+    "fullPlanButton": "Générer le plan complet"
+  },
+  "mealPlanning": {
     "title": "Planification des Repas, Réinventée",
     "subtitle": "Création intelligente de repas, suivi des macronutriments, échange de recettes et livraison des courses en un clic.",
     "plans": [
@@ -289,83 +288,83 @@
     ]
   },
   "pricing": {
-  "title": "Choisissez Votre Plan",
-  "subtitle": "Plans simples, flexibles et sans engagement conçus pour vous.",
-  "plans": [
-    {
-      "name": "Gratuit",
-      "tagline": "Essayez Prepcart avec les bases",
-      "badge": "Essayez Maintenant",
-      "buttonText": "Commencer Gratuitement",
-      "features": [
-        "1 plan de repas par mois",
-        "Non personnalisé",
-        "Pas d'échange (flou)",
-        "Génération de liste d'épicerie – Prêt pour Instacart",
-        "Listes/plans non sauvegardables",
-        "NO Basculer garde-manger",
-        "NO historique"
-      ]
+    "title": "Choisissez Votre Plan",
+    "subtitle": "Plans simples, flexibles et sans engagement conçus pour vous.",
+    "plans": [
+      {
+        "name": "Gratuit",
+        "tagline": "Essayez Prepcart avec les bases",
+        "badge": "Essayez Maintenant",
+        "buttonText": "Commencer Gratuitement",
+        "features": [
+          "1 plan de repas par mois",
+          "Non personnalisé",
+          "Pas d'échange (flou)",
+          "Génération de liste d'épicerie – Prêt pour Instacart",
+          "Listes/plans non sauvegardables",
+          "NO Basculer garde-manger",
+          "NO historique"
+        ]
+      },
+      {
+        "name": "Plus",
+        "tagline": "Plus de flexibilité, plus de contrôle",
+        "badge": "Le Plus Populaire",
+        "buttonText": "Démarrer le Plan Plus",
+        "features": [
+          "Max 6 repas par mois",
+          "Personnalisé",
+          "Échange disponible",
+          "Génération de liste d'épicerie – Prêt pour Instacart",
+          "Listes sauvegardables",
+          "Basculer garde-manger",
+          "Historique sauvegardé",
+          "Tableau de bord complet",
+          "Analyse complète nutrition & macros",
+          "Nouvelles recettes hebdomadaires"
+        ]
+      },
+      {
+        "name": "Premium",
+        "tagline": "L'expérience Prepcart complète",
+        "badge": "Accès Illimité",
+        "buttonText": "Passer au Premium",
+        "features": [
+          "Repas illimités",
+          "Personnalisé",
+          "Échange disponible",
+          "Génération de liste d'épicerie – Prêt pour Instacart",
+          "Listes sauvegardables",
+          "Basculer garde-manger",
+          "Historique sauvegardé",
+          "Accès complet au tableau de bord",
+          "Analyse complète nutrition & macros",
+          "Nouvelles recettes hebdomadaires",
+          "Accès anticipé aux futures fonctionnalités"
+        ]
+      }
+    ],
+    "messages": {
+      "currentPlan": "Forfait actuel",
+      "freePlan": "Forfait gratuit",
+      "plusPlan": "Forfait Plus",
+      "upgradePremium": "Passer à Premium",
+      "processing": "Traitement...",
+      "cancelling": "Annulation...",
+      "cancelPlan": "Annuler l’abonnement",
+      "launchDeal": "Special Launch Deal"
     },
-    {
-      "name": "Plus",
-      "tagline": "Plus de flexibilité, plus de contrôle",
-      "badge": "Le Plus Populaire",
-      "buttonText": "Démarrer le Plan Plus",
-      "features": [
-        "Max 6 repas par mois",
-        "Personnalisé",
-        "Échange disponible",
-        "Génération de liste d'épicerie – Prêt pour Instacart",
-        "Listes sauvegardables",
-        "Basculer garde-manger",
-        "Historique sauvegardé",
-        "Tableau de bord complet",
-        "Analyse complète nutrition & macros",
-        "Nouvelles recettes hebdomadaires"
-      ]
+    "alerts": {
+      "cancellationSuccess": "Annulation réussie",
+      "cancellationFailed": "Échec de l’annulation :",
+      "somethingWrong": "Une erreur est survenue",
+      "paymentError": "Erreur de paiement :",
+      "paymentSuccess": "Paiement réussi !"
     },
-    {
-      "name": "Premium",
-      "tagline": "L'expérience Prepcart complète",
-      "badge": "Accès Illimité",
-      "buttonText": "Passer au Premium",
-      "features": [
-        "Repas illimités",
-        "Personnalisé",
-        "Échange disponible",
-        "Génération de liste d'épicerie – Prêt pour Instacart",
-        "Listes sauvegardables",
-        "Basculer garde-manger",
-        "Historique sauvegardé",
-        "Accès complet au tableau de bord",
-        "Analyse complète nutrition & macros",
-        "Nouvelles recettes hebdomadaires",
-        "Accès anticipé aux futures fonctionnalités"
-      ]
-    }
-  ],
-  "messages": {
-    "currentPlan": "Forfait actuel",
-    "freePlan": "Forfait gratuit",
-    "plusPlan": "Forfait Plus",
-    "upgradePremium": "Passer à Premium",
-    "processing": "Traitement...",
-    "cancelling": "Annulation...",
-    "cancelPlan": "Annuler l’abonnement",
-    "launchDeal": "Special Launch Deal" 
+    "currentAccount": "Compte actuel :",
+    "plan": "Forfait :",
+    "swaps": "Échanges :"
   },
-  "alerts": {
-    "cancellationSuccess": "Annulation réussie",
-    "cancellationFailed": "Échec de l’annulation :",
-    "somethingWrong": "Une erreur est survenue",
-    "paymentError": "Erreur de paiement :",
-    "paymentSuccess": "Paiement réussi !"
-  },
-  "currentAccount": "Compte actuel :",
-  "plan": "Forfait :",
-  "swaps": "Échanges :"
-},
   "groceryList": {
     "title": "Générer Ma Liste d'Épicerie →",
     "subtitle": "🍁 Prêt pour le Canada, 🧺 auto-grouper, ✏️ entièrement modifiable, 🧂 conscient du garde-manger, et 🛒 prêt à commander — tout ce dont vous avez besoin pour une liste d'épicerie plus intelligente et sans stress en un seul endroit.",
@@ -378,7 +377,7 @@
     "itemsCount": "articles",
     "readyToShopTitle": "Prêt à Magasiner ?",
     "readyToShopDescription": "Votre liste d'épicerie est organisée et prête — appuyez pour tout faire livrer.",
-    "instacartButton": "Commander les Ingrédients sur Instacart →",
+    "instacartButton": "Commandez avec Instacart →",
     "cartLoadsText": "Panier chargé instantanément"
   },
   "testimonials": {
@@ -391,7 +390,7 @@
       "email": "info@prepcart.ca"
     }
   },
-   "subscribe": {
+  "subscribe": {
     "title": "Restez Informé",
     "subtitle": "Recevez les derniers plans de repas et offres dans votre boîte de réception",
     "emailPlaceholder": "Entrez votre email",
@@ -401,15 +400,15 @@
     "successMessage": "Abonnement réussi!",
     "errorMessage": "Échec de l'abonnement. Veuillez réessayer."
   },
-"contactUs": {
-  "title": "Contactez-nous",
-  "subtitle": "Des questions ou besoin d'aide ? Nous sommes là pour vous aider !",
-  "emailTitle": "Support par Email",
-  "emailDescription": "Envoyez-nous un email et nous répondrons dans les 24 heures",
-  "phoneTitle": "Support Téléphonique",
-  "phoneDescription": "Appelez-nous pendant les heures de bureau (9h - 17h HNE)",
-  "availabilityNote": "Lundi - Vendredi, 9h - 18h HNE"
-},
+  "contactUs": {
+    "title": "Contactez-nous",
+    "subtitle": "Des questions ou besoin d'aide ? Nous sommes là pour vous aider !",
+    "emailTitle": "Support par Email",
+    "emailDescription": "Envoyez-nous un email et nous répondrons dans les 24 heures",
+    "phoneTitle": "Support Téléphonique",
+    "phoneDescription": "Appelez-nous pendant les heures de bureau (9h - 17h HNE)",
+    "availabilityNote": "Lundi - Vendredi, 9h - 18h HNE"
+  },
   "footer": {
     "tagline": "\"Fait pour les vraies familles canadiennes🍁\"",
     "company": "Entreprise",
@@ -500,73 +499,50 @@
     "title": "Conditions d'utilisation",
     "lastUpdated": "Dernière mise à jour : 31 décembre 2025",
     "intro": "Les présentes Conditions d'utilisation ('Conditions') régissent votre accès et votre utilisation du site Web et des services de Prepcart (le 'Service'), exploités par Prepcart ('Prepcart', 'nous', 'notre', 'nos') à l'adresse https://Prepcart.ca. Ces Conditions sont rédigées conformément aux lois fédérales canadiennes applicables, y compris la Loi sur la protection des renseignements personnels et les documents électroniques (LPRPDE), la Loi canadienne anti-pourriel (LCAP) et la Loi sur la protection des renseignements personnels dans le secteur privé du Québec (Loi 25).",
-    
     "acceptanceTitle": "1. Acceptation des Conditions",
     "acceptanceText": "En accédant au Service ou en l'utilisant, vous confirmez que vous avez au moins 18 ans et que vous acceptez d'être lié par ces Conditions et notre Politique de confidentialité. Si vous n'êtes pas d'accord, vous ne devez pas utiliser le Service.",
-    
     "serviceTitle": "2. Description du Service",
     "serviceText": "Prepcart est une plateforme numérique de planification de repas qui utilise des systèmes automatisés et l'intelligence artificielle pour générer des plans de repas, des suggestions d'épicerie et des recommandations alimentaires basées sur les informations fournies par les utilisateurs. Prepcart ne vend pas de nourriture, d'épicerie, de kits repas ou de services de livraison.",
-    
     "aiTitle": "3. Utilisation de l'intelligence artificielle",
     "aiText": "Le Service repose sur le traitement automatisé et l'intelligence artificielle pour personnaliser le contenu. Les résultats générés par l'IA sont fournis à titre informatif seulement et ne sont pas destinés à remplacer des conseils médicaux, nutritionnels ou diététiques professionnels.",
-    
     "accountsTitle": "4. Comptes utilisateur et responsabilités",
     "accountsText": "Vous êtes responsable de la confidentialité de vos identifiants de compte et de toutes les activités menées via votre compte. Vous acceptez de fournir des informations exactes et à jour et de nous informer rapidement de toute utilisation non autorisée de votre compte.",
-    
     "acceptableUseTitle": "5. Utilisation acceptable et conduite interdite",
     "acceptableUseText": "Vous acceptez de ne pas faire un usage abusif du Service, y compris, sans s'y limiter :\n- tenter d'interférer avec le Service ou sa sécurité ou de les perturber ;\n- procéder à la rétro-ingénierie, au scraping, au décompilage ou à l'exploitation du Service ou de son logiciel ;\n- utiliser des systèmes automatisés ou des robots sans autorisation ;\n- utiliser le Service à des fins illégales, trompeuses ou commerciales sans consentement ;\n- porter atteinte aux droits de propriété intellectuelle ou autres droits d'autrui.",
-    
     "ipTitle": "6. Propriété intellectuelle et licence",
     "ipText": "Tout le contenu disponible via le Service, y compris le texte, les graphiques, les logiciels, les plans de repas, les résultats générés par l'IA, les marques de commerce et les logos, est la propriété de Prepcart ou de ses concédants de licence. Une licence limitée, non exclusive et non transférable vous est accordée pour utiliser le Service à des fins personnelles et non commerciales uniquement.",
-    
     "dataTitle": "7. Propriété des données utilisateur",
     "dataText": "Vous conservez la propriété des renseignements personnels et des données que vous fournissez. Prepcart se voit accorder un droit limité d'utiliser, de stocker, de traiter, d'anonymiser et de supprimer ces données selon les besoins pour exploiter, maintenir et améliorer le Service, conformément à notre Politique de confidentialité.",
-    
     "subscriptionTitle": "8. Abonnements, facturation et paiements",
     "subscriptionText": "Certaines fonctionnalités du Service sont disponibles via des abonnements payants qui se renouvellent automatiquement sauf annulation. En souscrivant, vous autorisez Prepcart à facturer les frais applicables de manière récurrente en utilisant votre méthode de paiement sélectionnée. Vous êtes responsable du maintien d'informations de facturation exactes. Prepcart peut modifier les prix ou les conditions d'abonnement avec un préavis raisonnable.",
-    
     "refundsTitle": "9. Remboursements et annulations",
     "refundsText": "Sauf indication contraire au moment de l'achat, les frais d'abonnement ne sont pas remboursables. Vous pouvez annuler votre abonnement à tout moment, et l'annulation prendra effet à la fin de la période de facturation en cours.",
-    
     "thirdPartyTitle": "10. Services tiers et intégrations",
     "thirdPartyText": "Le Service peut inclure des liens ou des intégrations avec des services tiers, y compris des plateformes d'épicerie telles qu'Instacart. Prepcart ne contrôle pas ces services et n'est pas responsable de leur contenu, de leurs prix, de leur disponibilité, de leur exactitude ou de leurs pratiques.",
-    
     "pricingTitle": "11. Clause de non-responsabilité concernant les prix et l'exactitude des données",
     "pricingText": "Les prix, la disponibilité et les détails des produits affichés via des intégrations tierces sont fournis à titre de commodité seulement et peuvent différer des listes réelles. Prepcart ne garantit pas l'exactitude et décline toute responsabilité pour les écarts ou les décisions basées sur ces informations.",
-    
     "medicalTitle": "12. Clause de non-responsabilité médicale et nutritionnelle",
     "medicalText": "Le Service ne fournit pas de conseils médicaux, nutritionnels ou de santé. Consultez toujours un professionnel qualifié avant de prendre des décisions concernant votre alimentation ou votre santé.",
-    
     "availabilityTitle": "13. Disponibilité du Service et support",
     "availabilityText": "Prepcart ne garantit pas un fonctionnement ininterrompu ou sans erreur du Service. Des travaux de maintenance, des mises à jour ou des interruptions de service peuvent survenir sans préavis.",
-    
     "warrantiesTitle": "14. Exclusion de garanties",
     "warrantiesText": "Le Service est fourni 'tel quel' et 'selon disponibilité'. Prepcart exclut toutes garanties, expresses ou implicites, y compris les garanties de qualité marchande, d'adéquation à un usage particulier et d'exactitude.",
-    
     "liabilityTitle": "15. Limitation de responsabilité",
     "liabilityText": "Dans la mesure maximale permise par la loi, Prepcart ne sera pas responsable des dommages indirects, accessoires, spéciaux ou consécutifs. La responsabilité totale de Prepcart pour toute réclamation ne dépassera pas les frais payés par vous à Prepcart au cours des douze (12) mois précédant l'événement ayant donné lieu à la réclamation.",
-    
     "indemnificationTitle": "16. Indemnisation",
     "indemnificationText": "Vous acceptez d'indemniser et de dégager de toute responsabilité Prepcart et ses affiliés contre toute réclamation, perte, dommage, responsabilité ou dépense découlant de votre utilisation du Service ou de la violation de ces Conditions.",
-    
     "terminationTitle": "17. Résiliation de compte et exportation des données",
     "terminationText": "Prepcart peut suspendre ou résilier des comptes en cas de violation de ces Conditions. À la fermeture du compte, vous pouvez demander l'accès ou l'exportation de vos renseignements personnels, sous réserve des exigences légales et opérationnelles.",
-    
     "outcomesTitle": "18. Aucune garantie de résultats",
     "outcomesText": "Prepcart ne garantit aucun résultat ou conséquence spécifique découlant de l'utilisation du Service, y compris les résultats diététiques, financiers ou les résultats des services tiers.",
-    
     "childrenTitle": "19. Confidentialité des enfants",
     "childrenText": "Le Service n'est pas destiné aux personnes de moins de 14 ans. Prepcart ne recueille pas sciemment de renseignements personnels auprès d'enfants. Si de telles informations sont identifiées, elles seront supprimées rapidement.",
-    
     "disputeTitle": "20. Résolution des différends",
     "disputeText": "Tout différend découlant de ces Conditions sera d'abord traité par des négociations de bonne foi. En cas d'absence de résolution, les différends seront soumis à la compétence exclusive des tribunaux de la province de Québec, Canada.",
-    
     "changesTitle": "21. Modifications des Conditions",
     "changesText": "Prepcart peut mettre à jour ces Conditions de temps à autre. L'utilisation continue du Service après les modifications constitue l'acceptation des Conditions mises à jour.",
-    
     "governingTitle": "22. Loi applicable",
     "governingText": "Ces Conditions sont régies par les lois du Canada et de la province de Québec.",
-    
     "contactTitle": "23. Coordonnées",
     "contactText": "Si vous avez des questions concernant ces Conditions, veuillez nous contacter à l'adresse suivante :\nCourriel : info@prepcart.ca"
   },
@@ -574,55 +550,38 @@
     "title": "Politique de confidentialité",
     "lastUpdated": "Dernière mise à jour : 31 décembre 2025",
     "intro": "La présente Politique de confidentialité explique comment Prepcart ('Prepcart', 'nous', 'notre', 'nos') recueille, utilise, divulgue et protège les renseignements personnels conformément à la loi fédérale canadienne sur la protection de la vie privée (LPRPDE), la Loi 25 du Québec (projet de loi 64) et les meilleures pratiques de l'industrie.",
-    
     "accountabilityTitle": "1. Responsabilité et gouvernance",
     "accountabilityText": "Prepcart est responsable de la protection des renseignements personnels sous son contrôle. Nous avons mis en œuvre des politiques de gouvernance, des procédures internes et des garanties pour assurer la conformité avec les lois sur la protection de la vie privée applicables. Un responsable de la protection de la vie privée désigné supervise nos pratiques de confidentialité et notre conformité.",
-    
     "collectionTitle": "2. Renseignements personnels que nous recueillons",
     "collectionText": "Nous pouvons recueillir les catégories suivantes de renseignements personnels :\n- Nom et coordonnées (adresse courriel)\n- Identifiants de compte et détails d'abonnement\n- Préférences alimentaires et saisies fournies par l'utilisateur\n- Données d'utilisation (plans de repas générés, pages consultées)\n- Données techniques (adresse IP, informations sur l'appareil et le navigateur)\n- Données de témoins (cookies) et d'analyse\n\nNous recueillons uniquement les informations nécessaires pour exploiter et améliorer nos services.",
-    
     "purposesTitle": "3. Finalités de la collecte",
     "purposesText": "Les renseignements personnels sont recueillis pour :\n- Créer et gérer les comptes utilisateur\n- Générer des plans de repas personnalisés à l'aide de systèmes automatisés\n- Traiter les abonnements et les paiements\n- Communiquer des messages transactionnels et liés au service\n- Améliorer la fonctionnalité et la performance de la plateforme\n- Se conformer aux obligations légales et réglementaires",
-    
     "consentTitle": "4. Consentement et base légale",
     "consentText": "Nous recueillons et traitons les renseignements personnels sur la base d'un consentement exprès, d'une nécessité contractuelle et d'obligations légales. Le consentement est obtenu clairement et peut être retiré à tout moment avec la même facilité avec laquelle il a été fourni.",
-    
     "automatedTitle": "5. Prise de décision automatisée et IA",
     "automatedText": "Prepcart utilise des systèmes automatisés et l'intelligence artificielle pour analyser les saisies des utilisateurs et générer des plans de repas et des recommandations personnalisés. Les utilisateurs peuvent demander des informations sur les processus de prise de décision automatisée ou contester les résultats conformément à la Loi 25 du Québec.",
-    
     "cookiesTitle": "6. Témoins (cookies) et technologies de suivi",
     "cookiesText": "Nous utilisons des témoins et des technologies similaires pour assurer la fonctionnalité du site Web, analyser l'utilisation et améliorer l'expérience utilisateur.\n- Les témoins essentiels sont requis pour que le Service fonctionne.\n- Les témoins d'analyse nous aident à comprendre les interactions des utilisateurs et à améliorer les performances.\n\nLes utilisateurs peuvent gérer ou retirer leur consentement aux témoins via les paramètres de leur navigateur ou notre bannière de témoins. La désactivation de certains témoins peut affecter la fonctionnalité du site.",
-    
     "accuracyTitle": "7. Exactitude et minimisation des données",
     "accuracyText": "Nous prenons des mesures raisonnables pour nous assurer que les renseignements personnels sont exacts, complets et à jour. Les utilisateurs sont encouragés à examiner et à mettre à jour leurs informations au besoin.",
-    
     "sharingTitle": "8. Partage de données et tiers",
     "sharingText": "Nous pouvons partager des renseignements personnels avec des fournisseurs de services de confiance (tels que les services de livraison de courriels, d'analyse et de traitement des paiements) strictement pour l'exploitation du service.\nLes renseignements personnels peuvent également être divulgués pour se conformer à des obligations légales, à des demandes des forces de l'ordre ou à des exigences réglementaires.",
-    
     "transfersTitle": "9. Transferts de données hors Québec ou Canada",
     "transfersText": "Les renseignements personnels peuvent être traités ou stockés à l'extérieur du Québec ou du Canada. Lorsque de tels transferts se produisent, nous appliquons des garanties appropriées et effectuons des évaluations des facteurs relatifs à la vie privée lorsque la loi l'exige.",
-    
     "retentionTitle": "10. Conservation des données",
     "retentionText": "Nous conservons les renseignements personnels uniquement aussi longtemps que nécessaire :\n- Données de compte et d'abonnement : conservées pendant que le compte est actif et jusqu'à 24 mois après sa fermeture\n- Enregistrements transactionnels et de facturation : conservés comme l'exige la loi\n- Données d'analyse : conservées sous forme agrégée ou anonymisée",
-    
     "securityTitle": "11. Garanties de sécurité",
     "securityText": "Nous appliquons des garanties administratives, techniques et organisationnelles pour protéger les renseignements personnels contre l'accès non autorisé, la perte, l'utilisation abusive ou la divulgation.",
-    
     "breachTitle": "12. Gestion des atteintes à la protection des données",
     "breachText": "Prepcart tient des registres internes de tous les incidents liés à la protection de la vie privée. En cas d'atteinte présentant un risque de préjudice grave, les personnes concernées et les autorités compétentes (y compris la CAI du Québec) seront informées conformément à la loi.",
-    
     "rightsTitle": "13. Droits des individus (Canada et Québec)",
     "rightsText": "Vous avez le droit de :\n- Accéder à vos renseignements personnels\n- Corriger des données inexactes\n- Retirer votre consentement\n- Demander la suppression ou le désindexation\n- Demander la portabilité des données (le cas échéant)\n\nLes demandes peuvent être soumises au responsable de la protection de la vie privée.",
-    
     "withdrawalTitle": "14. Retrait du consentement",
     "withdrawalText": "Le consentement peut être retiré à tout temps sans pénalité. Le retrait peut limiter l'accès à certaines fonctionnalités du Service.",
-    
     "updatesTitle": "15. Mises à jour de la politique",
     "updatesText": "Nous pouvons mettre à jour cette Politique de confidentialité de temps à autre. Les changements importants seront communiqués via le Service ou par courriel, le cas échéant.",
-    
     "officerTitle": "16. Coordonnées du responsable de la protection de la vie privée",
     "officerText": "Responsable de la protection de la vie privée :\nCourriel : info@prepcart.ca",
-    
     "contactTitle": "17. Coordonnées",
     "contactText": "Pour les questions ou demandes relatives à la protection de la vie privée :\nCourriel : info@prepcart.ca"
   }
