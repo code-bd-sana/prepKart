@@ -1282,7 +1282,7 @@ export default function GroceryListPage({ params }) {
                 </div>
               </div>
 
-              <div className='flex items-center gap-4'>
+              <div className='flex md:flex-row flex-col items-center gap-4'>
                 <button
                   onClick={() => setShowPantryModal(true)}
                   className='h-9 px-4 rounded-lg bg-[#4a9fd8] hover:bg-[#3b8ec4] transition-colors text-sm font-medium text-white flex items-center gap-2'>
