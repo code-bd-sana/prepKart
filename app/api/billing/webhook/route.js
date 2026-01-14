@@ -253,10 +253,11 @@ import { stripe } from "@/lib/stripe";
 import { connectDB } from "@/lib/db";
 import User from "@/models/User";
 import {
-  sendNewSubscriptionEmail,
-  sendRenewalEmail,
-  sendPaymentFailedEmail,
+  sendAdminNotification,
   sendCancellationEmail,
+  sendNewSubscriptionEmail,
+  sendPaymentFailedEmail,
+  sendRenewalEmail,
 } from "@/lib/email";
 
 export async function POST(request) {

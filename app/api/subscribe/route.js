@@ -1,9 +1,9 @@
 import { connectDB } from "@/lib/db";
 import Subscription from "@/models/Subscription";
-import {
-  sendSubscriptionWelcomeEmail,
-  sendSubscriptionNotificationToAdmin,
-} from "@/lib/email";
+// import {
+//   sendSubscriptionWelcomeEmail,
+//   sendSubscriptionNotificationToAdmin,
+// } from "@/lib/email";
 
 export async function POST(request) {
   try {
@@ -53,20 +53,20 @@ export async function POST(request) {
 
     // ✅ Send emails in background (don't wait for them)
     // Send welcome email to user
-    sendSubscriptionWelcomeEmail(subscription)
-      .then((result) => {
-        if (result)
-          console.log(`✅ Welcome email sent to: ${subscription.email}`);
-      })
-      .catch((error) => console.error("User email error:", error));
+    // sendSubscriptionWelcomeEmail(subscription)
+    //   .then((result) => {
+    //     if (result)
+    //       console.log(`✅ Welcome email sent to: ${subscription.email}`);
+    //   })
+    //   .catch((error) => console.error("User email error:", error));
 
-    // Send notification to admin
-    sendSubscriptionNotificationToAdmin(subscription)
-      .then((result) => {
-        if (result)
-          console.log(`✅ Admin notified about: ${subscription.email}`);
-      })
-      .catch((error) => console.error("Admin email error:", error));
+    // // Send notification to admin
+    // sendSubscriptionNotificationToAdmin(subscription)
+    //   .then((result) => {
+    //     if (result)
+    //       console.log(`✅ Admin notified about: ${subscription.email}`);
+    //   })
+    //   .catch((error) => console.error("Admin email error:", error));
 
     return Response.json(
       {
