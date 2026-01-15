@@ -75,7 +75,7 @@ export async function POST(request, { params }) {
     const oldMeal = plan.days[dayIndex].meals[mealIndex];
 
     // Now get user info
-    let actualUserTier = "free"; 
+    let actualUserTier = "free";
 
     if (userId) {
       const user = await User.findById(userId);
@@ -133,7 +133,7 @@ export async function POST(request, { params }) {
     // Generate alternative meal
     const alternativeInputs = {
       ...(plan.inputs || {}),
-      userTier: actualUserTier, 
+      userTier: actualUserTier,
       mealType: oldMeal.mealType,
       cookingTime: plan.inputs?.maxCookingTime || 30,
       portions: plan.inputs?.portions || 2,
@@ -147,7 +147,7 @@ export async function POST(request, { params }) {
       skillLevel: plan.inputs?.skillLevel || "Beginner",
     };
 
-    // TIMEOUT FUNCTION 
+    // TIMEOUT FUNCTION
     async function withTimeout(promise, timeoutMs = 15000) {
       return Promise.race([
         promise,
@@ -164,9 +164,9 @@ export async function POST(request, { params }) {
         generateAlternativeMeal(
           alternativeInputs,
           oldMeal.recipeName,
-          actualUserTier 
+          actualUserTier
         ),
-        10000 
+        10000
       );
     } catch (timeoutError) {
       console.error(
@@ -206,7 +206,7 @@ export async function POST(request, { params }) {
     const updatedMeal = {
       ...newMeal,
       isSwapped: true,
-      originalRecipe: oldMeal.recipeName, 
+      originalRecipe: oldMeal.recipeName,
       swappedAt: new Date().toISOString(),
     };
 
@@ -348,217 +348,3 @@ export async function GET(request, { params }) {
     );
   }
 }
-
-
-// import { NextResponse } from "next/server";
-// import { connectDB } from "@/lib/db";
-// import Plan from "@/models/Plan";
-// import User from "@/models/User";
-// import { generateAlternativeMeal } from "@/lib/openai";
-
-// const SWAPS_PER_PLAN = {
-//   free: 0,
-//   tier2: 2,
-//   tier3: 3,
-// };
-
-// export async function POST(request, { params }) {
-//   try {
-//     await connectDB();
-
-//     const { id } = await params;
-//     const body = await request.json();
-    
-//     const { dayIndex, mealIndex, userId, userTier, planData } = body;
-
-//     if (dayIndex === undefined || mealIndex === undefined) {
-//       return NextResponse.json(
-//         { error: "dayIndex and mealIndex are required" },
-//         { status: 400 }
-//       );
-//     }
-
-//     // Get plan
-//     let plan;
-//     let isTempPlan = false;
-
-//     if (id.startsWith("temp_")) {
-//       isTempPlan = true;
-//       plan = planData || body.planData || {};
-
-//       if (!plan.swaps) {
-//         plan.swaps = {
-//           allowed: 0,
-//           used: 0,
-//           remaining: 0,
-//         };
-//       }
-//     } else {
-//       plan = await Plan.findById(id);
-//     }
-
-//     if (!plan || !plan.days?.[dayIndex]?.meals?.[mealIndex]) {
-//       return NextResponse.json({ error: "Meal not found" }, { status: 404 });
-//     }
-
-//     const oldMeal = plan.days[dayIndex].meals[mealIndex];
-
-//     // Get user info
-//     let actualUserTier = "free";
-//     if (userId) {
-//       const user = await User.findById(userId);
-//       if (user) {
-//         actualUserTier = user.tier || "free";
-//       }
-//     }
-
-//     // Block free users from swapping
-//     if (userId && actualUserTier === "free") {
-//       return NextResponse.json(
-//         {
-//           error: "Free users cannot swap meals. Upgrade to Plus or Premium.",
-//           requiresUpgrade: true,
-//           tier: actualUserTier,
-//         },
-//         { status: 403 }
-//       );
-//     }
-
-//     // Update temp plan swaps
-//     if (isTempPlan) {
-//       plan.swaps.allowed = SWAPS_PER_PLAN[actualUserTier] || 0;
-//       plan.swaps.remaining = plan.swaps.allowed - plan.swaps.used;
-//     }
-
-//     // Get swap allowance
-//     const swapsAllowedForTier = SWAPS_PER_PLAN[actualUserTier] || 0;
-//     let planSwapsAllowed = swapsAllowedForTier;
-//     let planSwapsUsed = 0;
-
-//     if (!isTempPlan) {
-//       planSwapsAllowed = plan.swapsAllowed || swapsAllowedForTier;
-//       planSwapsUsed = plan.swapsUsed || 0;
-//     } else {
-//       planSwapsAllowed = plan.swaps?.allowed || swapsAllowedForTier;
-//       planSwapsUsed = plan.swaps?.used || 0;
-//     }
-
-//     // Check if swaps are available
-//     if (planSwapsUsed >= planSwapsAllowed) {
-//       return NextResponse.json(
-//         {
-//           error: "No swaps remaining for this meal plan",
-//           details: `Your ${actualUserTier} account allows ${planSwapsAllowed} swaps. Used ${planSwapsUsed}.`,
-//         },
-//         { status: 400 }
-//       );
-//     }
-
-//     // Generate alternative meal
-//     const alternativeInputs = {
-//       cuisine: plan.inputs?.cuisine || "any",
-//       mealType: oldMeal.mealType,
-//       max_cooking_time: plan.inputs?.maxCookingTime || 30,
-//       portions: plan.inputs?.portions || 2,
-//       goal: plan.inputs?.goal || "General health",
-//       province: plan.inputs?.province || "Canada",
-//       budgetLevel: plan.inputs?.budgetLevel || "Medium",
-//       dietaryPreferences: plan.inputs?.dietaryPreferences || [],
-//       allergies: plan.inputs?.allergies || [],
-//       likes: plan.inputs?.likes || "",
-//       dislikes: plan.inputs?.dislikes || "",
-//       skillLevel: plan.inputs?.skillLevel || "Beginner",
-//       cookingMethod: plan.inputs?.cookingMethod || "",
-//     };
-
-//     // Add timeout to prevent hanging
-//     const generateWithTimeout = (promise, timeout = 10000) => {
-//       return Promise.race([
-//         promise,
-//         new Promise((_, reject) => 
-//           setTimeout(() => reject(new Error("Swap request timeout")), timeout)
-//         )
-//       ]);
-//     };
-
-//     let newMeal;
-//     try {
-//       newMeal = await generateWithTimeout(
-//         generateAlternativeMeal(
-//           alternativeInputs,
-//           oldMeal.recipeName,
-//           actualUserTier
-//         ),
-//         8000
-//       );
-//     } catch (error) {
-//       console.error("Alternative meal error:", error);
-      
-//       // Fallback meal
-//       newMeal = {
-//         mealType: oldMeal.mealType,
-//         recipeName: `Alternative ${oldMeal.mealType}`,
-//         ingredients: [
-//           { name: "Protein", quantity: plan.inputs?.portions || 2, unit: "servings" },
-//           { name: "Vegetables", quantity: 2, unit: "cups" },
-//           { name: "Grains", quantity: 1, unit: "cup" }
-//         ],
-//         cookingTime: 25,
-//         instructions: [
-//           "Prepare ingredients",
-//           "Cook according to preference",
-//           "Serve hot"
-//         ],
-//         recipeSource: "fallback",
-//         isAlternative: true,
-//         tier: actualUserTier,
-//       };
-//     }
-
-//     // Update plan swaps
-//     const newPlanSwapsUsed = planSwapsUsed + 1;
-//     const swapsRemaining = planSwapsAllowed - newPlanSwapsUsed;
-
-//     // Create updated meal
-//     const updatedMeal = {
-//       ...newMeal,
-//       isSwapped: true,
-//       originalRecipe: oldMeal.recipeName,
-//       swappedAt: new Date().toISOString(),
-//     };
-
-//     // Update the plan
-//     plan.days[dayIndex].meals[mealIndex] = updatedMeal;
-
-//     if (!isTempPlan) {
-//       plan.swapsUsed = newPlanSwapsUsed;
-//       plan.swapsAllowed = planSwapsAllowed;
-//       plan.updatedAt = new Date();
-//       await plan.save();
-//     } else {
-//       plan.swaps.used = newPlanSwapsUsed;
-//       plan.swaps.remaining = swapsRemaining;
-//     }
-
-//     return NextResponse.json({
-//       success: true,
-//       message: "Meal swapped successfully!",
-//       newMeal: updatedMeal,
-//       swaps: {
-//         allowed: planSwapsAllowed,
-//         used: newPlanSwapsUsed,
-//         remaining: swapsRemaining,
-//       },
-//       userTier: actualUserTier,
-//     });
-//   } catch (error) {
-//     console.error("Swap error:", error);
-//     return NextResponse.json(
-//       {
-//         error: "Failed to swap meal",
-//         details: error.message,
-//       },
-//       { status: 500 }
-//     );
-//   }
-// }

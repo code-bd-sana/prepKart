@@ -4,11 +4,7 @@ import { connectDB } from "@/lib/db";
 import User from "@/models/User";
 import Plan from "@/models/Plan";
 import { generateMealPlan } from "@/lib/openai";
-// import { generateSpoonacularMealPlan } from "@/lib/spoonacular";
 import { authenticate } from "@/middleware/auth";
-// import HybridService from "@/lib/hybridService";
-// import { generateChatGPTRecipe } from "@/lib/openai";
-// import { computeNutritionForIngredients } from "@/lib/spoonacular";
 import { extractPrimaryProtein, extractBaseCarb } from "@/lib/hybridUtils";
 
 // TIER CONFIGURATION
