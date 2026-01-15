@@ -32,7 +32,7 @@ export async function authenticate(request) {
       };
     }
 
-    // Verify token - USE verifyAccessToken
+    // Verify token
     const decoded = verifyAccessToken(token);
     if (!decoded) {
       return {
@@ -43,7 +43,7 @@ export async function authenticate(request) {
       };
     }
 
-     let userId;
+    let userId;
     try {
       // Check if it's already a valid ObjectId string
       if (mongoose.Types.ObjectId.isValid(decoded.userId)) {
@@ -53,18 +53,17 @@ export async function authenticate(request) {
         userId = decoded.userId;
       }
     } catch (error) {
-      console.error('Error converting userId to ObjectId:', error);
+      console.error("Error converting userId to ObjectId:", error);
       userId = decoded.userId;
     }
-    
 
     // Return user info
     return {
       success: true,
-      userId: userId, 
+      userId: userId,
       userEmail: decoded.email,
       userTier: decoded.tier,
-      userName: decoded.name || '',
+      userName: decoded.name || "",
       decoded,
     };
   } catch (error) {
