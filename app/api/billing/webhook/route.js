@@ -248,16 +248,18 @@
 //   }
 // }
 
-// api/billing/webhook/route.js
 import { NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { connectDB } from "@/lib/db";
 import User from "@/models/User";
+import {
+  sendNewSubscriptionEmail,
+  sendRenewalEmail,
+  sendPaymentFailedEmail,
+  sendCancellationEmail,
+} from "@/lib/email";
 
 export async function POST(request) {
-  console.log("🚨 [WEBHOOK] REQUEST RECEIVED");
-  console.log("Time:", new Date().toISOString());
-
   // Log headers
   const headers = {};
   for (const [key, value] of request.headers.entries()) {
@@ -268,54 +270,46 @@ export async function POST(request) {
   try {
     // Get raw body
     const payload = await request.text();
-    console.log("📦 Payload length:", payload.length);
-    console.log("📦 First 500 chars:", payload.substring(0, 500));
-
     // Check for signature
     const signature = request.headers.get("stripe-signature");
     if (!signature) {
-      console.error("❌ MISSING STRIPE-SIGNATURE HEADER");
+      console.error("MISSING STRIPE-SIGNATURE HEADER");
       return NextResponse.json(
         { error: "No stripe-signature header" },
         { status: 400 }
       );
     }
 
-    console.log("✅ Signature present");
-
     // Verify webhook secret exists
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
     if (!webhookSecret) {
-      console.error("❌ MISSING STRIPE_WEBHOOK_SECRET ENV VARIABLE");
+      console.error("MISSING STRIPE_WEBHOOK_SECRET ENV VARIABLE");
       return NextResponse.json(
         { error: "Webhook secret not configured" },
         { status: 500 }
       );
     }
 
-    console.log("✅ Webhook secret configured");
+    console.log("Webhook secret configured");
 
     let event;
     try {
       event = stripe.webhooks.constructEvent(payload, signature, webhookSecret);
-      console.log("✅ Event verified:", event.type, event.id);
+      console.log("Event verified:", event.type, event.id);
     } catch (err) {
-      console.error("❌ SIGNATURE VERIFICATION FAILED:", err.message);
+      console.error("SIGNATURE VERIFICATION FAILED:", err.message);
       return NextResponse.json(
         { error: "Webhook signature verification failed" },
         { status: 400 }
       );
     }
 
-    // Process the event
-    console.log(`🎯 Processing ${event.type}...`);
-
     // Connect to DB
     try {
       await connectDB();
-      console.log("✅ Database connected");
+      console.log("Database connected");
     } catch (dbError) {
-      console.error("❌ Database connection failed:", dbError.message);
+      console.error("Database connection failed:", dbError.message);
       throw dbError;
     }
 
@@ -338,13 +332,13 @@ export async function POST(request) {
         break;
 
       default:
-        console.log(`ℹ️ Unhandled event type: ${event.type}`);
+        console.log(`ℹUnhandled event type: ${event.type}`);
     }
 
-    console.log("✅ Webhook processed successfully");
+    console.log("Webhook processed successfully");
     return NextResponse.json({ received: true });
   } catch (error) {
-    console.error("🔥 WEBHOOK PROCESSING ERROR:");
+    console.error("WEBHOOK PROCESSING ERROR:");
     console.error("Message:", error.message);
     console.error("Stack:", error.stack);
 
@@ -360,7 +354,7 @@ export async function POST(request) {
 
 // Handler functions
 async function handleCheckoutSessionCompleted(session) {
-  console.log("🛒 Handling checkout.session.completed");
+  console.log("Handling checkout.session.completed");
 
   if (session.payment_status !== "paid") {
     console.log("Payment not paid, skipping");
@@ -372,7 +366,7 @@ async function handleCheckoutSessionCompleted(session) {
     throw new Error("No userId in session metadata");
   }
 
-  // FIX: Get subscription details with proper error handling
+  // Get subscription details with proper error handling
   let periodEnd = new Date(Date.now() + 31 * 24 * 60 * 60 * 1000); // Default 30 days
 
   if (session.subscription) {
@@ -381,7 +375,7 @@ async function handleCheckoutSessionCompleted(session) {
         session.subscription
       );
 
-      // FIX: Validate the timestamp before creating Date
+      // Validate the timestamp before creating Date
       if (subscription.current_period_end) {
         const timestamp = subscription.current_period_end * 1000;
         if (!isNaN(timestamp) && timestamp > 0) {
@@ -402,7 +396,7 @@ async function handleCheckoutSessionCompleted(session) {
     }
   }
 
-  // FIX: Validate periodEnd is a valid Date
+  // Validate periodEnd is a valid Date
   if (!periodEnd || isNaN(periodEnd.getTime())) {
     console.error("Invalid periodEnd date, using default");
     periodEnd = new Date(Date.now() + 31 * 24 * 60 * 60 * 1000);
@@ -415,7 +409,7 @@ async function handleCheckoutSessionCompleted(session) {
 
   console.log(`Updating user ${userId} to ${tier} with ${swapsAllowed} swaps`);
 
-  // FIX: Ensure currentPeriodEnd is a valid Date
+  // Ensure currentPeriodEnd is a valid Date
   const updateDoc = {
     tier,
     swapsAllowed,
@@ -426,7 +420,7 @@ async function handleCheckoutSessionCompleted(session) {
       stripeSubscriptionId: session.subscription,
       status: "active",
       tier,
-      currentPeriodEnd: periodEnd, // This is now guaranteed valid
+      currentPeriodEnd: periodEnd,
       cancelAtPeriodEnd: false,
     },
   };
@@ -443,11 +437,31 @@ async function handleCheckoutSessionCompleted(session) {
     throw new Error(`User ${userId} not found`);
   }
 
-  console.log("✅ User updated successfully");
-}
+  console.log("User updated successfully");
+  // After successful update, send email
+  if (result) {
+    console.log("User updated successfully");
 
+    // Send subscription email
+    try {
+      const tier = session.metadata?.tier || "tier2";
+      const price = tier === "tier2" ? 4.99 : 9.99;
+
+      await sendNewSubscriptionEmail(result, {
+        tier,
+        currentPeriodEnd: periodEnd,
+        price,
+      });
+
+      console.log("Subscription email sent to:", result.email);
+    } catch (emailError) {
+      console.error("Failed to send subscription email:", emailError.message);
+      // Don't fail the webhook if email fails
+    }
+  }
+}
 async function handleInvoicePaymentSucceeded(invoice) {
-  console.log("💰 Handling invoice.payment_succeeded");
+  console.log("Handling invoice.payment_succeeded");
 
   // Skip initial invoice
   if (invoice.billing_reason === "subscription_create") {
@@ -495,9 +509,7 @@ async function handleInvoicePaymentSucceeded(invoice) {
         });
 
         console.log(
-          `✅ Auto-renewal: ${
-            user.email
-          } renewed until ${periodEnd.toISOString()}`
+          `Auto-renewal: ${user.email} renewed until ${periodEnd.toISOString()}`
         );
       } else {
         console.error("User not found for subscription:", invoice.subscription);
@@ -507,10 +519,62 @@ async function handleInvoicePaymentSucceeded(invoice) {
       throw error;
     }
   }
-}
+  if (user) {
+    await User.findByIdAndUpdate(user._id, {
+      $set: {
+        "subscription.currentPeriodEnd": periodEnd,
+        swapsUsed: 0,
+      },
+    });
 
+    console.log(
+      `Auto-renewal: ${user.email} renewed until ${periodEnd.toISOString()}`
+    );
+
+    // Send renewal email
+    try {
+      await sendRenewalEmail(user, {
+        tier: user.tier,
+        currentPeriodEnd: periodEnd,
+      });
+      console.log("Renewal email sent to:", user.email);
+    } catch (emailError) {
+      console.error("Failed to send renewal email:", emailError.message);
+    }
+  }
+}
+async function handleInvoicePaymentFailed(invoice) {
+  console.log("💳 Handling invoice.payment_failed");
+
+  if (invoice.subscription) {
+    const user = await User.findOne({
+      "subscription.stripeSubscriptionId": invoice.subscription,
+    });
+
+    if (user) {
+      await User.findByIdAndUpdate(user._id, {
+        $set: {
+          "subscription.status": "past_due",
+        },
+      });
+
+      console.log(`❌ Payment failed for ${user.email}`);
+
+      // Send payment failed email
+      try {
+        await sendPaymentFailedEmail(user, invoice);
+        console.log("📧 Payment failed email sent to:", user.email);
+      } catch (emailError) {
+        console.error(
+          "Failed to send payment failed email:",
+          emailError.message
+        );
+      }
+    }
+  }
+}
 async function handleSubscriptionUpdated(subscription) {
-  console.log("🔄 Handling subscription update");
+  console.log("Handling subscription update");
 
   const user = await User.findOne({ stripeCustomerId: subscription.customer });
   if (!user) {
@@ -547,17 +611,17 @@ async function handleSubscriptionUpdated(subscription) {
   }
 
   await User.findByIdAndUpdate(user._id, { $set: updates });
-  console.log(
-    `✅ Updated ${user.email} subscription to ${subscription.status}`
-  );
+  console.log(`Updated ${user.email} subscription to ${subscription.status}`);
 }
 async function handleSubscriptionDeleted(subscription) {
-  console.log("🗑️ Handling subscription deletion");
-  console.log("Subscription ID:", subscription.id);
+  console.log("Handling subscription deletion");
 
-  await User.updateOne(
-    { "subscription.stripeSubscriptionId": subscription.id },
-    {
+  const user = await User.findOne({
+    "subscription.stripeSubscriptionId": subscription.id,
+  });
+
+  if (user) {
+    await User.findByIdAndUpdate(user._id, {
       $set: {
         tier: "free",
         swapsAllowed: 1,
@@ -566,8 +630,16 @@ async function handleSubscriptionDeleted(subscription) {
         "subscription.cancelAtPeriodEnd": false,
         "subscription.tier": "free",
       },
-    }
-  );
+    });
 
-  console.log("✅ User downgraded to free tier");
+    console.log("User downgraded to free tier");
+
+    // Send cancellation email
+    try {
+      await sendCancellationEmail(user, { tier: user.tier });
+      console.log("Cancellation email sent to:", user.email);
+    } catch (emailError) {
+      console.error("Failed to send cancellation email:", emailError.message);
+    }
+  }
 }
