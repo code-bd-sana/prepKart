@@ -257,6 +257,7 @@ import {
   sendRenewalEmail,
   sendPaymentFailedEmail,
   sendCancellationEmail,
+  sendAdminNotification,
 } from "@/lib/email";
 
 export async function POST(request) {
@@ -447,6 +448,7 @@ async function handleCheckoutSessionCompleted(session) {
       const tier = session.metadata?.tier || "tier2";
       const price = tier === "tier2" ? 4.99 : 9.99;
 
+      // send email to user
       await sendNewSubscriptionEmail(result, {
         tier,
         currentPeriodEnd: periodEnd,
@@ -454,6 +456,10 @@ async function handleCheckoutSessionCompleted(session) {
       });
 
       console.log("Subscription email sent to:", result.email);
+
+      // send email to admin
+      await sendAdminNotification(result, tier, price);
+      console.log("Admin notification sent");
     } catch (emailError) {
       console.error("Failed to send subscription email:", emailError.message);
       // Don't fail the webhook if email fails
@@ -472,7 +478,7 @@ async function handleInvoicePaymentSucceeded(invoice) {
   // Handle auto-renewal
   if (invoice.billing_reason === "subscription_cycle" && invoice.subscription) {
     console.log(
-      "Processing auto-renewal for subscription:",
+      " Processing auto-renewal for subscription:",
       invoice.subscription
     );
 
@@ -481,7 +487,7 @@ async function handleInvoicePaymentSucceeded(invoice) {
         invoice.subscription
       );
 
-      // FIX: Validate date before updating
+      // Validate date before updating
       let periodEnd = new Date(Date.now() + 31 * 24 * 60 * 60 * 1000);
 
       if (subscription.current_period_end) {
@@ -511,6 +517,17 @@ async function handleInvoicePaymentSucceeded(invoice) {
         console.log(
           `Auto-renewal: ${user.email} renewed until ${periodEnd.toISOString()}`
         );
+
+        // Send renewal email
+        try {
+          await sendRenewalEmail(user, {
+            tier: user.tier,
+            currentPeriodEnd: periodEnd,
+          });
+          console.log(`Renewal email sent to ${user.email}`);
+        } catch (emailError) {
+          console.error("Failed to send renewal email:", emailError.message);
+        }
       } else {
         console.error("User not found for subscription:", invoice.subscription);
       }
@@ -519,32 +536,9 @@ async function handleInvoicePaymentSucceeded(invoice) {
       throw error;
     }
   }
-  if (user) {
-    await User.findByIdAndUpdate(user._id, {
-      $set: {
-        "subscription.currentPeriodEnd": periodEnd,
-        swapsUsed: 0,
-      },
-    });
-
-    console.log(
-      `Auto-renewal: ${user.email} renewed until ${periodEnd.toISOString()}`
-    );
-
-    // Send renewal email
-    try {
-      await sendRenewalEmail(user, {
-        tier: user.tier,
-        currentPeriodEnd: periodEnd,
-      });
-      console.log("Renewal email sent to:", user.email);
-    } catch (emailError) {
-      console.error("Failed to send renewal email:", emailError.message);
-    }
-  }
 }
 async function handleInvoicePaymentFailed(invoice) {
-  console.log("💳 Handling invoice.payment_failed");
+  console.log("Handling invoice.payment_failed");
 
   if (invoice.subscription) {
     const user = await User.findOne({
@@ -558,12 +552,12 @@ async function handleInvoicePaymentFailed(invoice) {
         },
       });
 
-      console.log(`❌ Payment failed for ${user.email}`);
+      console.log(`Payment failed for ${user.email}`);
 
       // Send payment failed email
       try {
         await sendPaymentFailedEmail(user, invoice);
-        console.log("📧 Payment failed email sent to:", user.email);
+        console.log("Payment failed email sent to:", user.email);
       } catch (emailError) {
         console.error(
           "Failed to send payment failed email:",

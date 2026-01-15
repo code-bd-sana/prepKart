@@ -752,17 +752,17 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
   };
 
   return (
-    <section className="py-16 md:py-20">
-      <div className="container mx-auto px-4 max-w-[1500px]">
-        <p className="text-center text-3xl md:text-4xl font-semibold text-gray-900 mb-3">
+    <section className='py-16 md:py-20'>
+      <div className='container mx-auto px-4 max-w-[1500px]'>
+        <p className='text-center text-3xl md:text-4xl font-semibold text-gray-900 mb-3'>
           {t("title")}
         </p>
         {plan && (
-          <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl">
-            <p className="text-amber-800 font-semibold flex items-center">
+          <div className='mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl'>
+            <p className='text-amber-800 font-semibold flex items-center'>
               Don‘t forget to save!
             </p>
-            <p className="text-amber-700 text-sm mt-1">
+            <p className='text-amber-700 text-sm mt-1'>
               If you close this window without clicking ‘Save Plan’, your meal
               plan will be lost forever.
             </p>
@@ -770,28 +770,27 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
         )}
         {/* Error Message */}
         {error && (
-          <div className="max-w-6xl mx-auto mb-8">
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+          <div className='max-w-6xl mx-auto mb-8'>
+            <div className='bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg'>
               {error}
             </div>
           </div>
         )}
         {/* for free users */}
         {freeLimitReached && (
-          <div className="max-w-6xl mx-auto mb-6">
-            <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
-              <p className="text-yellow-800 font-medium">
+          <div className='max-w-6xl mx-auto mb-6'>
+            <div className='bg-yellow-50 border border-yellow-200 rounded-xl p-4'>
+              <p className='text-yellow-800 font-medium'>
                 You have reached your free plan limit (1 plan per month).
               </p>
-              <p className="text-yellow-700 text-sm mt-1">
-                Upgrade to <span className="font-semibold">Plus</span> for 6
-                plans/month, or <span className="font-semibold">Premium</span>{" "}
+              <p className='text-yellow-700 text-sm mt-1'>
+                Upgrade to <span className='font-semibold'>Plus</span> for 6
+                plans/month, or <span className='font-semibold'>Premium</span>{" "}
                 for unlimited plans.
               </p>
               <button
                 onClick={() => (window.location.href = "/#pricing")}
-                className="mt-2 bg-[#8cc63c] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#7ab32f] transition"
-              >
+                className='mt-2 bg-[#8cc63c] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#7ab32f] transition'>
                 View Plans & Pricing
               </button>
             </div>
@@ -799,26 +798,24 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
         )}
         {/* Form */}
         {!plan ? (
-          <div className="max-w-6xl mx-auto">
+          <div className='max-w-6xl mx-auto'>
             <form
               onSubmit={handleSubmit}
-              className="space-y-4 bg-white rounded-2xl shadow-lg p-6 md:p-6"
-            >
+              className='space-y-4 bg-white rounded-2xl shadow-lg p-6 md:p-6'>
               {/* Province & Goal */}
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className='grid md:grid-cols-2 gap-6'>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className='block text-sm font-medium text-gray-700 mb-2'>
                     {t(`form.province`)}
                   </label>
 
-                  <div className="relative">
+                  <div className='relative'>
                     <select
-                      name="province"
+                      name='province'
                       value={form.province}
                       onChange={handleChange}
                       required
-                      className="w-full appearance-none px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2"
-                    >
+                      className='w-full appearance-none px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2'>
                       {PROVINCES.map((province) => (
                         <option key={province} value={province}>
                           {province}
@@ -826,19 +823,19 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
                       ))}
                     </select>
 
-                    <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
+                    <span className='pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-400'>
                       <IoIosArrowDown />
                     </span>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className='block text-sm font-medium text-gray-700 mb-2'>
                     {t(`form.goal`)}
                   </label>
-                  <div className="relative">
+                  <div className='relative'>
                     <select
-                      name="goal"
+                      name='goal'
                       value={form.goal}
                       onChange={(e) => {
                         const value = e.target.value;
@@ -855,9 +852,8 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
                         handleChange(e);
                       }}
                       required
-                      className="w-full appearance-none px-4 py-3 border border-gray-300 rounded-lg focus:ring-2"
-                    >
-                      <option value="">{t(`form.selectGoal`)}</option>
+                      className='w-full appearance-none px-4 py-3 border border-gray-300 rounded-lg focus:ring-2'>
+                      <option value=''>{t(`form.selectGoal`)}</option>
                       {GOALS.map((goal) => {
                         const isPremiumGoal = goal === "Family Friendly";
                         const isRestricted =
@@ -870,14 +866,13 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
                             disabled={isRestricted}
                             className={
                               isRestricted ? "text-gray-400 bg-gray-50" : ""
-                            }
-                          >
+                            }>
                             {goal} {isRestricted && "🔒"}
                           </option>
                         );
                       })}
                     </select>
-                    <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
+                    <span className='pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-400'>
                       <IoIosArrowDown />
                     </span>
                   </div>
@@ -885,27 +880,27 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
               </div>
 
               {/* Cuisine & Budget */}
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className='grid md:grid-cols-2 gap-6'>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className='block text-sm font-medium text-gray-700 mb-2'>
                     {t(`form.cuisine`)}
                   </label>
                   <input
-                    type="text"
-                    name="cuisine"
+                    type='text'
+                    name='cuisine'
                     value={form.cuisine}
                     onChange={handleChange}
                     placeholder={t(`form.cuisinePlaceholder`)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2"
+                    className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2'
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className='block text-sm font-medium text-gray-700 mb-2'>
                     {t(`form.budgetLevel`)}
                   </label>
-                  <div className="relative">
+                  <div className='relative'>
                     <select
-                      name="budgetLevel"
+                      name='budgetLevel'
                       value={form.budgetLevel}
                       onChange={(e) => {
                         const value = e.target.value;
@@ -920,8 +915,7 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
                         }
                         handleChange(e);
                       }}
-                      className="w-full appearance-none px-4 py-3 border border-gray-300 rounded-lg focus:ring-2"
-                    >
+                      className='w-full appearance-none px-4 py-3 border border-gray-300 rounded-lg focus:ring-2'>
                       {BUDGET_LEVELS.map((level) => {
                         const isPremium = level === "High";
                         const isDisabled =
@@ -932,14 +926,13 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
                             key={level}
                             value={level}
                             disabled={isDisabled}
-                            className={isDisabled ? "text-gray-400" : ""}
-                          >
+                            className={isDisabled ? "text-gray-400" : ""}>
                             {level} {isDisabled && "🔒 Premium"}
                           </option>
                         );
                       })}
                     </select>
-                    <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
+                    <span className='pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-400'>
                       <IoIosArrowDown />
                     </span>
                   </div>
@@ -947,43 +940,43 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
               </div>
 
               {/* Portions, Meals, Time */}
-              <div className="grid md:grid-cols-4 gap-6">
+              <div className='grid md:grid-cols-4 gap-6'>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className='block text-sm font-medium text-gray-700 mb-2'>
                     {t(`form.portions`)}
                   </label>
                   <input
-                    type="number"
-                    name="portions"
-                    min="1"
-                    max="10"
+                    type='number'
+                    name='portions'
+                    min='1'
+                    max='10'
                     value={form.portions}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2"
+                    className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2'
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className='block text-sm font-medium text-gray-700 mb-2'>
                     {t(`form.mealsPerDay`)}
                   </label>
                   <input
-                    type="number"
-                    name="mealsPerDay"
-                    min="1"
-                    max="5"
+                    type='number'
+                    name='mealsPerDay'
+                    min='1'
+                    max='5'
                     value={form.mealsPerDay}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2"
+                    className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2'
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Number of Days <span className="text-red-500">*</span>
+                  <label className='block text-sm font-medium text-gray-700 mb-1'>
+                    Number of Days <span className='text-red-500'>*</span>
                   </label>
-                  <div className="relative">
+                  <div className='relative'>
                     <select
-                      name="days_count"
+                      name='days_count'
                       value={form.days_count}
                       onChange={(e) => {
                         const value = parseInt(e.target.value);
@@ -997,11 +990,10 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
                           days_count: value,
                         });
                       }}
-                      className="w-full appearance-none px-3 py-2 border border-gray-300 rounded-md focus:ring-teal-500 focus:border-teal-500"
-                      disabled={loading}
-                    >
+                      className='w-full appearance-none px-3 py-2 border border-gray-300 rounded-md focus:ring-teal-500 focus:border-teal-500'
+                      disabled={loading}>
                       {/* Always available - 3 days */}
-                      <option value="3">3 days</option>
+                      <option value='3'>3 days</option>
 
                       {/* 4-7 days: Show with premium icons for guest/free users */}
                       {[4, 5, 6, 7].map((days) => {
@@ -1014,21 +1006,20 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
                             disabled={isRestricted}
                             className={
                               isRestricted ? "text-gray-400 bg-gray-50" : ""
-                            }
-                          >
+                            }>
                             {days} days {isRestricted && "🔒 Premium"}
                           </option>
                         );
                       })}
                     </select>
-                    <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
+                    <span className='pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-400'>
                       <IoIosArrowDown />
                     </span>
                   </div>
 
                   {/* Help text with upgrade link */}
-                  <div className="flex items-center justify-between mt-1">
-                    <p className="text-xs text-gray-500">
+                  <div className='flex items-center justify-between mt-1'>
+                    <p className='text-xs text-gray-500'>
                       {!user
                         ? "Login to access 7-day plans"
                         : user?.tier === "free"
@@ -1038,10 +1029,9 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
 
                     {(!user || user?.tier === "free") && (
                       <button
-                        type="button"
+                        type='button'
                         onClick={() => (window.location.href = "/#pricing")}
-                        className="text-xs text-[#8cc63c] hover:text-[#7ab32f] font-medium"
-                      >
+                        className='text-xs text-[#8cc63c] hover:text-[#7ab32f] font-medium'>
                         Upgrade →
                       </button>
                     )}
@@ -1049,75 +1039,75 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className='block text-sm font-medium text-gray-700 mb-2'>
                     {t(`form.maxCookingTime`)} (minutes)
                   </label>
                   <input
-                    type="number"
-                    name="maxCookingTime"
-                    min="5"
-                    max="180"
+                    type='number'
+                    name='maxCookingTime'
+                    min='5'
+                    max='180'
                     value={form.maxCookingTime}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2"
+                    className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2'
                   />
                 </div>
               </div>
 
               {/* Likes & Dislikes */}
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className='grid md:grid-cols-2 gap-6'>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className='block text-sm font-medium text-gray-700 mb-2'>
                     {t(`form.likes`)}
                   </label>
                   <input
-                    type="text"
-                    name="likes"
+                    type='text'
+                    name='likes'
                     value={form.likes}
                     onChange={handleChange}
                     placeholder={t(`form.likesPlaceholder`)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2"
+                    className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2'
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className='block text-sm font-medium text-gray-700 mb-2'>
                     {t(`form.dislikes`)}
                   </label>
                   <input
-                    type="text"
-                    name="dislikes"
+                    type='text'
+                    name='dislikes'
                     value={form.dislikes}
                     onChange={handleChange}
                     placeholder={t(`form.dislikesPlaceholder`)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2"
+                    className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2'
                   />
                 </div>
               </div>
 
               {/* Cooking Method & Skill Level */}
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className='grid md:grid-cols-2 gap-6'>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className='block text-sm font-medium text-gray-700 mb-2'>
                     {t(`form.cookingMethod`)}
                   </label>
                   <input
-                    type="text"
-                    name="cookingMethod"
+                    type='text'
+                    name='cookingMethod'
                     value={form.cookingMethod}
                     onChange={handleChange}
-                    placeholder="e.g., bake, grill, stir-fry"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2"
+                    placeholder='e.g., bake, grill, stir-fry'
+                    className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2'
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className='block text-sm font-medium text-gray-700 mb-2'>
                     {t(`form.skillLevel`)}
                   </label>
-                  <div className="relative">
+                  <div className='relative'>
                     <select
-                      name="skillLevel"
+                      name='skillLevel'
                       value={form.skillLevel}
                       onChange={(e) => {
                         const value = e.target.value;
@@ -1132,8 +1122,7 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
                         }
                         handleChange(e);
                       }}
-                      className="w-full appearance-none px-4 py-3 border border-gray-300 rounded-lg focus:ring-2"
-                    >
+                      className='w-full appearance-none px-4 py-3 border border-gray-300 rounded-lg focus:ring-2'>
                       {SKILL_LEVELS.map((level) => {
                         const isPremium = level === "Advanced";
                         const isDisabled =
@@ -1144,14 +1133,13 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
                             key={level}
                             value={level}
                             disabled={isDisabled}
-                            className={isDisabled ? "text-gray-400" : ""}
-                          >
+                            className={isDisabled ? "text-gray-400" : ""}>
                             {level} {isDisabled && "🔒 Premium"}
                           </option>
                         );
                       })}
                     </select>
-                    <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
+                    <span className='pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-400'>
                       <IoIosArrowDown />
                     </span>
                   </div>
@@ -1160,15 +1148,15 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
 
               {/* Dietary Preferences */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">
+                <label className='block text-sm font-medium text-gray-700 mb-3'>
                   {t(`form.dietaryPreferences`)}
                   {(!user || user?.tier === "free") && (
-                    <span className="text-xs text-gray-500 ml-2">
+                    <span className='text-xs text-gray-500 ml-2'>
                       (Premium options locked 🔒)
                     </span>
                   )}
                 </label>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                <div className='grid grid-cols-2 md:grid-cols-4 gap-2'>
                   {DIETARY_PREFERENCES.map((pref) => {
                     const isPremium = [
                       "Keto",
@@ -1186,11 +1174,10 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
                           isDisabled
                             ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                             : "bg-gray-50 hover:bg-gray-100"
-                        }`}
-                      >
+                        }`}>
                         <input
-                          type="checkbox"
-                          name="dietaryPreferences"
+                          type='checkbox'
+                          name='dietaryPreferences'
                           value={pref}
                           checked={form.dietaryPreferences.includes(pref)}
                           onChange={(e) => {
@@ -1212,8 +1199,7 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
                         <span
                           className={`text-sm ${
                             isDisabled ? "text-gray-400" : "text-gray-700"
-                          }`}
-                        >
+                          }`}>
                           {pref} {isDisabled && "🔒"}
                         </span>
                       </label>
@@ -1224,39 +1210,37 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
 
               {/* Allergies */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">
+                <label className='block text-sm font-medium text-gray-700 mb-3'>
                   {t(`form.allergies`)}
                 </label>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className='grid grid-cols-2 md:grid-cols-4 gap-3'>
                   {ALLERGIES.map((allergy) => (
                     <label
                       key={allergy}
-                      className="flex items-center space-x-2 bg-gray-50 px-3 py-2 rounded-lg hover:bg-gray-100"
-                    >
+                      className='flex items-center space-x-2 bg-gray-50 px-3 py-2 rounded-lg hover:bg-gray-100'>
                       <input
-                        type="checkbox"
-                        name="allergies"
+                        type='checkbox'
+                        name='allergies'
                         value={allergy}
                         checked={form.allergies.includes(allergy)}
                         onChange={handleChange}
-                        className="h-4 w-4 text-blue-600 rounded"
+                        className='h-4 w-4 text-blue-600 rounded'
                       />
-                      <span className="text-sm text-gray-700">{allergy}</span>
+                      <span className='text-sm text-gray-700'>{allergy}</span>
                     </label>
                   ))}
                 </div>
               </div>
 
               {/* Submit Button */}
-              <div className="pt-4">
+              <div className='pt-4'>
                 <button
-                  type="submit"
+                  type='submit'
                   disabled={loading}
-                  className="w-full bg-[#8cc63c] hover:bg-[#7ab32f] text-white font-semibold py-4 px-6 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 relative overflow-hidden"
-                >
+                  className='w-full bg-[#8cc63c] hover:bg-[#7ab32f] text-white font-semibold py-4 px-6 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 relative overflow-hidden'>
                   {loading ? (
-                    <div className="flex items-center justify-center">
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                    <div className='flex items-center justify-center'>
+                      <div className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2'></div>
                       Generating {form.days_count}-Day Plan... (
                       {generatingProgress}%)
                     </div>
@@ -1267,7 +1251,7 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
 
                 {/* Estimated Time */}
                 {loading && (
-                  <p className="text-sm text-gray-500 text-center mt-2">
+                  <p className='text-sm text-gray-500 text-center mt-2'>
                     Estimated time:{" "}
                     {form.days_count <= 3
                       ? "30-60 seconds"
@@ -1281,17 +1265,17 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
           </div>
         ) : (
           /* Plan Display */
-          <div className="max-w-[1500px] mt-6 mx-auto">
-            <div className="bg-white rounded-2xl shadow-xl p-6 md:p-6">
+          <div className='max-w-[1500px] mt-6 mx-auto'>
+            <div className='bg-white rounded-2xl shadow-xl p-6 md:p-6'>
               {/* Plan Header */}
-              <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
+              <div className='flex flex-col md:flex-row md:items-center justify-between mb-8'>
                 <div>
-                  <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
+                  <h2 className='text-2xl md:text-3xl font-bold text-gray-900'>
                     {plan.title}
                   </h2>
-                  <p className="text-gray-600 mt-2">
+                  <p className='text-gray-600 mt-2'>
                     {plan.days?.length || 7}-Day Plan •{t("plan.generatedFor")}{" "}
-                    <span className="font-semibold text-[#8cc63c]">
+                    <span className='font-semibold text-[#8cc63c]'>
                       {plan.swaps.remaining} of {plan.swaps.allowed} swaps
                       available
                     </span>{" "}
@@ -1312,30 +1296,28 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
               </div>
 
               {/* Meal Plan Days */}
-              <div className="space-y-6">
+              <div className='space-y-6'>
                 {plan.days?.map((day, dayIndex) => (
                   <div
                     key={dayIndex}
-                    className="border border-gray-200 rounded-xl p-6 hover:border-blue-300 transition"
-                  >
-                    <div className="flex items-center mb-6">
-                      <div className="bg-green-100 text-[#8cc63c] font-bold text-lg w-10 h-10 flex items-center justify-center rounded-full mr-4">
+                    className='border border-gray-200 rounded-xl p-6 hover:border-blue-300 transition'>
+                    <div className='flex items-center mb-6'>
+                      <div className='bg-green-100 text-[#8cc63c] font-bold text-lg w-10 h-10 flex items-center justify-center rounded-full mr-4'>
                         {dayIndex + 1}
                       </div>
-                      <h3 className="text-xl font-semibold text-gray-900">
+                      <h3 className='text-xl font-semibold text-gray-900'>
                         Day {dayIndex + 1}
                       </h3>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3  gap-4">
+                    <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3  gap-4'>
                       {day.meals?.map((meal, mealIndex) => (
                         <div
                           key={mealIndex}
-                          className="bg-gray-50 rounded-xl md:p-3 p-2 hover:bg-white hover:shadow-md transition flex flex-col md:h-[400px] h-[280px]"
-                        >
+                          className='bg-gray-50 rounded-xl md:p-3 p-2 hover:bg-white hover:shadow-md transition flex flex-col md:h-[400px] h-[280px]'>
                           {/* Header*/}
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center min-w-0 flex-1">
+                          <div className='flex items-center justify-between mb-2'>
+                            <div className='flex items-center min-w-0 flex-1'>
                               <span
                                 className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-sm font-semibold mr-2 shrink-0 ${
                                   meal.mealType === "breakfast"
@@ -1345,48 +1327,45 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
                                     : meal.mealType === "dinner"
                                     ? "bg-red-100 text-red-800"
                                     : "bg-purple-100 text-purple-800"
-                                }`}
-                              >
+                                }`}>
                                 {meal.mealType.charAt(0).toUpperCase()}
                               </span>
-                              <h4 className="text-sm font-semibold text-gray-900 truncate flex-1">
+                              <h4 className='text-sm font-semibold text-gray-900 truncate flex-1'>
                                 {meal.recipeName}
                               </h4>
                             </div>
-                            <div className="text-sm  text-gray-500 shrink-0 ml-2">
+                            <div className='text-sm  text-gray-500 shrink-0 ml-2'>
                               {meal.cookingTime} min
                             </div>
                           </div>
                           {meal.recipeSource === "spoonacular" && (
-                            <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full flex items-center shrink-0 ml-2">
+                            <span className='text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full flex items-center shrink-0 ml-2'>
                               <svg
-                                className="w-3 h-3 mr-1"
-                                fill="currentColor"
-                                viewBox="0 0 20 20"
-                              >
-                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                className='w-3 h-3 mr-1'
+                                fill='currentColor'
+                                viewBox='0 0 20 20'>
+                                <path d='M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z' />
                               </svg>
                               Verified
                             </span>
                           )}
 
-                          <div className="text-sm text-gray-500 shrink-0 ml-2">
+                          <div className='text-sm text-gray-500 shrink-0 ml-2'>
                             {meal.cookingTime} min
                           </div>
                           {/* Scrollable Content Area - Mobile optimized */}
-                          <div className="flex-1 overflow-y-auto pr-1 meal-scroll">
+                          <div className='flex-1 overflow-y-auto pr-1 meal-scroll'>
                             {/* Ingredients - Mobile friendly */}
-                            <div className="mb-3">
-                              <p className="text-sm font-medium text-gray-700 mb-1">
+                            <div className='mb-3'>
+                              <p className='text-sm font-medium text-gray-700 mb-1'>
                                 Ingredients ({meal.ingredients?.length || 0}):
                               </p>
-                              <div className="flex flex-wrap gap-1">
+                              <div className='flex flex-wrap gap-1'>
                                 {meal.ingredients?.map((ing, idx) => (
                                   <span
                                     key={idx}
-                                    className="bg-white border border-gray-200 px-2 py-1 rounded text-sm whitespace-normal wrap-break-words"
-                                    title={`${ing.quantity} ${ing.unit} ${ing.name}`}
-                                  >
+                                    className='bg-white border border-gray-200 px-2 py-1 rounded text-sm whitespace-normal wrap-break-words'
+                                    title={`${ing.quantity} ${ing.unit} ${ing.name}`}>
                                     {ing.quantity} {ing.unit} {ing.name}
                                   </span>
                                 ))}
@@ -1396,20 +1375,19 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
                             {/* Instructions - Mobile optimized */}
                             {meal.instructions &&
                               meal.instructions.length > 0 && (
-                                <div className="mb-2">
-                                  <p className="text-sm font-medium text-gray-700 mb-1">
+                                <div className='mb-2'>
+                                  <p className='text-sm font-medium text-gray-700 mb-1'>
                                     Instructions:
                                   </p>
-                                  <ol className="space-y-1">
+                                  <ol className='space-y-1'>
                                     {meal.instructions.map((step, idx) => (
                                       <li
                                         key={idx}
-                                        className="text-sm text-gray-600 flex"
-                                      >
-                                        <span className="font-semibold text-[#4a9fd8] mr-1 shrink-0">
+                                        className='text-sm text-gray-600 flex'>
+                                        <span className='font-semibold text-[#4a9fd8] mr-1 shrink-0'>
                                           {idx + 1}.
                                         </span>
-                                        <span className="flex-1">{step}</span>
+                                        <span className='flex-1'>{step}</span>
                                       </li>
                                     ))}
                                   </ol>
@@ -1418,7 +1396,7 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
                           </div>
 
                           {/* Swap Button */}
-                          <div className="pt-2 border-t border-gray-100">
+                          <div className='pt-2 border-t border-gray-100'>
                             {/* <button
                               onClick={async () => {
                                 if (!user) {
@@ -1499,22 +1477,20 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
                                 swappingMeals[`${dayIndex}-${mealIndex}`]
                                   ? "bg-gray-300 cursor-not-allowed"
                                   : "bg-[#4a9fd8] hover:bg-[#3a8ec8] text-white"
-                              }`}
-                            >
+                              }`}>
                               {swappingMeals[`${dayIndex}-${mealIndex}`]
                                 ? "Swapping..."
                                 : "Swap This Meal"}
                             </button>
-                            <p className="text-gray-600 mt-2">
+                            <p className='text-gray-600 mt-2 text-sm'>
                               {plan.days?.length || 7}-Day Plan •{" "}
-                              {t("plan.generatedFor")}
-                              <span className="font-semibold">
+                              <span className='font-semibold'>
                                 {user?.tier === "free" ? (
-                                  <span className="text-gray-500 ml-1">
+                                  <span className='text-gray-500 ml-1'>
                                     No swaps for free tier
                                   </span>
                                 ) : (
-                                  <span className="text-[#8cc63c] ml-1">
+                                  <span className='text-[#8cc63c] ml-1'>
                                     {plan.swaps.remaining} of{" "}
                                     {plan.swaps.allowed} swaps available
                                   </span>
@@ -1537,16 +1513,16 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
               </div>
 
               {/* Action Buttons */}
-              <div className="max-w-5xl mx-auto pt-8 border-t border-gray-200">
+              <div className='max-w-5xl mx-auto pt-8 border-t border-gray-200'>
                 {plan.isSaved && (
-                  <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
-                    <p className="text-green-800">
+                  <div className='bg-green-50 border border-green-200 rounded-xl p-4 mb-6'>
+                    <p className='text-green-800'>
                       This plan is saved to your account. You can now generate
                       grocery lists.
                     </p>
                   </div>
                 )}
-                <div className="flex flex-col md:flex-row gap-4">
+                <div className='flex flex-col md:flex-row gap-4'>
                   <button
                     onClick={savePlan}
                     disabled={
@@ -1562,8 +1538,7 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
                       (plan.isSaved && !plan.needsUpdate)
                         ? "bg-gray-300 cursor-not-allowed"
                         : "bg-green-600 hover:bg-green-700 text-white"
-                    }`}
-                  >
+                    }`}>
                     {!plan
                       ? "Save Plan"
                       : !user
@@ -1586,11 +1561,10 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
                         generateGroceryList(plan.id);
                       }
                     }}
-                    className="flex-1 bg-green-600  text-white font-semibold py-4 rounded-xl hover:bg-green-400 hover:text-black transition flex items-center justify-center"
-                  >
+                    className='flex-1 bg-green-600  text-white font-semibold py-4 rounded-xl hover:bg-green-400 hover:text-black transition flex items-center justify-center'>
                     {loading ? (
-                      <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <div className='flex items-center gap-2'>
+                        <div className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin'></div>
                         Generating...
                       </div>
                     ) : (
