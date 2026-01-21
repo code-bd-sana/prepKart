@@ -442,7 +442,7 @@
       "budgetLevel": "Budget Level",
       "portions": "Portions",
       "mealsPerDay": "Meals per Day",
-      "maxCookingTime": "Max Cooking Time (minutes)",
+      "maxCookingTime": "Max Cooking Time",
       "likes": "Foods You Like",
       "dislikes": "Foods You Dislike",
       "cookingMethod": "Preferred Cooking Methods",
