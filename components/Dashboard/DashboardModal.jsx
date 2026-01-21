@@ -26,6 +26,8 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
   const [loading, setLoading] = useState(false);
   const [pantry, setPantry] = useState(null);
   const [pantryLoading, setPantryLoading] = useState(true);
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [newPantryItem, setNewPantryItem] = useState({
     name: "",
     quantity: 1,
@@ -37,7 +39,10 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
 
   // Fetch saved meal plans when modal opens
   useEffect(() => {
-    if (!isOpen || !user?.id) return;
+    if (!isOpen || !user?.id) {
+      setIsInitialLoading(false);
+      return;
+    }
 
     const fetchSavedPlans = async () => {
       setLoading(true);
@@ -118,8 +123,16 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
       }
     };
 
-    fetchSavedPlans();
-    fetchPantry();
+    setIsInitialLoading(true);
+
+    // fetchSavedPlans();
+    // fetchPantry();
+
+    Promise.all([fetchSavedPlans(), fetchPantry()])
+      .catch((err) => console.error("Dashboard data fetch failed:", err))
+      .finally(() => {
+        setIsInitialLoading(false);
+      });
 
     if (groceryListIdFromURL) {
       setGroceryListId(groceryListIdFromURL);
@@ -128,11 +141,12 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
 
   const handleClickOutside = useCallback(
     (e) => {
+      if (isConfirmingDelete) return;
       if (modalRef.current && !modalRef.current.contains(e.target)) {
         onClose();
       }
     },
-    [onClose]
+    [onClose, isConfirmingDelete],
   );
 
   // Pantry functions
@@ -424,32 +438,33 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
   const deleteMealPlan = async (planId) => {
     try {
       const confirmPromise = new Promise((resolve) => {
+        setIsConfirmingDelete(true);
         toast(
-          <div className="p-4">
-            <p className="font-semibold text-gray-800 mb-2">
+          <div className='p-4'>
+            <p className='font-semibold text-gray-800 mb-2'>
               Delete Meal Plan?
             </p>
-            <p className="text-gray-600 text-sm mb-4">
+            <p className='text-gray-600 text-sm mb-4'>
               Are you sure you want to delete this meal plan? This action cannot
               be undone.
             </p>
-            <div className="flex gap-2 justify-end">
+            <div className='flex gap-2 justify-end'>
               <button
                 onClick={() => {
                   toast.dismiss();
+                  setIsConfirmingDelete(false);
                   resolve(false);
                 }}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition"
-              >
+                className='px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition'>
                 Cancel
               </button>
               <button
                 onClick={() => {
                   toast.dismiss();
+                  setIsConfirmingDelete(false);
                   resolve(true);
                 }}
-                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition"
-              >
+                className='px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition'>
                 Delete
               </button>
             </div>
@@ -461,7 +476,7 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
             draggable: false,
             closeButton: false,
             theme: "light",
-          }
+          },
         );
       });
 
@@ -536,6 +551,8 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
         progress: undefined,
         theme: "light",
       });
+    } finally {
+      setIsConfirmingDelete(false); // safety net
     }
   };
 
@@ -551,126 +568,123 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
     switch (activeTab) {
       case "Nutrition":
         return (
-          <div className="space-y-6 mb-72">
-            <div className="mt-4 bg-green-50 border border-green-200 rounded-lg p-4">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                <p className="text-green-700 font-medium">
+          <div className='space-y-6 mb-72'>
+            <div className='mt-4 bg-green-50 border border-green-200 rounded-lg p-4'>
+              <div className='flex items-center gap-2'>
+                <div className='w-3 h-3 bg-green-500 rounded-full'></div>
+                <p className='text-green-700 font-medium'>
                   Using verified nutrition data from Spoonacular
                 </p>
               </div>
-              <p className="text-green-600 text-sm mt-1">
+              <p className='text-green-600 text-sm mt-1'>
                 All nutrition information is validated by Spoonacular API for
                 accuracy
               </p>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-              <div className="bg-blue-50 p-6 rounded-xl">
-                <p className="text-sm text-blue-600 font-medium">
+            <div className='grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 md:gap-4'>
+              <div className='bg-blue-50 p-6 rounded-xl'>
+                <p className='text-sm text-blue-600 font-medium'>
                   Total Calories
                 </p>
-                <p className="text-3xl font-bold text-gray-900">
+                <p className='text-3xl font-bold text-gray-900'>
                   {nutritionStats.totalCalories}
                 </p>
-                <p className="text-xs text-gray-500">Across all saved plans</p>
+                <p className='text-xs text-gray-500'>Across all saved plans</p>
               </div>
-              <div className="bg-green-50 p-6 rounded-xl">
-                <p className="text-sm text-green-600 font-medium">
+              <div className='bg-green-50 p-6 rounded-xl'>
+                <p className='text-sm text-green-600 font-medium'>
                   Total Protein
                 </p>
-                <p className="text-3xl font-bold text-gray-900">
+                <p className='text-3xl font-bold text-gray-900'>
                   {nutritionStats.totalProtein}g
                 </p>
-                <p className="text-xs text-gray-500">Across all saved plans</p>
+                <p className='text-xs text-gray-500'>Across all saved plans</p>
               </div>
-              <div className="bg-purple-50 p-6 rounded-xl">
-                <p className="text-sm text-purple-600 font-medium">
+              <div className='bg-purple-50 p-6 rounded-xl'>
+                <p className='text-sm text-purple-600 font-medium'>
                   Average Calories
                 </p>
-                <p className="text-3xl font-bold text-gray-900">
+                <p className='text-3xl font-bold text-gray-900'>
                   {nutritionStats.averageCalories}
                 </p>
-                <p className="text-xs text-gray-500">Per meal plan</p>
+                <p className='text-xs text-gray-500'>Per meal plan</p>
               </div>
-              <div className="bg-amber-50 p-6 rounded-xl">
-                <p className="text-sm text-amber-600 font-medium">
+              <div className='bg-amber-50 p-6 rounded-xl'>
+                <p className='text-sm text-amber-600 font-medium'>
                   Meals Analyzed
                 </p>
-                <p className="text-3xl font-bold text-gray-900">
+                <p className='text-3xl font-bold text-gray-900'>
                   {nutritionStats.planCount}
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className='text-xs text-gray-500'>
                   Total meals in saved plans
                 </p>
               </div>
             </div>
 
-            <div className="bg-white border border-gray-200 rounded-xl p-6">
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">
+            <div className='bg-white border border-gray-200 rounded-xl p-6'>
+              <h3 className='text-xl font-semibold text-gray-900 mb-4'>
                 Nutrition Breakdown
               </h3>
-              <div className="space-y-4">
+              <div className='space-y-4'>
                 <div>
-                  <div className="flex justify-between mb-1">
-                    <span className="text-sm font-medium text-gray-700">
+                  <div className='flex justify-between mb-1'>
+                    <span className='text-sm font-medium text-gray-700'>
                       Protein
                     </span>
-                    <span className="text-sm font-medium text-gray-900">
+                    <span className='text-sm font-medium text-gray-900'>
                       {nutritionStats.totalProtein}g
                     </span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className='w-full bg-gray-200 rounded-full h-2'>
                     <div
-                      className="bg-green-500 h-2 rounded-full"
+                      className='bg-green-500 h-2 rounded-full'
                       style={{
                         width: `${Math.min(
                           100,
-                          (nutritionStats.totalProtein / 500) * 100
+                          (nutritionStats.totalProtein / 500) * 100,
                         )}%`,
-                      }}
-                    ></div>
+                      }}></div>
                   </div>
                 </div>
                 <div>
-                  <div className="flex justify-between mb-1">
-                    <span className="text-sm font-medium text-gray-700">
+                  <div className='flex justify-between mb-1'>
+                    <span className='text-sm font-medium text-gray-700'>
                       Carbs
                     </span>
-                    <span className="text-sm font-medium text-gray-900">
+                    <span className='text-sm font-medium text-gray-900'>
                       {nutritionStats.totalCarbs}g
                     </span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className='w-full bg-gray-200 rounded-full h-2'>
                     <div
-                      className="bg-blue-500 h-2 rounded-full"
+                      className='bg-blue-500 h-2 rounded-full'
                       style={{
                         width: `${Math.min(
                           100,
-                          (nutritionStats.totalCarbs / 1000) * 100
+                          (nutritionStats.totalCarbs / 1000) * 100,
                         )}%`,
-                      }}
-                    ></div>
+                      }}></div>
                   </div>
                 </div>
                 <div>
-                  <div className="flex justify-between mb-1">
-                    <span className="text-sm font-medium text-gray-700">
+                  <div className='flex justify-between mb-1'>
+                    <span className='text-sm font-medium text-gray-700'>
                       Fat
                     </span>
-                    <span className="text-sm font-medium text-gray-900">
+                    <span className='text-sm font-medium text-gray-900'>
                       {nutritionStats.totalFat}g
                     </span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className='w-full bg-gray-200 rounded-full h-2'>
                     <div
-                      className="bg-yellow-500 h-2 rounded-full"
+                      className='bg-yellow-500 h-2 rounded-full'
                       style={{
                         width: `${Math.min(
                           100,
-                          (nutritionStats.totalFat / 300) * 100
+                          (nutritionStats.totalFat / 300) * 100,
                         )}%`,
-                      }}
-                    ></div>
+                      }}></div>
                   </div>
                 </div>
               </div>
@@ -680,11 +694,11 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
 
       case "Pantry":
         return (
-          <div className="space-y-6 mb-72">
+          <div className='space-y-6 mb-72'>
             {/* Header */}
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">My Pantry</h1>
-              <p className="text-gray-600 mt-2">
+              <h1 className='text-2xl font-bold text-gray-900'>My Pantry</h1>
+              <p className='text-gray-600 mt-2'>
                 Manage items you already have at home. These will be excluded
                 from grocery lists when pantry toggle is enabled.
               </p>
@@ -692,11 +706,11 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
 
             {/* Upgrade message for free users */}
             {user?.tier === "free" ? (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6 text-center">
-                <h2 className="text-xl font-semibold text-yellow-800 mb-2">
+              <div className='bg-yellow-50 border border-yellow-200 rounded-xl p-6 text-center'>
+                <h2 className='text-xl font-semibold text-yellow-800 mb-2'>
                   Pantry Feature Unlocked
                 </h2>
-                <p className="text-yellow-700 mb-4">
+                <p className='text-yellow-700 mb-4'>
                   The pantry feature is only available for Plus and Premium
                   users.
                 </p>
@@ -705,26 +719,25 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
                     onClose();
                     router.push(`/${locale}/#pricing`);
                   }}
-                  className="inline-block bg-green-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-green-700 transition"
-                >
+                  className='inline-block bg-green-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-green-700 transition'>
                   Upgrade Now
                 </button>
               </div>
             ) : (
               <>
                 {/* Add Item Form */}
-                <div className="bg-white rounded-xl shadow-md p-6">
-                  <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                <div className='bg-white rounded-xl shadow-md p-6'>
+                  <h2 className='text-xl font-semibold text-gray-900 mb-4'>
                     Add New Item
                   </h2>
 
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className='block text-sm font-medium text-gray-700 mb-1'>
                         Item Name *
                       </label>
                       <input
-                        type="text"
+                        type='text'
                         value={newPantryItem.name}
                         onChange={(e) =>
                           setNewPantryItem({
@@ -732,19 +745,19 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
                             name: e.target.value,
                           })
                         }
-                        placeholder="e.g., Rice, Olive Oil, Eggs"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                        placeholder='e.g., Rice, Olive Oil, Eggs'
+                        className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500'
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className='block text-sm font-medium text-gray-700 mb-1'>
                         Quantity
                       </label>
                       <input
-                        type="number"
-                        min="0.1"
-                        step="0.1"
+                        type='number'
+                        min='0.1'
+                        step='0.1'
                         value={newPantryItem.quantity}
                         onChange={(e) =>
                           setNewPantryItem({
@@ -752,12 +765,12 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
                             quantity: parseFloat(e.target.value) || 1,
                           })
                         }
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                        className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500'
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className='block text-sm font-medium text-gray-700 mb-1'>
                         Unit
                       </label>
                       <select
@@ -768,26 +781,24 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
                             unit: e.target.value,
                           })
                         }
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                      >
-                        <option value="unit">unit</option>
-                        <option value="cup">cup</option>
-                        <option value="tbsp">tbsp</option>
-                        <option value="tsp">tsp</option>
-                        <option value="oz">oz</option>
-                        <option value="lb">lb</option>
-                        <option value="kg">kg</option>
-                        <option value="g">g</option>
-                        <option value="ml">ml</option>
-                        <option value="l">l</option>
+                        className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500'>
+                        <option value='unit'>unit</option>
+                        <option value='cup'>cup</option>
+                        <option value='tbsp'>tbsp</option>
+                        <option value='tsp'>tsp</option>
+                        <option value='oz'>oz</option>
+                        <option value='lb'>lb</option>
+                        <option value='kg'>kg</option>
+                        <option value='g'>g</option>
+                        <option value='ml'>ml</option>
+                        <option value='l'>l</option>
                       </select>
                     </div>
 
-                    <div className="flex items-end">
+                    <div className='flex items-end'>
                       <button
                         onClick={addPantryItem}
-                        className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition font-medium"
-                      >
+                        className='w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition font-medium'>
                         Add to Pantry
                       </button>
                     </div>
@@ -796,49 +807,47 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
 
                 {/* Pantry Items */}
                 {pantryLoading ? (
-                  <div className="flex justify-center items-center h-64">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div>
+                  <div className='flex justify-center items-center h-64'>
+                    <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-green-500'></div>
                   </div>
                 ) : pantry?.items && pantry.items.length > 0 ? (
-                  <div className="bg-white rounded-xl shadow-md p-6">
-                    <div className="flex justify-between items-center mb-6">
-                      <h2 className="text-xl font-semibold text-gray-900">
+                  <div className='bg-white rounded-xl shadow-md p-6'>
+                    <div className='flex justify-between items-center mb-6'>
+                      <h2 className='text-xl font-semibold text-gray-900'>
                         Pantry Items ({pantry.items.length})
                       </h2>
-                      <span className="text-sm text-gray-500">
+                      <span className='text-sm text-gray-500'>
                         Last updated:{" "}
                         {new Date(pantry.lastSynced).toLocaleDateString()}
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
                       {pantry.items.map((item, index) => (
                         <div
                           key={index}
-                          className="border border-gray-200 rounded-lg p-4 hover:border-green-300 transition"
-                        >
-                          <div className="flex justify-between items-start mb-2">
+                          className='border border-gray-200 rounded-lg p-4 hover:border-green-300 transition'>
+                          <div className='flex justify-between items-start mb-2'>
                             <div>
-                              <h3 className="font-medium text-gray-900">
+                              <h3 className='font-medium text-gray-900'>
                                 {item.name}
                               </h3>
-                              <p className="text-sm text-gray-600">
+                              <p className='text-sm text-gray-600'>
                                 {item.quantity} {item.unit}
                               </p>
                             </div>
                             <button
                               onClick={() => removePantryItem(item.name)}
-                              className="text-red-600 hover:text-red-800 text-sm"
-                            >
+                              className='text-red-600 hover:text-red-800 text-sm'>
                               Remove
                             </button>
                           </div>
 
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded">
+                          <div className='flex items-center justify-between text-sm'>
+                            <span className='bg-gray-100 text-gray-800 px-2 py-1 rounded'>
                               {item.category || "Uncategorized"}
                             </span>
-                            <span className="text-gray-500">
+                            <span className='text-gray-500'>
                               {new Date(item.lastUpdated).toLocaleDateString()}
                             </span>
                           </div>
@@ -847,12 +856,12 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
                     </div>
                   </div>
                 ) : (
-                  <div className="bg-white rounded-xl shadow-md p-8 text-center">
-                    <div className="text-gray-400 text-6xl mb-4">🏪</div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  <div className='bg-white rounded-xl shadow-md p-8 text-center'>
+                    <div className='text-gray-400 text-6xl mb-4'>🏪</div>
+                    <h3 className='text-xl font-semibold text-gray-900 mb-2'>
                       Your pantry is empty
                     </h3>
-                    <p className="text-gray-600 mb-6">
+                    <p className='text-gray-600 mb-6'>
                       Add items you already have at home to exclude them from
                       grocery lists.
                     </p>
@@ -865,36 +874,34 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
 
       case "Calendar":
         return (
-          <div className="space-y-6 mb-72">
-            <div className="bg-white border border-gray-200 rounded-xl p-6">
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">
+          <div className='space-y-6 mb-72'>
+            <div className='bg-white border border-gray-200 rounded-xl p-6'>
+              <h3 className='text-xl font-semibold text-gray-900 mb-4'>
                 Meal Plan Calendar
               </h3>
-              <div className="grid grid-cols-7 gap-2 mb-6">
+              <div className='grid grid-cols-7 gap-2 mb-6'>
                 {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
                   (day) => (
                     <div
                       key={day}
-                      className="text-center font-medium text-gray-700 py-2"
-                    >
+                      className='text-center font-medium text-gray-700 py-2'>
                       {day}
                     </div>
-                  )
+                  ),
                 )}
                 {Array.from({ length: 35 }).map((_, index) => (
                   <div
                     key={index}
-                    className="md:h-20 border border-gray-200 rounded-lg p-2 hover:bg-gray-50"
-                  >
-                    <div className="text-sm font-medium text-gray-700">
+                    className='md:h-20 border border-gray-200 rounded-lg p-2 hover:bg-gray-50'>
+                    <div className='text-sm font-medium text-gray-700'>
                       {index + 1}
                     </div>
                   </div>
                 ))}
               </div>
 
-              <div className="space-y-3">
-                <h4 className="font-semibold text-gray-900">
+              <div className='space-y-3'>
+                <h4 className='font-semibold text-gray-900'>
                   Upcoming Expiring Plans
                 </h4>
                 {savedMealPlans
@@ -903,13 +910,12 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
                   .map((plan) => (
                     <div
                       key={plan._id}
-                      className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg"
-                    >
+                      className='flex items-center justify-between p-3 bg-yellow-50 rounded-lg'>
                       <div>
-                        <p className="font-medium text-gray-900">
+                        <p className='font-medium text-gray-900'>
                           {plan.title}
                         </p>
-                        <p className="text-sm text-gray-600">
+                        <p className='text-sm text-gray-600'>
                           Expires: {formatDate(plan.expiresAt)}
                         </p>
                       </div>
@@ -922,61 +928,61 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
 
       case "Budget":
         return (
-          <div className="space-y-6 mb-72">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-green-50 p-6 rounded-xl">
-                <div className="flex items-center gap-3 mb-3">
-                  <DollarSign className="w-6 h-6 text-green-600" />
-                  <p className="text-sm text-green-600 font-medium">
+          <div className='space-y-6 mb-72'>
+            <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+              <div className='bg-green-50 p-6 rounded-xl'>
+                <div className='flex items-center gap-3 mb-3'>
+                  <DollarSign className='w-6 h-6 text-green-600' />
+                  <p className='text-sm text-green-600 font-medium'>
                     Total Estimated Cost
                   </p>
                 </div>
-                <p className="text-3xl font-bold text-gray-900">
+                <p className='text-3xl font-bold text-gray-900'>
                   ${budgetStats.totalCost}
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className='text-xs text-gray-500'>
                   For all saved meal plans
                 </p>
               </div>
 
-              <div className="bg-blue-50 p-6 rounded-xl">
-                <div className="flex items-center gap-3 mb-3">
-                  <DollarSign className="w-6 h-6 text-blue-600" />
-                  <p className="text-sm text-blue-600 font-medium">
+              <div className='bg-blue-50 p-6 rounded-xl'>
+                <div className='flex items-center gap-3 mb-3'>
+                  <DollarSign className='w-6 h-6 text-blue-600' />
+                  <p className='text-sm text-blue-600 font-medium'>
                     Average Daily Cost
                   </p>
                 </div>
-                <p className="text-3xl font-bold text-gray-900">
+                <p className='text-3xl font-bold text-gray-900'>
                   ${budgetStats.averageDailyCost}
                 </p>
-                <p className="text-xs text-gray-500">Per plan</p>
+                <p className='text-xs text-gray-500'>Per plan</p>
               </div>
 
-              <div className="bg-purple-50 p-6 rounded-xl">
-                <div className="flex items-center gap-3 mb-3">
-                  <Utensils className="w-6 h-6 text-purple-600" />
-                  <p className="text-sm text-purple-600 font-medium">
+              <div className='bg-purple-50 p-6 rounded-xl'>
+                <div className='flex items-center gap-3 mb-3'>
+                  <Utensils className='w-6 h-6 text-purple-600' />
+                  <p className='text-sm text-purple-600 font-medium'>
                     Plans by Budget Level
                   </p>
                 </div>
-                <p className="text-3xl font-bold text-gray-900">
+                <p className='text-3xl font-bold text-gray-900'>
                   {
                     savedMealPlans.filter(
-                      (p) => p.inputs?.budget_level === "Low"
+                      (p) => p.inputs?.budget_level === "Low",
                     ).length
                   }{" "}
                   Low
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className='text-xs text-gray-500'>
                   {
                     savedMealPlans.filter(
-                      (p) => p.inputs?.budget_level === "Medium"
+                      (p) => p.inputs?.budget_level === "Medium",
                     ).length
                   }{" "}
                   Medium •
                   {
                     savedMealPlans.filter(
-                      (p) => p.inputs?.budget_level === "High"
+                      (p) => p.inputs?.budget_level === "High",
                     ).length
                   }{" "}
                   High
@@ -984,11 +990,11 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
               </div>
             </div>
 
-            <div className="bg-white border border-gray-200 rounded-xl p-6">
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">
+            <div className='bg-white border border-gray-200 rounded-xl p-6'>
+              <h3 className='text-xl font-semibold text-gray-900 mb-4'>
                 Budget Breakdown
               </h3>
-              <div className="space-y-4">
+              <div className='space-y-4'>
                 {savedMealPlans.slice(0, 5).map((plan) => {
                   const budgetLevel = plan.inputs?.budget_level || "Medium";
                   const budgetColors = {
@@ -1000,36 +1006,34 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
                   return (
                     <div
                       key={plan._id}
-                      className="flex items-center justify-between"
-                    >
-                      <div className="flex-1">
-                        <p className="font-medium text-gray-900">
+                      className='flex items-center justify-between'>
+                      <div className='flex-1'>
+                        <p className='font-medium text-gray-900'>
                           {plan.title}
                         </p>
-                        <p className="text-sm text-gray-600">
+                        <p className='text-sm text-gray-600'>
                           {plan.days?.length || 0} days •{" "}
                           {plan.inputs?.portions || 2} portions
                         </p>
                       </div>
-                      <div className="flex items-center gap-4">
+                      <div className='flex items-center gap-4'>
                         <span
                           className={`px-3 py-1 rounded-full text-sm font-medium ${
                             budgetLevel === "Low"
                               ? "bg-green-100 text-green-800"
                               : budgetLevel === "Medium"
-                              ? "bg-yellow-100 text-yellow-800"
-                              : "bg-red-100 text-red-800"
-                          }`}
-                        >
+                                ? "bg-yellow-100 text-yellow-800"
+                                : "bg-red-100 text-red-800"
+                          }`}>
                           {budgetLevel} Budget
                         </span>
-                        <span className="font-semibold text-gray-900">
+                        <span className='font-semibold text-gray-900'>
                           $
                           {budgetLevel === "Low"
                             ? 50
                             : budgetLevel === "High"
-                            ? 100
-                            : 75}
+                              ? 100
+                              : 75}
                         </span>
                       </div>
                     </div>
@@ -1041,14 +1045,14 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
         );
       case "Pantry":
         return (
-          <div className="space-y-6 mb-72">
+          <div className='space-y-6 mb-72'>
             {/* Upgrade message for free users */}
             {user?.tier === "free" ? (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6 text-center">
-                <h2 className="text-xl font-semibold text-yellow-800 mb-2">
+              <div className='bg-yellow-50 border border-yellow-200 rounded-xl p-6 text-center'>
+                <h2 className='text-xl font-semibold text-yellow-800 mb-2'>
                   Pantry Feature Unlocked
                 </h2>
-                <p className="text-yellow-700 mb-4">
+                <p className='text-yellow-700 mb-4'>
                   The pantry feature is only available for Plus and Premium
                   users.
                 </p>
@@ -1056,56 +1060,56 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
             ) : (
               <>
                 {/* Add Item Form */}
-                <div className="bg-white rounded-xl shadow-md p-6 ">
-                  <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                <div className='bg-white rounded-xl shadow-md p-6 '>
+                  <h2 className='text-xl font-semibold text-gray-900 mb-4'>
                     Add New Item
                   </h2>
 
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className='block text-sm font-medium text-gray-700 mb-1'>
                         Item Name *
                       </label>
                       <input
-                        type="text"
-                        placeholder="e.g., Rice, Olive Oil, Eggs"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                        type='text'
+                        placeholder='e.g., Rice, Olive Oil, Eggs'
+                        className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500'
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className='block text-sm font-medium text-gray-700 mb-1'>
                         Quantity
                       </label>
                       <input
-                        type="number"
-                        min="0.1"
-                        step="0.1"
-                        defaultValue="1"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                        type='number'
+                        min='0.1'
+                        step='0.1'
+                        defaultValue='1'
+                        className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500'
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className='block text-sm font-medium text-gray-700 mb-1'>
                         Unit
                       </label>
-                      <select className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
-                        <option value="unit">unit</option>
-                        <option value="cup">cup</option>
-                        <option value="tbsp">tbsp</option>
-                        <option value="tsp">tsp</option>
-                        <option value="oz">oz</option>
-                        <option value="lb">lb</option>
-                        <option value="kg">kg</option>
-                        <option value="g">g</option>
-                        <option value="ml">ml</option>
-                        <option value="l">l</option>
+                      <select className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500'>
+                        <option value='unit'>unit</option>
+                        <option value='cup'>cup</option>
+                        <option value='tbsp'>tbsp</option>
+                        <option value='tsp'>tsp</option>
+                        <option value='oz'>oz</option>
+                        <option value='lb'>lb</option>
+                        <option value='kg'>kg</option>
+                        <option value='g'>g</option>
+                        <option value='ml'>ml</option>
+                        <option value='l'>l</option>
                       </select>
                     </div>
 
-                    <div className="flex items-end">
-                      <button className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition font-medium">
+                    <div className='flex items-end'>
+                      <button className='w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition font-medium'>
                         Add to Pantry
                       </button>
                     </div>
@@ -1113,22 +1117,22 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
                 </div>
 
                 {/* Pantry Items */}
-                <div className="bg-white rounded-xl shadow-md p-6 mb-64">
-                  <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-xl font-semibold text-gray-900">
+                <div className='bg-white rounded-xl shadow-md p-6 mb-64'>
+                  <div className='flex justify-between items-center mb-6'>
+                    <h2 className='text-xl font-semibold text-gray-900'>
                       My Pantry Items (0)
                     </h2>
-                    <span className="text-sm text-gray-500">
+                    <span className='text-sm text-gray-500'>
                       Last updated: {new Date().toLocaleDateString()}
                     </span>
                   </div>
 
-                  <div className="text-center py-12">
-                    <div className="text-gray-400 text-6xl mb-4">🏪</div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  <div className='text-center py-12'>
+                    <div className='text-gray-400 text-6xl mb-4'>🏪</div>
+                    <h3 className='text-xl font-semibold text-gray-900 mb-2'>
                       Your pantry is empty
                     </h3>
-                    <p className="text-gray-600 mb-6">
+                    <p className='text-gray-600 mb-6'>
                       Add items you already have at home to exclude them from
                       grocery lists.
                     </p>
@@ -1153,86 +1157,85 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
         const regularSavedPlans = savedMealPlans.filter(
           (plan) =>
             plan.isSaved === true &&
-            !plan.title?.toLowerCase().includes("quick")
+            !plan.title?.toLowerCase().includes("quick"),
         );
 
         const quickSavedPlans = savedMealPlans.filter((plan) =>
-          plan.title?.toLowerCase().includes("quick")
+          plan.title?.toLowerCase().includes("quick"),
         );
 
         return (
           <>
-            <div className="mb-72">
+            <div className='mb-72'>
               {/* Plan Status Card - Always show */}
-              <div className="mb-8 bg-white border border-gray-200 rounded-xl p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-2xl font-bold text-gray-900">
+              <div className='mb-8 bg-white border border-gray-200 rounded-xl p-6'>
+                <div className='flex items-center justify-between mb-4'>
+                  <h2 className='text-2xl font-bold text-gray-900'>
                     Your Plan
                   </h2>
                   <div
-                    className={`px-4 py-2 rounded-lg ${tierInfo.color} font-medium`}
-                  >
+                    className={`px-4 py-2 rounded-lg ${tierInfo.color} font-medium`}>
                     {tierInfo.displayName} Plan
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div className="bg-blue-50 p-4 rounded-xl">
-                    <p className="text-sm text-blue-600 font-medium">
+                <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
+                  <div className='bg-blue-50 p-4 rounded-xl'>
+                    <p className='text-sm text-blue-600 font-medium'>
                       Monthly Plans Used
                     </p>
-                    <p className="text-2xl font-bold text-gray-900">
+                    <p className='text-2xl font-bold text-gray-900'>
                       {user?.monthly_plan_count ||
                         user?.planGenerationCount ||
                         0}
                     </p>
-                    <p className="text-xs text-gray-500">This month</p>
+                    <p className='text-xs text-gray-500'>This month</p>
                   </div>
 
-                  <div className="bg-green-50 p-4 rounded-xl">
-                    <p className="text-sm text-green-600 font-medium">
+                  <div className='bg-green-50 p-4 rounded-xl'>
+                    <p className='text-sm text-green-600 font-medium'>
                       Swaps Used
                     </p>
-                    <p className="text-2xl font-bold text-gray-900">
+                    <p className='text-2xl font-bold text-gray-900'>
                       {user?.preferences?.swapsUsed || 0}
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className='text-xs text-gray-500'>
                       of {user?.preferences?.swapsAllowed || 3} allowed
                     </p>
                   </div>
 
-                  <div className="bg-purple-50 p-4 rounded-xl">
-                    <p className="text-sm text-purple-600 font-medium">
+                  <div className='bg-purple-50 p-4 rounded-xl'>
+                    <p className='text-sm text-purple-600 font-medium'>
                       Saved Plans
                     </p>
-                    <p className="text-2xl font-bold text-gray-900">
+                    <p className='text-2xl font-bold text-gray-900'>
                       {savedMealPlans.length}
                     </p>
-                    <p className="text-xs text-gray-500">Total saved</p>
+                    <p className='text-xs text-gray-500'>Total saved</p>
                   </div>
 
-                  <div className="bg-amber-50 p-4 rounded-xl">
-                    <p className="text-sm text-amber-600 font-medium">
+                  <div className='bg-amber-50 p-4 rounded-xl'>
+                    <p className='text-sm text-amber-600 font-medium'>
                       Last Login
                     </p>
-                    <p className="text-2xl font-bold text-gray-900">
+                    <p className='text-2xl font-bold text-gray-900'>
                       {user?.lastLogin ? formatDate(user.lastLogin) : "Never"}
                     </p>
-                    <p className="text-xs text-gray-500">Recent activity</p>
+                    <p className='text-xs text-gray-500'>Recent activity</p>
                   </div>
                 </div>
               </div>
 
               {/* REGULAR SAVED PLANS SECTION */}
               {regularSavedPlans.length > 0 && (
-                <div className="mb-8">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-bold text-gray-900">
+                <div className='mb-8'>
+                  <div className='flex items-center justify-between mb-6'>
+                    <h2 className='text-2xl font-bold text-gray-900'>
                       Regular Saved Plans ({regularSavedPlans.length})
                     </h2>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                  <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6'>
                     {regularSavedPlans.map((plan) => {
                       const isExpired = isPlanExpired(plan);
                       return (
@@ -1242,31 +1245,30 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
                             isExpired
                               ? "border-red-300 bg-red-50"
                               : "border-gray-200"
-                          }`}
-                        >
+                          }`}>
                           {isExpired && (
-                            <div className="mb-3 px-3 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full inline-flex items-center">
-                              <span className="h-2 w-2 bg-red-500 rounded-full mr-2"></span>
+                            <div className='mb-3 px-3 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full inline-flex items-center'>
+                              <span className='h-2 w-2 bg-red-500 rounded-full mr-2'></span>
                               Expired
                             </div>
                           )}
 
-                          <div className="flex items-start justify-between mb-4">
-                            <div className="flex items-center gap-3">
-                              <div className="text-3xl">
+                          <div className='flex items-start justify-between mb-4'>
+                            <div className='flex items-center gap-3'>
+                              <div className='text-3xl'>
                                 {getGoalEmoji(plan.inputs?.goal)}
                               </div>
                               <div>
-                                <h3 className="text-xl font-semibold text-gray-900">
+                                <h3 className='text-xl font-semibold text-gray-900'>
                                   {plan.title}
                                 </h3>
-                                <span className="text-xs px-2 py-1 bg-teal-100 text-teal-800 rounded-full">
+                                <span className='text-xs px-2 py-1 bg-teal-100 text-teal-800 rounded-full'>
                                   {plan.inputs?.goal || "Custom Plan"}
                                 </span>
                               </div>
                             </div>
-                            <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                              <Bookmark className="w-5 h-5 text-teal-600 fill-teal-600" />
+                            <button className='p-2 hover:bg-gray-100 rounded-lg transition-colors'>
+                              <Bookmark className='w-5 h-5 text-teal-600 fill-teal-600' />
                             </button>
                             <button
                               onClick={(e) => {
@@ -1274,60 +1276,57 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
                                 e.stopPropagation();
                                 deleteMealPlan(plan._id);
                               }}
-                              className="p-2 hover:bg-red-50 rounded-lg transition-colors text-red-600"
-                              title="Delete plan"
-                            >
+                              className='p-2 hover:bg-red-50 rounded-lg transition-colors text-red-600'
+                              title='Delete plan'>
                               <svg
-                                className="w-5 h-5"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
+                                className='w-5 h-5'
+                                fill='none'
+                                stroke='currentColor'
+                                viewBox='0 0 24 24'>
                                 <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
+                                  strokeLinecap='round'
+                                  strokeLinejoin='round'
                                   strokeWidth={2}
-                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                  d='M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16'
                                 />
                               </svg>
                             </button>
                           </div>
 
-                          <div className="space-y-2 mb-6 grow">
-                            <p className="text-sm text-gray-600">
+                          <div className='space-y-2 mb-6 grow'>
+                            <p className='text-sm text-gray-600'>
                               Created: {formatDate(plan.createdAt)}
                             </p>
-                            <p className="text-sm text-gray-600">
+                            <p className='text-sm text-gray-600'>
                               {countTotalMeals(plan)} meals •{" "}
                               {plan.days?.length || 0} days
                             </p>
-                            <p className="text-sm text-gray-600">
+                            <p className='text-sm text-gray-600'>
                               Portions: {plan.inputs?.portions || 2} • Budget:{" "}
                               {plan.inputs?.budget_level || "Medium"}
                             </p>
                             {plan.inputs?.cuisine && (
-                              <p className="text-sm text-gray-600">
+                              <p className='text-sm text-gray-600'>
                                 Cuisine: {plan.inputs.cuisine}
                               </p>
                             )}
                           </div>
 
-                          <div className="mt-auto">
+                          <div className='mt-auto'>
                             <Link
-                              className="w-full block"
+                              className='w-full block'
                               href={`/${locale}/plans/${plan._id}${
                                 plan.groceryListId
                                   ? `?groceryListId=${plan.groceryListId}`
                                   : ""
-                              }`}
-                            >
-                              <button className="w-full bg-white border border-gray-300 text-gray-700 px-7 py-2.5 rounded-lg font-medium hover:bg-gray-50 transition-colors cursor-pointer">
+                              }`}>
+                              <button className='w-full bg-white border border-gray-300 text-gray-700 px-7 py-2.5 rounded-lg font-medium hover:bg-gray-50 transition-colors cursor-pointer'>
                                 View Plan
                               </button>
                             </Link>
                           </div>
 
-                          <div className="mt-4 pt-4 border-t border-gray-100 flex justify-between text-xs text-gray-500">
+                          <div className='mt-4 pt-4 border-t border-gray-100 flex justify-between text-xs text-gray-500'>
                             <span>
                               Swaps: {plan.swapsUsed || 0}/
                               {plan.swapsAllowed || 3}
@@ -1335,7 +1334,7 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
                             <span>Source: {plan.source || "OpenAI"}</span>
                             <span>
                               {isExpired ? (
-                                <span className="text-red-500">Expired</span>
+                                <span className='text-red-500'>Expired</span>
                               ) : plan.expiresAt ? (
                                 `Expires: ${formatDate(plan.expiresAt)}`
                               ) : (
@@ -1352,17 +1351,17 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
 
               {/* QUICK SAVED PLANS SECTION */}
               {quickSavedPlans.length > 0 && (
-                <div className="mb-8">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-bold text-gray-900">
+                <div className='mb-8'>
+                  <div className='flex items-center justify-between mb-6'>
+                    <h2 className='text-2xl font-bold text-gray-900'>
                       Quick Saved Plans ({quickSavedPlans.length})
                     </h2>
-                    <span className="text-sm text-gray-500">
+                    <span className='text-sm text-gray-500'>
                       Generated from quick plan feature
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
                     {quickSavedPlans.map((plan) => {
                       const isExpired = isPlanExpired(plan);
                       return (
@@ -1370,29 +1369,28 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
                           key={plan._id}
                           className={`bg-white border border-blue-200 rounded-xl p-6 hover:shadow-lg transition-shadow min-h-[400px] flex flex-col ${
                             isExpired ? "border-red-300 bg-red-50" : ""
-                          }`}
-                        >
+                          }`}>
                           {isExpired && (
-                            <div className="mb-3 px-3 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full inline-flex items-center">
-                              <span className="h-2 w-2 bg-red-500 rounded-full mr-2"></span>
+                            <div className='mb-3 px-3 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full inline-flex items-center'>
+                              <span className='h-2 w-2 bg-red-500 rounded-full mr-2'></span>
                               Expired
                             </div>
                           )}
 
-                          <div className="flex items-start justify-between mb-4">
-                            <div className="flex items-center gap-3">
-                              <div className="text-3xl">⚡</div>
+                          <div className='flex items-start justify-between mb-4'>
+                            <div className='flex items-center gap-3'>
+                              <div className='text-3xl'>⚡</div>
                               <div>
-                                <h3 className="text-xl font-semibold text-gray-900">
+                                <h3 className='text-xl font-semibold text-gray-900'>
                                   {plan.title}
                                 </h3>
-                                <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
+                                <span className='text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full'>
                                   Quick Plan
                                 </span>
                               </div>
                             </div>
-                            <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                              <Bookmark className="w-5 h-5  text-teal-600 fill-teal-600" />
+                            <button className='p-2 hover:bg-gray-100 rounded-lg transition-colors'>
+                              <Bookmark className='w-5 h-5  text-teal-600 fill-teal-600' />
                             </button>
                             <button
                               onClick={(e) => {
@@ -1400,55 +1398,52 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
                                 e.stopPropagation();
                                 deleteMealPlan(plan._id);
                               }}
-                              className="p-2 hover:bg-red-50 rounded-lg transition-colors text-red-600"
-                              title="Delete plan"
-                            >
+                              className='p-2 hover:bg-red-50 rounded-lg transition-colors text-red-600'
+                              title='Delete plan'>
                               <svg
-                                className="w-5 h-5"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
+                                className='w-5 h-5'
+                                fill='none'
+                                stroke='currentColor'
+                                viewBox='0 0 24 24'>
                                 <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
+                                  strokeLinecap='round'
+                                  strokeLinejoin='round'
                                   strokeWidth={2}
-                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                  d='M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16'
                                 />
                               </svg>
                             </button>
                           </div>
 
-                          <div className="space-y-2 mb-6 grow">
-                            <p className="text-sm text-gray-600">
+                          <div className='space-y-2 mb-6 grow'>
+                            <p className='text-sm text-gray-600'>
                               Created: {formatDate(plan.createdAt)}
                             </p>
-                            <p className="text-sm text-gray-600">
+                            <p className='text-sm text-gray-600'>
                               {countTotalMeals(plan)} meals •{" "}
                               {plan.days?.length || 0} days
                             </p>
-                            <p className="text-sm text-gray-600">
+                            <p className='text-sm text-gray-600'>
                               {plan.swapsAllowed || 0} swaps available
                             </p>
                             {plan.source && (
-                              <p className="text-sm text-gray-600">
+                              <p className='text-sm text-gray-600'>
                                 Source: {plan.source}
                               </p>
                             )}
                           </div>
 
-                          <div className="mt-auto">
+                          <div className='mt-auto'>
                             <Link
-                              className="w-full block"
-                              href={`/${locale}/plans/${plan._id}`}
-                            >
-                              <button className="w-full bg-white border border-gray-300 text-gray-700 px-7 py-2.5 rounded-lg font-medium hover:bg-gray-50 transition-colors cursor-pointer">
+                              className='w-full block'
+                              href={`/${locale}/plans/${plan._id}`}>
+                              <button className='w-full bg-white border border-gray-300 text-gray-700 px-7 py-2.5 rounded-lg font-medium hover:bg-gray-50 transition-colors cursor-pointer'>
                                 View Quick Plan
                               </button>
                             </Link>
                           </div>
 
-                          <div className="mt-4 pt-4 border-t border-gray-100 flex justify-between text-xs text-gray-500">
+                          <div className='mt-4 pt-4 border-t border-gray-100 flex justify-between text-xs text-gray-500'>
                             <span>
                               Swaps: {plan.swapsUsed || 0}/
                               {plan.swapsAllowed || 3}
@@ -1456,7 +1451,7 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
                             <span>Source: {plan.source || "OpenAI"}</span>
                             <span>
                               {isExpired ? (
-                                <span className="text-red-500">Expired</span>
+                                <span className='text-red-500'>Expired</span>
                               ) : plan.expiresAt ? (
                                 `Expires: ${formatDate(plan.expiresAt)}`
                               ) : (
@@ -1474,12 +1469,12 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
               {/* EMPTY STATE */}
               {regularSavedPlans.length === 0 &&
                 quickSavedPlans.length === 0 && (
-                  <div className="text-center py-12 bg-gray-50 rounded-xl">
-                    <Bookmark className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold text-gray-700 mb-2">
+                  <div className='text-center py-12 bg-gray-50 rounded-xl'>
+                    <Bookmark className='w-16 h-16 text-gray-300 mx-auto mb-4' />
+                    <h3 className='text-xl font-semibold text-gray-700 mb-2'>
                       No saved meal plans yet
                     </h3>
-                    <p className="text-gray-500 mb-6">
+                    <p className='text-gray-500 mb-6'>
                       {currentTier === "free"
                         ? "Free users cannot save meal plans. Upgrade to Plus or Premium to save your plans."
                         : "Create and save your first meal plan to get started!"}
@@ -1490,13 +1485,12 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
                           onClose();
                           router.push(`/${locale}/#pricing`);
                         }}
-                        className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg font-medium"
-                      >
-                        <Crown className="inline w-5 h-5 mr-2" />
+                        className='bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg font-medium'>
+                        <Crown className='inline w-5 h-5 mr-2' />
                         Upgrade to Save Plans
                       </button>
                     ) : (
-                      <button className="bg-teal-600 text-white px-6 py-3 rounded-lg font-medium">
+                      <button className='bg-teal-600 text-white px-6 py-3 rounded-lg font-medium'>
                         Create First Plan to View
                       </button>
                     )}
@@ -1509,66 +1503,64 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 ">
+    <div className='fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 '>
       {/* Overlay */}
-      <div className="absolute inset-0" onClick={onClose} />
+      <div className='absolute inset-0' onClick={onClose} />
 
       {/* Modal Content */}
       <div
         ref={modalRef}
-        className="relative bg-white rounded-none md:rounded-2xl w-full h-screen max-h-[95vh]  md:max-w-[1400px] md:max-h-[95vh] md:h-auto overflow-hidden flex flex-col shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
-      >
+        className='relative bg-white rounded-none md:rounded-2xl w-full h-screen max-h-[95vh]  md:max-w-[1400px] md:max-h-[95vh] md:h-auto overflow-hidden flex flex-col shadow-2xl'
+        onClick={(e) => e.stopPropagation()}>
         {/* Header with gradient background */}
-        <div className="bg-linear-to-r from-teal-500 to-emerald-400 px-4 md:px-8 py-4 md:py-6 relative">
-          <div className="flex items-center justify-between">
+        <div className='bg-linear-to-r from-teal-500 to-emerald-400 px-4 md:px-8 py-4 md:py-6 relative'>
+          <div className='flex items-center justify-between'>
             <div>
-              <h1 className="text-3xl font-bold text-white mb-1">
+              <h1 className='text-3xl font-bold text-white mb-1'>
                 {user?.name || "User"}s Dashboard
               </h1>
-              <div className="flex flex-wrap items-center gap-3 text-white/90">
-                <div className="flex items-center gap-1 text-sm">
-                  <Mail className="w-4 h-4" />
-                  <span className="truncate max-w-[200px]">{user?.email}</span>
+              <div className='flex flex-wrap items-center gap-3 text-white/90'>
+                <div className='flex items-center gap-1 text-sm'>
+                  <Mail className='w-4 h-4' />
+                  <span className='truncate max-w-[200px]'>{user?.email}</span>
                 </div>
                 {user?.province && (
-                  <div className="flex items-center gap-1 text-sm">
-                    <MapPin className="w-4 h-4" />
+                  <div className='flex items-center gap-1 text-sm'>
+                    <MapPin className='w-4 h-4' />
                     <span>{user.province}</span>
                   </div>
                 )}
                 {user?.createdAt && (
-                  <div className="flex items-center gap-1 text-sm">
-                    <Calendar className="w-4 h-4" />
+                  <div className='flex items-center gap-1 text-sm'>
+                    <Calendar className='w-4 h-4' />
                     <span>Member since {formatDate(user.createdAt)}</span>
                   </div>
                 )}
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className='flex items-center gap-3'>
               {/* Show Upgrade button only if not Premium */}
               {currentTier !== "tier3" && (
-                <button className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors shadow-lg">
-                  <Crown className="w-5 h-5" />
+                <button className='flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors shadow-lg'>
+                  <Crown className='w-5 h-5' />
                   Upgrade to Premium
                 </button>
               )}
 
               <button
                 onClick={onClose}
-                className="p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors text-white"
-                aria-label="Close modal"
-              >
-                <X className="w-6 h-6" />
+                className='p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors text-white'
+                aria-label='Close modal'>
+                <X className='w-6 h-6' />
               </button>
             </div>
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="bg-gray-50 border-b border-gray-200 px-4 md:px-8">
-          <div className="flex overflow-x-auto gap-4 md:gap-8 scrollbar-hide py-2">
+        <div className='bg-gray-50 border-b border-gray-200 px-4 md:px-8'>
+          <div className='flex overflow-x-auto gap-4 md:gap-8 scrollbar-hide py-2'>
             {tabs.map((tab) => (
               <button
                 key={tab}
@@ -1577,11 +1569,10 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
                   activeTab === tab
                     ? "text-teal-600"
                     : "text-gray-600 hover:text-gray-900"
-                }`}
-              >
+                }`}>
                 {tab}
                 {activeTab === tab && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-teal-600" />
+                  <div className='absolute bottom-0 left-0 right-0 h-0.5 bg-teal-600' />
                 )}
               </button>
             ))}
@@ -1589,8 +1580,22 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 overflow-y-auto p-8 max-h-[650px]">
-          <div className="max-w-7xl mx-auto h-full">{renderTabContent()}</div>
+        <div className='flex-1 overflow-y-auto p-8 max-h-[650px]'>
+          <div className='max-w-7xl mx-auto h-full'>
+            {isInitialLoading ? (
+              <div className='flex flex-col items-center justify-center h-[60vh] min-h-[400px]'>
+                <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mb-6'></div>
+                <h3 className='text-xl font-medium text-gray-700 mb-2'>
+                  Loading your dashboard
+                </h3>
+                <p className='text-gray-500'>
+                  Fetching meal plans & pantry data...
+                </p>
+              </div>
+            ) : (
+              renderTabContent()
+            )}
+          </div>
         </div>
       </div>
     </div>

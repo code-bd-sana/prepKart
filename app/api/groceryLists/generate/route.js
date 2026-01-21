@@ -22,7 +22,7 @@ export async function POST(request) {
     if (!auth.success) {
       return NextResponse.json(
         { error: "Please login to generate grocery lists" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -31,7 +31,7 @@ export async function POST(request) {
     // Get accurate user tier
     const user = await User.findById(userId).select("tier subscription");
     const userTier = user?.subscription?.tier || user?.tier || "free";
-    const impactId = process.env.INSTACART_IMPACT_ID || "6773996";
+    const impactId = process.env.INSTACART_IMPACT_ID || "6899496";
 
     // Parse request body
     const body = await request.json();
@@ -40,7 +40,7 @@ export async function POST(request) {
     if (!planId) {
       return NextResponse.json(
         { error: "Plan ID is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -55,7 +55,7 @@ export async function POST(request) {
           {
             error: "Plan data required for temporary plans",
           },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -74,7 +74,7 @@ export async function POST(request) {
       if (plan.userId && plan.userId.toString() !== userId.toString()) {
         return NextResponse.json(
           { error: "Not authorized to access this plan" },
-          { status: 403 }
+          { status: 403 },
         );
       }
     }
@@ -83,7 +83,7 @@ export async function POST(request) {
     if (pantryToggle && userTier === "free") {
       return NextResponse.json(
         { error: "Pantry toggle is only available for Plus and Premium users" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -104,7 +104,7 @@ export async function POST(request) {
       allIngredients,
       pantryItems,
       pantryToggle,
-      plan.days
+      plan.days,
     );
 
     // Sort items by aisle
@@ -138,12 +138,12 @@ export async function POST(request) {
 
     // Generate Instacart deep link
     const itemsForInstacart = sortedItems.filter(
-      (item) => item.checked === true
+      (item) => item.checked === true,
     );
     const instacartLink = await generateInstacartLink(
       itemsForInstacart,
       userTier,
-      impactId
+      impactId,
     );
 
     console.log("Instacart link generated:", instacartLink);
@@ -177,7 +177,7 @@ export async function POST(request) {
         error: error.message,
         details: "Check server logs for more info",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -353,13 +353,13 @@ function cleanDisplayName(name) {
   // Remove units that are separate words (not single letters)
   cleaned = cleaned.replace(
     /\s+(?:cup|cups|tbsp|tablespoon|tablespoons|tsp|teaspoon|teaspoons|oz|ounce|ounces|lb|pound|pounds|kilogram|kilograms|milliliter|milliliters|liter|liters|clove|cloves|serving|servings|pinch|pinches|dash|dashes)\b/gi,
-    ""
+    "",
   );
 
   // Remove preparation methods
   cleaned = cleaned.replace(
     /\s+(?:diced|chopped|minced|sliced|grated|shredded|fresh|frozen|canned|dried|organic|large|medium|small|extra large)\b/gi,
-    ""
+    "",
   );
 
   // Remove anything in parentheses
@@ -441,7 +441,7 @@ function processIngredients(ingredients, pantryItems, pantryToggle, planDays) {
         estimatedPrice: calculateItemPrice(
           item.normalizedName,
           purchase.quantity,
-          purchase.unit
+          purchase.unit,
         ),
         _id: new mongoose.Types.ObjectId(),
       };

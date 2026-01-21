@@ -45,23 +45,6 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
     checkAuth();
   }, [user]);
   // Form state
-  // const [form, setForm] = useState({
-  //   province: user?.province || "Ontario", // Use user's province if available
-  //   cuisine: "",
-  //   goal: user?.goal || "", // Use user's goal if available
-  //   budgetLevel: user?.budgetLevel || "Medium", // Use user's budgetLevel
-  //   portions: 2,
-  //   mealsPerDay: 3,
-  //   likes: user?.likes?.join(", ") || "", // Convert array to comma-separated string
-  //   dislikes: user?.dislikes?.join(", ") || "", // Convert array to comma-separated string
-  //   cookingMethod: user?.cookingMethod?.join(", ") || "", // Convert array if needed
-  //   maxCookingTime: 30,
-  //   skillLevel: user?.skillLevel || "Beginner", // Use user's skillLevel
-  //   dietaryPreferences: user?.dietaryPreferences || [], // Use user's array
-  //   allergies: user?.allergies || [], // Use user's array
-  //   days_count: !user || user?.tier === "free" ? 3 : 7,
-  // });
-
   const [form, setForm] = useState(() => {
     // Access nested preferences
     const preferences = user?.preferences || {};
@@ -105,73 +88,73 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
       province: text.includes("alberta")
         ? "Alberta"
         : text.includes("british")
-        ? "British Columbia"
-        : text.includes("columbia")
-        ? "British Columbia"
-        : text.includes("manitoba")
-        ? "Manitoba"
-        : text.includes("New")
-        ? "New Brunswick"
-        : text.includes("Brunswick")
-        ? "New Brunswick"
-        : text.includes("yukon")
-        ? "Yukon"
-        : text.includes("nunavut")
-        ? "Nunavut"
-        : text.includes("quebec")
-        ? "Quebec"
-        : text.includes("columbia")
-        ? "British Columbia"
-        : prev.province,
+          ? "British Columbia"
+          : text.includes("columbia")
+            ? "British Columbia"
+            : text.includes("manitoba")
+              ? "Manitoba"
+              : text.includes("New")
+                ? "New Brunswick"
+                : text.includes("Brunswick")
+                  ? "New Brunswick"
+                  : text.includes("yukon")
+                    ? "Yukon"
+                    : text.includes("nunavut")
+                      ? "Nunavut"
+                      : text.includes("quebec")
+                        ? "Quebec"
+                        : text.includes("columbia")
+                          ? "British Columbia"
+                          : prev.province,
 
       // Goal
       goal: text.includes("lose")
         ? "Weigth Loss"
         : text.includes("weight")
-        ? "Weigth Loss"
-        : text.includes("muscle")
-        ? "Muscle Gain"
-        : text.includes("healthy")
-        ? "Healthy Eating"
-        : text.includes("quick")
-        ? "Quick Meals"
-        : text.includes("family")
-        ? "Family Friendly"
-        : prev.goal,
+          ? "Weigth Loss"
+          : text.includes("muscle")
+            ? "Muscle Gain"
+            : text.includes("healthy")
+              ? "Healthy Eating"
+              : text.includes("quick")
+                ? "Quick Meals"
+                : text.includes("family")
+                  ? "Family Friendly"
+                  : prev.goal,
 
       // level
       skillLevel: text.includes("beginner")
         ? "Beginner"
         : text.includes("intermediate")
-        ? "Intermediate"
-        : text.includes("expert")
-        ? "Advanced"
-        : text.includes("advanced")
-        ? "Advanced"
-        : prev.skillLevel,
+          ? "Intermediate"
+          : text.includes("expert")
+            ? "Advanced"
+            : text.includes("advanced")
+              ? "Advanced"
+              : prev.skillLevel,
 
       // Cuisine
       cuisine: text.includes("asian")
         ? "Asian"
         : text.includes("italian")
-        ? "Italian"
-        : text.includes("mexican")
-        ? "Mexican"
-        : text.includes("chinese")
-        ? "Chinese"
-        : text.includes("indian")
-        ? "Indian"
-        : prev.cuisine,
+          ? "Italian"
+          : text.includes("mexican")
+            ? "Mexican"
+            : text.includes("chinese")
+              ? "Chinese"
+              : text.includes("indian")
+                ? "Indian"
+                : prev.cuisine,
 
       // Budget
       budgetLevel:
         text.includes("cheap") || text.includes("low budget")
           ? "Low"
           : text.includes("medium") || text.includes("medium budget")
-          ? "Medium"
-          : text.includes("high") || text.includes("high budget")
-          ? "High"
-          : prev.budgetLevel,
+            ? "Medium"
+            : text.includes("high") || text.includes("high budget")
+              ? "High"
+              : prev.budgetLevel,
 
       // allergies
       allergies: [
@@ -385,12 +368,6 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
 
       // Get user ID
       const userId = user?.id || user?._id;
-
-      // if (!user || !userId) {
-      //   toast.warning("Please login to save plans!");
-      //   return;
-      // }
-
       if (!user || user?.tier === "free") {
         toast.error("Upgrade to Plus or Premium to save plans");
         window.location.href = "/#pricing";
@@ -455,6 +432,10 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
           source: plan.source, // Preserve the source
         });
 
+        if (typeof onPlanGenerated === "function") {
+          onPlanGenerated(false); // no unsaved plan anymore
+        }
+
         return result;
       } else {
         console.error("Save failed:", result);
@@ -509,31 +490,6 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
         return;
       }
 
-      // Check user tier
-      // if (user.tier === "free") {
-      //   toast.error("Upgrade to Plus or Premium to generate grocery lists");
-      //   return;
-      // }
-
-      // Check if plan is saved
-      // if (!plan.isSaved && plan.id.startsWith("temp_")) {
-      //   toast.warning(
-      //     <div>
-      //       <p className="font-medium">Please save the plan first!</p>
-      //       <p className="text-sm mt-1">
-      //         Click Save Plan to save your meal plan, then generate grocery
-      //         list.
-      //       </p>
-      //     </div>,
-      //     {
-      //       autoClose: 5000,
-      //       closeButton: true,
-      //       closeOnClick: true,
-      //     }
-      //   );
-      //   return;
-      // }
-
       setLoading(true);
 
       // Get authentication token
@@ -567,7 +523,7 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
         const text = await response.text();
         console.error("Non-JSON response:", text.substring(0, 200));
         throw new Error(
-          `Server returned non-JSON: ${response.status} ${response.statusText}`
+          `Server returned non-JSON: ${response.status} ${response.statusText}`,
         );
       }
 
@@ -579,7 +535,7 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
         // Store in localStorage
         localStorage.setItem(
           "lastGroceryList",
-          JSON.stringify(data.groceryList)
+          JSON.stringify(data.groceryList),
         );
 
         // Open grocery list page
@@ -590,7 +546,7 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
         // Handle specific errors
         if (data.planNotSaved) {
           toast.error(
-            "Please save the plan first before generating grocery list"
+            "Please save the plan first before generating grocery list",
           );
         } else if (data.requiresUpgrade) {
           toast.error("Upgrade required for grocery list feature");
@@ -613,34 +569,6 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
       setLoading(false);
     }
   };
-  // Update your Instacart function
-  // const orderOnInstacart = async () => {
-  //   try {
-  //     if (!plan || !plan.id) {
-  //       toast.error("No plan available");
-  //       return;
-  //     }
-
-  //     if (user.tier === "free") {
-  //       toast.error(
-  //         "Instacart integration is only available for Plus and Premium users"
-  //       );
-  //       return;
-  //     }
-
-  //     // First generate grocery list if not already done
-  //     const groceryList = await generateGroceryList();
-
-  //     if (groceryList && groceryList.instacartDeepLink) {
-  //       // Open Instacart in new tab
-  //       window.open(groceryList.instacartDeepLink, "_blank");
-  //     } else {
-  //       toast.error("Could not generate Instacart link");
-  //     }
-  //   } catch (error) {
-  //     toast.error("Error connecting to Instacart: " + error.message);
-  //   }
-  // };
   // swap meal
   const swapMeal = async (planId, mealIndex, dayIndex) => {
     // Create a unique key for this specific meal
@@ -663,7 +591,7 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
       // Check current swaps
       if (plan.swaps.remaining <= 0) {
         toast.error(
-          `No swaps remaining! Used ${plan.swaps.used}/${plan.swaps.allowed}`
+          `No swaps remaining! Used ${plan.swaps.used}/${plan.swaps.allowed}`,
         );
         return null;
       }
@@ -757,7 +685,7 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
         <p className='text-center text-3xl md:text-4xl font-semibold text-gray-900 mb-3'>
           {t("title")}
         </p>
-        {plan && (
+        {/* {plan && (
           <div className='mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl'>
             <p className='text-amber-800 font-semibold flex items-center'>
               Don‘t forget to save!
@@ -767,7 +695,7 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
               plan will be lost forever.
             </p>
           </div>
-        )}
+        )} */}
         {/* Error Message */}
         {error && (
           <div className='max-w-6xl mx-auto mb-8'>
@@ -845,7 +773,7 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
                           (!user || user?.tier === "free")
                         ) {
                           toast.error(
-                            "Upgrade to Premium for Family Friendly plans"
+                            "Upgrade to Premium for Family Friendly plans",
                           );
                           return;
                         }
@@ -909,7 +837,7 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
                           (!user || user?.tier === "free")
                         ) {
                           toast.error(
-                            "High budget is a Premium feature. Upgrade to access."
+                            "High budget is a Premium feature. Upgrade to access.",
                           );
                           return;
                         }
@@ -1023,8 +951,8 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
                       {!user
                         ? "Login to access 7-day plans"
                         : user?.tier === "free"
-                        ? "Free tier: 3-day limit"
-                        : "Premium: Up to 7-day plans"}
+                          ? "Free tier: 3-day limit"
+                          : "Premium: Up to 7-day plans"}
                     </p>
 
                     {(!user || user?.tier === "free") && (
@@ -1116,7 +1044,7 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
                           (!user || user?.tier === "free")
                         ) {
                           toast.error(
-                            "Advanced skill level is a Premium feature."
+                            "Advanced skill level is a Premium feature.",
                           );
                           return;
                         }
@@ -1183,7 +1111,7 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
                           onChange={(e) => {
                             if (isDisabled) {
                               toast.error(
-                                `"${pref}" is a Premium feature. Upgrade to access.`
+                                `"${pref}" is a Premium feature. Upgrade to access.`,
                               );
                               return;
                             }
@@ -1256,8 +1184,8 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
                     {form.days_count <= 3
                       ? "30-60 seconds"
                       : form.days_count <= 5
-                      ? "1-2 minutes"
-                      : "2-3 minutes"}
+                        ? "1-2 minutes"
+                        : "2-3 minutes"}
                   </p>
                 )}
               </div>
@@ -1323,10 +1251,10 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
                                   meal.mealType === "breakfast"
                                     ? "bg-green-100 text-green-800"
                                     : meal.mealType === "lunch"
-                                    ? "bg-yellow-100 text-yellow-800"
-                                    : meal.mealType === "dinner"
-                                    ? "bg-red-100 text-red-800"
-                                    : "bg-purple-100 text-purple-800"
+                                      ? "bg-yellow-100 text-yellow-800"
+                                      : meal.mealType === "dinner"
+                                        ? "bg-red-100 text-red-800"
+                                        : "bg-purple-100 text-purple-800"
                                 }`}>
                                 {meal.mealType.charAt(0).toUpperCase()}
                               </span>
@@ -1456,14 +1384,14 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
 
                                 if (user.tier === "free") {
                                   toast.error(
-                                    "Upgrade to Plus or Premium to swap meals"
+                                    "Upgrade to Plus or Premium to swap meals",
                                   );
                                   return;
                                 }
 
                                 if (plan.swaps.remaining <= 0) {
                                   toast.error(
-                                    `No swaps remaining! Used ${plan.swaps.used}/${plan.swaps.allowed}`
+                                    `No swaps remaining! Used ${plan.swaps.used}/${plan.swaps.allowed}`,
                                   );
                                   return;
                                 }
@@ -1542,20 +1470,20 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
                     {!plan
                       ? "Save Plan"
                       : !user
-                      ? "Login to Save"
-                      : user?.tier === "free"
-                      ? "Upgrade to Save"
-                      : plan.needsUpdate
-                      ? "Update Plan"
-                      : plan.isSaved
-                      ? "Plan Saved"
-                      : "Save Plan"}
+                        ? "Login to Save"
+                        : user?.tier === "free"
+                          ? "Upgrade to Save"
+                          : plan.needsUpdate
+                            ? "Update Plan"
+                            : plan.isSaved
+                              ? "Plan Saved"
+                              : "Save Plan"}
                   </button>
                   <button
                     onClick={() => {
                       if (plan.requiresAccount) {
                         toast.warning(
-                          "Please create an account to generate grocery list!"
+                          "Please create an account to generate grocery list!",
                         );
                       } else {
                         generateGroceryList(plan.id);
