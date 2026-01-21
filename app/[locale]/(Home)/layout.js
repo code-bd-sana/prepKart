@@ -3,7 +3,7 @@
 import Navbar from "@/components/shared/Navbar";
 import Footer from "@/components/shared/Footer";
 import React, { useState, useEffect, useRef } from "react";
-import ToastProvider from "@/components/ToastProvider";
+// import ToastProvider from "@/components/ToastProvider";
 import Providers from "@/app/providers";
 import { FaShoppingCart } from "react-icons/fa";
 import { toast } from "react-toastify";
@@ -131,7 +131,7 @@ export default function HomeLayout({ children }) {
 
     if (cartData.checkedCount === 0) {
       toast.info(
-        "Please select at least one item to add to your Instacart cart"
+        "Please select at least one item to add to your Instacart cart",
       );
       return;
     }
@@ -174,7 +174,7 @@ export default function HomeLayout({ children }) {
           groceryItems: checkedItems,
           userId: user?.id,
           groceryListId: cartData.listId,
-          source: "floating_cart_button" 
+          source: "floating_cart_button",
         }),
       });
 
@@ -200,16 +200,16 @@ export default function HomeLayout({ children }) {
   const isCartEnabled = user && cartData.checkedCount > 0;
 
   return (
-    <Providers className="relative min-h-screen">
+    <Providers className='relative min-h-screen'>
       <Navbar />
-      <main className="min-h-screen">
+      <main className='min-h-screen'>
         {children}
-        <ToastProvider />
+        {/* <ToastProvider /> */}
         <CookieConsent />
       </main>
       <Footer />
 
-      <div className="fixed bottom-6 right-6 z-50">
+      <div className='fixed bottom-6 right-6 z-50'>
         <button
           onClick={handleCartClick}
           className={`
@@ -222,24 +222,23 @@ export default function HomeLayout({ children }) {
                 : "bg-gray-400 shadow-gray-400/30 hover:shadow-gray-400/40 cursor-not-allowed"
             }
           `}
-          disabled={!isCartEnabled}
-        >
-          <FaShoppingCart className="w-6 h-6 text-white" />
+          disabled={!isCartEnabled}>
+          <FaShoppingCart className='w-6 h-6 text-white' />
 
           {cartData.checkedCount > 0 && user && (
-            <div className="absolute -top-2 -right-2 flex items-center justify-center w-6 h-6 bg-red-500 text-white text-xs font-bold rounded-full border-2 border-white">
+            <div className='absolute -top-2 -right-2 flex items-center justify-center w-6 h-6 bg-red-500 text-white text-xs font-bold rounded-full border-2 border-white'>
               {cartData.checkedCount}
             </div>
           )}
 
-          <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-gray-800 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none hidden md:block">
+          <div className='absolute right-full mr-3 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-gray-800 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none hidden md:block'>
             {!user
               ? "Please login"
               : !cartData.listId
-              ? "Open grocery list"
-              : cartData.checkedCount === 0
-              ? "Select items first"
-              : `Order ${cartData.checkedCount} items on Instacart`}
+                ? "Open grocery list"
+                : cartData.checkedCount === 0
+                  ? "Select items first"
+                  : `Order ${cartData.checkedCount} items on Instacart`}
           </div>
         </button>
       </div>
