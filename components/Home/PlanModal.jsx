@@ -40,7 +40,7 @@ export default function PlanModal({ isOpen, onClose, voiceText }) {
       toast(
         <div className='p-5 max-w-md'>
           <p className='font-semibold text-gray-800 text-lg mb-3'>
-            Discard meal plan?
+            Discard meal plan without saving?
           </p>
           <div className='flex gap-3 justify-end'>
             <button

@@ -128,6 +128,8 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
     // fetchSavedPlans();
     // fetchPantry();
 
+    // loading until data is fetched
+
     Promise.all([fetchSavedPlans(), fetchPantry()])
       .catch((err) => console.error("Dashboard data fetch failed:", err))
       .finally(() => {
