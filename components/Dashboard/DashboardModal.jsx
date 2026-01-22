@@ -256,7 +256,8 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
 
   if (!isOpen) return null;
 
-  const tabs = ["Meal Plans", "Nutrition", "Calendar", "Budget", "Pantry"];
+  // const tabs = ["Meal Plans", "Nutrition", "Calendar", "Budget", "Pantry"];
+  const tabs = ["Meal Plans", "Nutrition", "Calendar", "Pantry"];
 
   const tierConfig = {
     free: {
@@ -928,123 +929,125 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
           </div>
         );
 
-      case "Budget":
-        return (
-          <div className='space-y-6 mb-72'>
-            <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-              <div className='bg-green-50 p-6 rounded-xl'>
-                <div className='flex items-center gap-3 mb-3'>
-                  <DollarSign className='w-6 h-6 text-green-600' />
-                  <p className='text-sm text-green-600 font-medium'>
-                    Total Estimated Cost
-                  </p>
-                </div>
-                <p className='text-3xl font-bold text-gray-900'>
-                  ${budgetStats.totalCost}
-                </p>
-                <p className='text-xs text-gray-500'>
-                  For all saved meal plans
-                </p>
-              </div>
+      // later for phase 2
+      // case "Budget":
+      //   return (
+      //     <div className='space-y-6 mb-72'>
+      //       <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+      //         <div className='bg-green-50 p-6 rounded-xl'>
+      //           <div className='flex items-center gap-3 mb-3'>
+      //             <DollarSign className='w-6 h-6 text-green-600' />
+      //             <p className='text-sm text-green-600 font-medium'>
+      //               Total Estimated Cost
+      //             </p>
+      //           </div>
+      //           <p className='text-3xl font-bold text-gray-900'>
+      //             ${budgetStats.totalCost}
+      //           </p>
+      //           <p className='text-xs text-gray-500'>
+      //             For all saved meal plans
+      //           </p>
+      //         </div>
 
-              <div className='bg-blue-50 p-6 rounded-xl'>
-                <div className='flex items-center gap-3 mb-3'>
-                  <DollarSign className='w-6 h-6 text-blue-600' />
-                  <p className='text-sm text-blue-600 font-medium'>
-                    Average Daily Cost
-                  </p>
-                </div>
-                <p className='text-3xl font-bold text-gray-900'>
-                  ${budgetStats.averageDailyCost}
-                </p>
-                <p className='text-xs text-gray-500'>Per plan</p>
-              </div>
+      //         <div className='bg-blue-50 p-6 rounded-xl'>
+      //           <div className='flex items-center gap-3 mb-3'>
+      //             <DollarSign className='w-6 h-6 text-blue-600' />
+      //             <p className='text-sm text-blue-600 font-medium'>
+      //               Average Daily Cost
+      //             </p>
+      //           </div>
+      //           <p className='text-3xl font-bold text-gray-900'>
+      //             ${budgetStats.averageDailyCost}
+      //           </p>
+      //           <p className='text-xs text-gray-500'>Per plan</p>
+      //         </div>
 
-              <div className='bg-purple-50 p-6 rounded-xl'>
-                <div className='flex items-center gap-3 mb-3'>
-                  <Utensils className='w-6 h-6 text-purple-600' />
-                  <p className='text-sm text-purple-600 font-medium'>
-                    Plans by Budget Level
-                  </p>
-                </div>
-                <p className='text-3xl font-bold text-gray-900'>
-                  {
-                    savedMealPlans.filter(
-                      (p) => p.inputs?.budget_level === "Low",
-                    ).length
-                  }{" "}
-                  Low
-                </p>
-                <p className='text-xs text-gray-500'>
-                  {
-                    savedMealPlans.filter(
-                      (p) => p.inputs?.budget_level === "Medium",
-                    ).length
-                  }{" "}
-                  Medium •
-                  {
-                    savedMealPlans.filter(
-                      (p) => p.inputs?.budget_level === "High",
-                    ).length
-                  }{" "}
-                  High
-                </p>
-              </div>
-            </div>
+      //         <div className='bg-purple-50 p-6 rounded-xl'>
+      //           <div className='flex items-center gap-3 mb-3'>
+      //             <Utensils className='w-6 h-6 text-purple-600' />
+      //             <p className='text-sm text-purple-600 font-medium'>
+      //               Plans by Budget Level
+      //             </p>
+      //           </div>
+      //           <p className='text-3xl font-bold text-gray-900'>
+      //             {
+      //               savedMealPlans.filter(
+      //                 (p) => p.inputs?.budget_level === "Low",
+      //               ).length
+      //             }{" "}
+      //             Low
+      //           </p>
+      //           <p className='text-xs text-gray-500'>
+      //             {
+      //               savedMealPlans.filter(
+      //                 (p) => p.inputs?.budget_level === "Medium",
+      //               ).length
+      //             }{" "}
+      //             Medium •
+      //             {
+      //               savedMealPlans.filter(
+      //                 (p) => p.inputs?.budget_level === "High",
+      //               ).length
+      //             }{" "}
+      //             High
+      //           </p>
+      //         </div>
+      //       </div>
 
-            <div className='bg-white border border-gray-200 rounded-xl p-6'>
-              <h3 className='text-xl font-semibold text-gray-900 mb-4'>
-                Budget Breakdown
-              </h3>
-              <div className='space-y-4'>
-                {savedMealPlans.slice(0, 5).map((plan) => {
-                  const budgetLevel = plan.inputs?.budget_level || "Medium";
-                  const budgetColors = {
-                    Low: "bg-green-500",
-                    Medium: "bg-yellow-500",
-                    High: "bg-red-500",
-                  };
+      //       <div className='bg-white border border-gray-200 rounded-xl p-6'>
+      //         <h3 className='text-xl font-semibold text-gray-900 mb-4'>
+      //           Budget Breakdown
+      //         </h3>
+      //         <div className='space-y-4'>
+      //           {savedMealPlans.slice(0, 5).map((plan) => {
+      //             const budgetLevel = plan.inputs?.budget_level || "Medium";
+      //             const budgetColors = {
+      //               Low: "bg-green-500",
+      //               Medium: "bg-yellow-500",
+      //               High: "bg-red-500",
+      //             };
 
-                  return (
-                    <div
-                      key={plan._id}
-                      className='flex items-center justify-between'>
-                      <div className='flex-1'>
-                        <p className='font-medium text-gray-900'>
-                          {plan.title}
-                        </p>
-                        <p className='text-sm text-gray-600'>
-                          {plan.days?.length || 0} days •{" "}
-                          {plan.inputs?.portions || 2} portions
-                        </p>
-                      </div>
-                      <div className='flex items-center gap-4'>
-                        <span
-                          className={`px-3 py-1 rounded-full text-sm font-medium ${
-                            budgetLevel === "Low"
-                              ? "bg-green-100 text-green-800"
-                              : budgetLevel === "Medium"
-                                ? "bg-yellow-100 text-yellow-800"
-                                : "bg-red-100 text-red-800"
-                          }`}>
-                          {budgetLevel} Budget
-                        </span>
-                        <span className='font-semibold text-gray-900'>
-                          $
-                          {budgetLevel === "Low"
-                            ? 50
-                            : budgetLevel === "High"
-                              ? 100
-                              : 75}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        );
+      //             return (
+      //               <div
+      //                 key={plan._id}
+      //                 className='flex items-center justify-between'>
+      //                 <div className='flex-1'>
+      //                   <p className='font-medium text-gray-900'>
+      //                     {plan.title}
+      //                   </p>
+      //                   <p className='text-sm text-gray-600'>
+      //                     {plan.days?.length || 0} days •{" "}
+      //                     {plan.inputs?.portions || 2} portions
+      //                   </p>
+      //                 </div>
+      //                 <div className='flex items-center gap-4'>
+      //                   <span
+      //                     className={`px-3 py-1 rounded-full text-sm font-medium ${
+      //                       budgetLevel === "Low"
+      //                         ? "bg-green-100 text-green-800"
+      //                         : budgetLevel === "Medium"
+      //                           ? "bg-yellow-100 text-yellow-800"
+      //                           : "bg-red-100 text-red-800"
+      //                     }`}>
+      //                     {budgetLevel} Budget
+      //                   </span>
+      //                   <span className='font-semibold text-gray-900'>
+      //                     $
+      //                     {budgetLevel === "Low"
+      //                       ? 50
+      //                       : budgetLevel === "High"
+      //                         ? 100
+      //                         : 75}
+      //                   </span>
+      //                 </div>
+      //               </div>
+      //             );
+      //           })}
+      //         </div>
+      //       </div>
+      //     </div>
+      //   );
+
       case "Pantry":
         return (
           <div className='space-y-6 mb-72'>
