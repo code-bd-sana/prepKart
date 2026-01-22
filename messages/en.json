@@ -353,7 +353,7 @@
       "processing": "Processing...",
       "cancelling": "Cancelling...",
       "cancelPlan": "Cancel plan",
-      "launchDeal": "Special Launch Deal"
+      "launchDeal": "Launch Price"
     },
     "alerts": {
       "cancellationSuccess": "cancelled successfully",
