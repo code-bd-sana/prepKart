@@ -65,6 +65,8 @@ const Footer = () => {
           "Support Request",
           "Hello Prepcart Team,",
         ),
+        target: "_blank",
+        rel: "noopener noreferrer",
       },
       {
         name: t("links.contact"),
@@ -138,6 +140,8 @@ const Footer = () => {
                     <li key={link.name}>
                       <a
                         href={link.href}
+                        target={link.target || "_self"}
+                        rel={link.rel || ""}
                         className='text-gray-600 hover:text-teal-600 transition-colors duration-200 text-sm inline-block hover:translate-x-1'>
                         {link.name}
                       </a>
