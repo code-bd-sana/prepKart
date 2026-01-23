@@ -2,7 +2,7 @@ import { connectDB } from "@/lib/db";
 import User from "@/models/User";
 import bcrypt from "bcryptjs";
 import { generateAccessToken, generateRefreshToken } from "@/lib/jwt";
-import { sendWelcomeEmail } from "@/lib/email";
+import { sendAdminNotificationNewUser, sendWelcomeEmail } from "@/lib/email";
 
 export async function POST(request) {
   try {
@@ -37,7 +37,7 @@ export async function POST(request) {
           success: false,
           error: "Name, email, password, and province are required",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -45,7 +45,7 @@ export async function POST(request) {
     if (!ageVerified) {
       return Response.json(
         { success: false, error: "You must be 18+ to use Prepcart" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -54,7 +54,7 @@ export async function POST(request) {
     if (existingUser) {
       return Response.json(
         { success: false, error: "User already exists" },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -98,7 +98,7 @@ export async function POST(request) {
       user._id,
       user.email,
       user.tier,
-      user.name
+      user.name,
     );
 
     const refreshToken = generateRefreshToken(user._id);
@@ -116,6 +116,9 @@ export async function POST(request) {
       preferences: user.preferences,
       marketing_consent: user.marketing_consent,
     }).catch(console.error); // Log errors but don't fail registration
+
+    //  Notification to admin (also non-blocking)
+    sendAdminNotificationNewUser(user, user.tier).catch(console.error);
 
     // Return response with user data
     return Response.json(
@@ -138,7 +141,7 @@ export async function POST(request) {
           expiresIn: 3600, // 1 hour
         },
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     console.error("Registration error:", error);
@@ -147,7 +150,7 @@ export async function POST(request) {
     if (error.code === 11000) {
       return Response.json(
         { success: false, error: "Email already exists" },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -156,13 +159,13 @@ export async function POST(request) {
       const messages = Object.values(error.errors).map((err) => err.message);
       return Response.json(
         { success: false, error: messages.join(", ") },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     return Response.json(
       { success: false, error: "Registration failed. Please try again." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
