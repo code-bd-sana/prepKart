@@ -163,6 +163,14 @@ const userSchema = new mongoose.Schema(
         enum: ["free", "tier2", "tier3", "admin"],
         default: "free",
       },
+      lastInvoice: {
+        invoiceId: String,
+        invoicePdf: String,
+        hostedInvoiceUrl: String,
+        amountPaid: Number,
+        currency: String,
+        paidAt: Date,
+      },
     },
     isActive: {
       type: Boolean,
@@ -171,7 +179,7 @@ const userSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 const User = mongoose.models.User || mongoose.model("User", userSchema);

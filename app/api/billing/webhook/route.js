@@ -1,253 +1,3 @@
-// import { NextResponse } from "next/server";
-// import { stripe } from "@/lib/stripe";
-// import { connectDB } from "@/lib/db";
-// import User from "@/models/User";
-
-// export async function POST(request) {
-//   const payload = await request.text();
-//   const signature = request.headers.get("stripe-signature");
-
-//   let event;
-
-//   try {
-//     event = stripe.webhooks.constructEvent(
-//       payload,
-//       signature,
-//       process.env.STRIPE_WEBHOOK_SECRET
-//     );
-//   } catch (err) {
-//     console.error("Webhook signature verification failed:", err.message);
-//     return NextResponse.json(
-//       { error: "Webhook signature verification failed" },
-//       { status: 400 }
-//     );
-//   }
-
-//   await connectDB();
-
-//   try {
-//     console.log(
-//       `WEBHOOK RECEIVED: ${event.type} at ${new Date().toISOString()}`
-//     );
-
-//     switch (event.type) {
-//       case "checkout.session.completed": {
-//         const session = event.data.object;
-//         const userId = session.metadata?.userId;
-//         const tier = session.metadata?.tier || "tier2";
-//         const customerId = session.customer;
-//         const subscriptionId = session.subscription;
-
-//         if (!userId) {
-//           console.error("NO USER ID IN METADATA");
-//           break;
-//         }
-
-//         if (session.payment_status !== "paid") {
-//           console.error("PAYMENT NOT PAID, SKIPPING");
-//           break;
-//         }
-
-//         // Get actual subscription end date
-//         let periodEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-
-//         if (subscriptionId) {
-//           try {
-//             const subscription = await stripe.subscriptions.retrieve(
-//               subscriptionId
-//             );
-//             periodEnd = new Date(subscription.current_period_end * 1000);
-//             console.log(`   Actual period ends: ${periodEnd}`);
-//           } catch (error) {
-//             console.error("Error getting subscription:", error);
-//           }
-//         }
-
-//         // Calculate swaps
-//         const swapsAllowed = tier === "tier2" ? 2 : 3;
-
-//         // Update user in database
-//         const result = await User.findByIdAndUpdate(
-//           userId,
-//           {
-//             tier: tier,
-//             swapsAllowed: swapsAllowed,
-//             swapsUsed: 0,
-//             stripeCustomerId: customerId,
-//             "subscription.status": "active",
-//             "subscription.tier": tier,
-//             "subscription.stripeSubscriptionId": subscriptionId,
-//             "subscription.stripeCustomerId": customerId,
-//             "subscription.currentPeriodEnd": periodEnd,
-//             "subscription.cancelAtPeriodEnd": false,
-//             "subscription.startDate": new Date(),
-//           },
-//           { new: true }
-//         );
-
-//         if (result) {
-//           // console.log(`DATABASE UPDATED: User ${userId} -> Tier ${tier}`);
-//           // console.log(`   Swaps allowed: ${swapsAllowed}`);
-//           console.log(`   Period ends: ${periodEnd}`);
-//         } else {
-//           console.error(`USER NOT FOUND: ${userId}`);
-//         }
-//         break;
-//       }
-
-//       case "invoice.payment_succeeded": {
-//         const invoice = event.data.object;
-
-//         // Skip initial invoice (handled by checkout.session.completed)
-//         if (invoice.billing_reason === "subscription_create") {
-//           console.log(
-//             "Initial invoice - skipping (handled by checkout.session.completed)"
-//           );
-//           break;
-//         }
-
-//         // Only process auto-renewals
-//         if (
-//           invoice.billing_reason === "subscription_cycle" &&
-//           invoice.subscription
-//         ) {
-//           console.log(`AUTO-RENEWAL DETECTED`);
-
-//           try {
-//             const subscription = await stripe.subscriptions.retrieve(
-//               invoice.subscription
-//             );
-//             const periodEnd = new Date(subscription.current_period_end * 1000);
-
-//             // Find user by subscription ID
-//             const user = await User.findOne({
-//               "subscription.stripeSubscriptionId": invoice.subscription,
-//             });
-
-//             if (user) {
-//               await User.findByIdAndUpdate(user._id, {
-//                 $set: {
-//                   "subscription.currentPeriodEnd": periodEnd,
-//                   "subscription.lastRenewalDate": new Date(),
-//                   swapsUsed: 0, // Reset for new month
-//                 },
-//               });
-
-//               console.log(`${user.email} renewed until ${periodEnd}`);
-//               console.log(`Swaps reset to 0`);
-//             } else {
-//               console.error(
-//                 `No user found for subscription ${invoice.subscription}`
-//               );
-//             }
-//           } catch (error) {
-//             console.error("Error processing renewal:", error);
-//           }
-//         }
-//         break;
-//       }
-
-//       case "invoice.paid": {
-//         // Similar logic to invoice.payment_succeeded
-//         const invoice = event.data.object;
-//         console.log(`INVOICE.PAID: ${invoice.id}`);
-
-//         if (
-//           invoice.billing_reason === "subscription_cycle" &&
-//           invoice.subscription
-//         ) {
-//           console.log(`Also an auto-renewal`);
-//         }
-//         break;
-//       }
-
-//       case "invoice.payment_failed": {
-//         const invoice = event.data.object;
-//         if (invoice.subscription) {
-//           const user = await User.findOne({
-//             "subscription.stripeSubscriptionId": invoice.subscription,
-//           });
-//           if (user) {
-//             await User.findByIdAndUpdate(user._id, {
-//               "subscription.status": "past_due", // Or handle as needed
-//             });
-//             console.log(`Payment failed for ${user.email}`);
-//           }
-//         }
-//         break;
-//       }
-
-//       case "customer.subscription.created": {
-//         const subscription = event.data.object;
-//         // console.log(`SUBSCRIPTION CREATED: ${subscription.id}`);
-//         // console.log(`   Customer: ${subscription.customer}`);
-//         // console.log(`   Status: ${subscription.status}`);
-//         // The checkout.session.completed should handle this
-//         break;
-//       }
-
-//       case "customer.subscription.updated": {
-//         const subscription = event.data.object;
-//         const customerId = subscription.customer;
-//         const status = subscription.status;
-
-//         console.log(`SUBSCRIPTION UPDATED: ${subscription.id} -> ${status}`);
-
-//         if (customerId) {
-//           const user = await User.findOne({
-//             "subscription.stripeCustomerId": customerId,
-//           });
-
-//           if (user) {
-//             const periodEnd = new Date(subscription.current_period_end * 1000);
-
-//             const updates = {
-//               "subscription.status": status,
-//               "subscription.currentPeriodEnd": periodEnd,
-//               "subscription.cancelAtPeriodEnd":
-//                 subscription.cancel_at_period_end,
-//             };
-
-//             if (status !== "active") {
-//               updates.tier = "free";
-//               updates.swapsAllowed = 1;
-//               updates.swapsUsed = 0;
-//             }
-
-//             await User.findByIdAndUpdate(user._id, updates);
-//             console.log(`Updated ${user.email} to status: ${status}`);
-//           }
-//         }
-//         break;
-//       }
-
-//       case "customer.subscription.deleted": {
-//         const subscription = event.data.object;
-//         await User.findOneAndUpdate(
-//           { "subscription.stripeSubscriptionId": subscription.id },
-//           {
-//             tier: "free",
-//             swapsAllowed: 1,
-//             "subscription.status": "canceled",
-//           }
-//         );
-//         break;
-//       }
-
-//       default:
-//         console.log(`Other event: ${event.type}`);
-//     }
-
-//     return NextResponse.json({ received: true });
-//   } catch (error) {
-//     console.error("WEBHOOK ERROR:", error);
-//     return NextResponse.json(
-//       { error: "Webhook processing failed" },
-//       { status: 500 }
-//     );
-//   }
-// }
-
 import { NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { connectDB } from "@/lib/db";
@@ -277,7 +27,7 @@ export async function POST(request) {
       console.error("MISSING STRIPE-SIGNATURE HEADER");
       return NextResponse.json(
         { error: "No stripe-signature header" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -287,7 +37,7 @@ export async function POST(request) {
       console.error("MISSING STRIPE_WEBHOOK_SECRET ENV VARIABLE");
       return NextResponse.json(
         { error: "Webhook secret not configured" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -301,7 +51,7 @@ export async function POST(request) {
       console.error("SIGNATURE VERIFICATION FAILED:", err.message);
       return NextResponse.json(
         { error: "Webhook signature verification failed" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -324,6 +74,10 @@ export async function POST(request) {
         await handleInvoicePaymentSucceeded(event.data.object);
         break;
 
+      case "invoice.paid":
+        await handleInvoicePaid(event.data.object);
+        break;
+
       case "customer.subscription.updated":
         await handleSubscriptionUpdated(event.data.object);
         break;
@@ -332,8 +86,12 @@ export async function POST(request) {
         await handleSubscriptionDeleted(event.data.object);
         break;
 
+      case "invoice.payment_failed":
+        await handleInvoicePaymentFailed(event.data.object);
+        break;
+
       default:
-        console.log(`ℹUnhandled event type: ${event.type}`);
+        console.log(`ℹ Unhandled event type: ${event.type}`);
     }
 
     console.log("Webhook processed successfully");
@@ -348,7 +106,7 @@ export async function POST(request) {
         error: "Webhook handler failed",
         message: error.message,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -369,12 +127,23 @@ async function handleCheckoutSessionCompleted(session) {
 
   // Get subscription details with proper error handling
   let periodEnd = new Date(Date.now() + 31 * 24 * 60 * 60 * 1000); // Default 30 days
+  let startedAt = new Date(); // Default to now
+  let lastInvoice = null;
 
   if (session.subscription) {
     try {
       const subscription = await stripe.subscriptions.retrieve(
-        session.subscription
+        session.subscription,
       );
+      console.log("subscription", subscription);
+      // Set startedAt from subscription creation
+      if (subscription.created) {
+        const timestamp = subscription.created * 1000;
+        if (!isNaN(timestamp) && timestamp > 0) {
+          startedAt = new Date(timestamp);
+          console.log("Subscription started at:", startedAt.toISOString());
+        }
+      }
 
       // Validate the timestamp before creating Date
       if (subscription.current_period_end) {
@@ -385,11 +154,31 @@ async function handleCheckoutSessionCompleted(session) {
         } else {
           console.warn(
             "Invalid subscription timestamp:",
-            subscription.current_period_end
+            subscription.current_period_end,
           );
         }
       } else {
         console.warn("No current_period_end in subscription");
+      }
+
+      // Get last invoice
+      const invoices = await stripe.invoices.list({
+        subscription: session.subscription, // Changed from customer to subscription
+        limit: 1,
+      });
+
+      const invoice = invoices.data[0];
+      console.log("invoice", invoice);
+      if (invoice) {
+        lastInvoice = {
+          invoiceId: invoice.id,
+          invoicePdf: invoice.invoice_pdf,
+          hostedInvoiceUrl: invoice.hosted_invoice_url,
+          amountPaid: invoice.amount_paid,
+          currency: invoice.currency,
+          paidAt: new Date(invoice.created * 1000),
+        };
+        console.log("Last invoice retrieved:", invoice.id);
       }
     } catch (error) {
       console.error("Failed to retrieve subscription:", error.message);
@@ -401,6 +190,10 @@ async function handleCheckoutSessionCompleted(session) {
   if (!periodEnd || isNaN(periodEnd.getTime())) {
     console.error("Invalid periodEnd date, using default");
     periodEnd = new Date(Date.now() + 31 * 24 * 60 * 60 * 1000);
+  }
+
+  if (!startedAt || isNaN(startedAt.getTime())) {
+    startedAt = new Date();
   }
 
   console.log("Final periodEnd:", periodEnd.toISOString());
@@ -423,15 +216,29 @@ async function handleCheckoutSessionCompleted(session) {
       tier,
       currentPeriodEnd: periodEnd,
       cancelAtPeriodEnd: false,
+      startedAt: startedAt,
+      lastInvoice: lastInvoice,
     },
   };
+
+  console.log("Update document:", JSON.stringify(updateDoc, null, 2));
+  if (lastInvoice) {
+    updateDoc.subscription.lastInvoice = {
+      invoiceId: lastInvoice.invoiceId,
+      invoicePdf: lastInvoice.invoicePdf,
+      hostedInvoiceUrl: lastInvoice.hostedInvoiceUrl,
+      amountPaid: lastInvoice.amountPaid,
+      currency: lastInvoice.currency,
+      paidAt: lastInvoice.paidAt,
+    };
+  }
 
   console.log("Update document:", JSON.stringify(updateDoc, null, 2));
 
   const result = await User.findByIdAndUpdate(
     userId,
     { $set: updateDoc },
-    { new: true, runValidators: true }
+    { new: true, runValidators: true },
   );
 
   if (!result) {
@@ -466,6 +273,7 @@ async function handleCheckoutSessionCompleted(session) {
     }
   }
 }
+
 async function handleInvoicePaymentSucceeded(invoice) {
   console.log("Handling invoice.payment_succeeded");
 
@@ -479,12 +287,12 @@ async function handleInvoicePaymentSucceeded(invoice) {
   if (invoice.billing_reason === "subscription_cycle" && invoice.subscription) {
     console.log(
       " Processing auto-renewal for subscription:",
-      invoice.subscription
+      invoice.subscription,
     );
 
     try {
       const subscription = await stripe.subscriptions.retrieve(
-        invoice.subscription
+        invoice.subscription,
       );
 
       // Validate date before updating
@@ -515,7 +323,7 @@ async function handleInvoicePaymentSucceeded(invoice) {
         });
 
         console.log(
-          `Auto-renewal: ${user.email} renewed until ${periodEnd.toISOString()}`
+          `Auto-renewal: ${user.email} renewed until ${periodEnd.toISOString()}`,
         );
 
         // Send renewal email
@@ -561,7 +369,7 @@ async function handleInvoicePaymentFailed(invoice) {
       } catch (emailError) {
         console.error(
           "Failed to send payment failed email:",
-          emailError.message
+          emailError.message,
         );
       }
     }
@@ -635,5 +443,73 @@ async function handleSubscriptionDeleted(subscription) {
     } catch (emailError) {
       console.error("Failed to send cancellation email:", emailError.message);
     }
+  }
+}
+async function handleInvoicePaid(invoice) {
+  console.log("Handling invoice.paid event");
+  console.log("Invoice ID:", invoice.id);
+  console.log("Billing reason:", invoice.billing_reason);
+
+  if (!invoice.subscription) {
+    console.log("No subscription in invoice, skipping");
+    return;
+  }
+
+  try {
+    // Find user by subscription ID
+    const user = await User.findOne({
+      "subscription.stripeSubscriptionId": invoice.subscription,
+    });
+
+    if (!user) {
+      console.error("User not found for subscription:", invoice.subscription);
+      return;
+    }
+
+    // Create lastInvoice object
+    const lastInvoice = {
+      invoiceId: invoice.id,
+      invoicePdf: invoice.invoice_pdf,
+      hostedInvoiceUrl: invoice.hosted_invoice_url,
+      amountPaid: invoice.amount_paid,
+      currency: invoice.currency,
+      paidAt: new Date(invoice.created * 1000),
+    };
+
+    console.log("Updating user with invoice:", invoice.id);
+
+    // Update user with lastInvoice
+    await User.findByIdAndUpdate(
+      user._id,
+      {
+        $set: {
+          "subscription.lastInvoice": lastInvoice,
+          "subscription.status": "active",
+          updatedAt: new Date(),
+        },
+      },
+      { new: true },
+    );
+
+    console.log(`Invoice ${invoice.id} saved for user ${user.email}`);
+
+    // If this is the first invoice, also set startedAt
+    if (invoice.billing_reason === "subscription_create") {
+      const subscription = await stripe.subscriptions.retrieve(
+        invoice.subscription,
+      );
+
+      if (subscription.created) {
+        const startedAt = new Date(subscription.created * 1000);
+        await User.findByIdAndUpdate(user._id, {
+          $set: {
+            "subscription.startedAt": startedAt,
+          },
+        });
+        console.log("StartedAt set to:", startedAt.toISOString());
+      }
+    }
+  } catch (error) {
+    console.error("Error in handleInvoicePaid:", error);
   }
 }
