@@ -63,6 +63,7 @@ export default function PricingSection() {
     ...planStyles[index],
   }));
 
+  // cancel the plan immediately
   const handleCancel = async (plan) => {
     const message = `Are you sure you want to cancel your ${plan.name} and switch to Free? This will take effect immediately.`;
 
@@ -98,6 +99,76 @@ export default function PricingSection() {
       }
     } catch (error) {
       console.error("Cancel error:", error);
+      toast.error(t("alerts.somethingWrong"));
+    } finally {
+      setCancelling(false);
+    }
+  };
+
+  const confirmCancelAutoRenewal = (plan) => {
+    toast(
+      ({ closeToast }) => (
+        <div className='text-sm'>
+          <p className='font-medium mb-2'>
+            Cancel auto-renewal for {plan.name}?
+          </p>
+          <p className='text-gray-600 mb-3'>
+            You will keep access until the end of your billing period.
+          </p>
+
+          <div className='flex justify-end gap-2'>
+            <button
+              onClick={closeToast}
+              className='px-3 py-1 text-xs text-gray-600 hover:text-gray-800'>
+              No
+            </button>
+
+            <button
+              onClick={() => {
+                closeToast();
+                handleCancelAutoRenewal(plan);
+              }}
+              className='px-3 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600'>
+              Yes, cancel
+            </button>
+          </div>
+        </div>
+      ),
+      { autoClose: false },
+    );
+  };
+
+  // cancel the plan after the period ends
+  const handleCancelAutoRenewal = async (plan) => {
+    try {
+      setCancelling(true);
+
+      const token =
+        localStorage.getItem("token") || localStorage.getItem("accessToken");
+
+      if (!token) {
+        toast.error("Please login to continue");
+        return;
+      }
+
+      const response = await fetch("/api/billing/cancel-auto-renewal", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success("Auto-renewal cancelled successfully");
+        dispatch(fetchUserData()); // this removes the button
+      } else {
+        toast.error(data.error || "Failed to cancel auto-renewal");
+      }
+    } catch (error) {
+      console.error(error);
       toast.error(t("alerts.somethingWrong"));
     } finally {
       setCancelling(false);
@@ -374,15 +445,31 @@ export default function PricingSection() {
                   {/* Action Button Area */}
                   <div className='mt-auto space-y-2'>
                     {isLoggedIn && buttonState.showCancel && (
-                      <button
-                        onClick={() => handleCancel(plan)}
-                        disabled={cancelling}
-                        className='w-full py-1.5 text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded transition-colors duration-150'>
-                        {cancelling
-                          ? t("messages.cancelling")
-                          : t("messages.cancelPlan")}
-                      </button>
+                      <div className='flex gap-1'>
+                        {/* Cancel immediately */}
+                        <button
+                          onClick={() => handleCancel(plan)}
+                          disabled={cancelling}
+                          className='w-full py-1.5 cursor-pointer text-xs text-gray-500 hover:text-gray-700 bg-gray-50 rounded transition-colors'>
+                          {cancelling
+                            ? t("messages.cancelling")
+                            : t("messages.cancelPlan")}
+                        </button>
+
+                        {/* Cancel auto-renewal (only if still enabled) */}
+                        {!user.subscription?.cancelAtPeriodEnd && (
+                          <button
+                            onClick={() => confirmCancelAutoRenewal(plan)}
+                            disabled={cancelling}
+                            className='w-full py-1.5 cursor-pointer text-xs text-gray-500 hover:text-gray-700 bg-gray-50 rounded transition-colors'>
+                            {cancelling
+                              ? t("messages.processing")
+                              : t("messages.cancelAutoRenewal")}
+                          </button>
+                        )}
+                      </div>
                     )}
+
                     {/* Main Plan Button */}
                     <button
                       onClick={() => handlePayment(plan)}
@@ -396,8 +483,6 @@ export default function PricingSection() {
                       }`}>
                       {processing ? t("messages.processing") : buttonState.text}
                     </button>
-
-                    {/* Small, Subtle Cancel Button */}
                   </div>
                 </div>
               </div>

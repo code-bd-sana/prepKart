@@ -12,7 +12,7 @@ import {
   Heart,
   DollarSign,
 } from "lucide-react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
@@ -35,7 +35,11 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
   });
   // Get user data from Redux
   const { user, loading: userLoading } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
   const router = useRouter();
+
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [isResuming, setIsResuming] = useState(false);
 
   // Fetch saved meal plans when modal opens
   useEffect(() => {
@@ -220,22 +224,10 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
   useEffect(() => {
     if (isOpen && !user) {
       onClose();
-      // Optional: redirect to login
       // router.push(`/${locale}/login`);
     }
     if (isOpen && user) {
       console.log("User tier:", user.tier);
-
-      if (user.tier === "admin" || user.role === "admin") {
-        console.log("Admin detected, redirecting...");
-        onClose();
-
-        setTimeout(() => {
-          window.location.href = "/";
-        }, 100);
-
-        return;
-      }
     }
   }, [isOpen, user, onClose, locale]);
 
@@ -254,10 +246,182 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
     };
   }, [isOpen, handleClickOutside]);
 
+  // cancel auto renewal
+  const handleCancelAutoRenewal = async () => {
+    try {
+      setIsCancelling(true);
+
+      const token =
+        localStorage.getItem("token") || localStorage.getItem("accessToken");
+
+      if (!token) {
+        toast.error("Please login to continue");
+        return;
+      }
+
+      const response = await fetch("/api/billing/cancel-auto-renewal", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success("Auto-renewal cancelled successfully");
+        // Refresh user data - dispatch is available here
+        dispatch(fetchUserData());
+      } else {
+        toast.error(data.error || "Failed to cancel auto-renewal");
+      }
+    } catch (error) {
+      console.error("Cancel auto-renewal error:", error);
+      toast.error("Failed to cancel auto-renewal");
+    } finally {
+      setIsCancelling(false);
+    }
+  };
+
+  // Resume subscription
+  const handleResumeSubscription = async () => {
+    try {
+      setIsResuming(true);
+
+      const token =
+        localStorage.getItem("token") || localStorage.getItem("accessToken");
+
+      if (!token) {
+        toast.error("Please login to continue");
+        return;
+      }
+
+      const response = await fetch("/api/billing/resume-subscription", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success("Auto-renewal resumed successfully");
+        // Refresh user data - dispatch is available here
+        dispatch(fetchUserData());
+      } else {
+        toast.error(data.error || "Failed to resume subscription");
+      }
+    } catch (error) {
+      console.error("Resume subscription error:", error);
+      toast.error("Failed to resume subscription");
+    } finally {
+      setIsResuming(false);
+    }
+  };
+
+  // Cancel subscription immediately
+  const handleCancelImmediately = async () => {
+    if (
+      !confirm(
+        "Are you sure you want to cancel immediately? You'll lose access to premium features right away.",
+      )
+    ) {
+      return;
+    }
+
+    try {
+      setIsCancelling(true);
+
+      const token =
+        localStorage.getItem("token") || localStorage.getItem("accessToken");
+
+      if (!token) {
+        toast.error("Please login to continue");
+        return;
+      }
+
+      const response = await fetch("/api/billing/cancel", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success("Subscription cancelled successfully");
+        // Refresh user data - dispatch is available here
+        dispatch(fetchUserData());
+      } else {
+        toast.error(data.error || "Failed to cancel subscription");
+      }
+    } catch (error) {
+      console.error("Cancel subscription error:", error);
+      toast.error("Failed to cancel subscription");
+    } finally {
+      setIsCancelling(false);
+    }
+  };
+
+  // Confirm cancel auto-renewal toast
+  const confirmCancelAutoRenewal = async () => {
+    return new Promise((resolve) => {
+      toast(
+        <div className='p-4'>
+          <p className='font-semibold text-gray-800 mb-2'>
+            Cancel Auto-Renewal?
+          </p>
+          <p className='text-sm text-gray-600 mb-4'>
+            Your {user?.tier === "tier2" ? "Plus" : "Premium"} plan will stay
+            active until {formatDate(user?.subscription?.currentPeriodEnd)}.
+            After that, you will be downgraded to the Free plan.
+          </p>
+          <div className='flex justify-end gap-2'>
+            <button
+              onClick={() => {
+                toast.dismiss();
+                resolve(false);
+              }}
+              className='px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition'>
+              Keep Auto-Renewal
+            </button>
+            <button
+              onClick={() => {
+                toast.dismiss();
+                resolve(true);
+              }}
+              className='px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition'>
+              Cancel Auto-Renewal
+            </button>
+          </div>
+        </div>,
+        {
+          position: "top-center",
+          autoClose: false,
+          closeOnClick: false,
+          draggable: false,
+          closeButton: false,
+          theme: "light",
+        },
+      );
+    });
+  };
+
   if (!isOpen) return null;
 
-  // const tabs = ["Meal Plans", "Nutrition", "Calendar", "Budget", "Pantry"];
-  const tabs = ["Meal Plans", "Nutrition", "Calendar", "Pantry"];
+  const tabs = [
+    "Meal Plans",
+    "Nutrition",
+    "Calendar",
+    // "Budget",
+    "Pantry",
+    // "Subscription Details",
+  ];
 
   const tierConfig = {
     free: {
@@ -278,7 +442,14 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
   };
 
   const currentTier = user?.tier || "free";
-  const tierInfo = tierConfig[currentTier];
+  const tierInfo =
+    currentTier === "admin"
+      ? {
+          name: "Admin Plan",
+          color: "bg-purple-700 text-white",
+          displayName: "Admin",
+        }
+      : tierConfig[currentTier] || tierConfig.free;
 
   // Helper function to get emoji for plan goal
   const getGoalEmoji = (goal) => {
@@ -560,7 +731,6 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
   };
 
   // Get stats
-  // const nutritionStats = calculateTotalNutrition();
   const nutritionStats = calculateTotalNutrition();
 
   const budgetStats = calculateBudget();
@@ -1049,112 +1219,355 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
       //   );
 
       case "Pantry":
+        // case "Subscription Details":
         return (
           <div className='space-y-6 mb-72'>
-            {/* Upgrade message for free users */}
-            {user?.tier === "free" ? (
-              <div className='bg-yellow-50 border border-yellow-200 rounded-xl p-6 text-center'>
-                <h2 className='text-xl font-semibold text-yellow-800 mb-2'>
-                  Pantry Feature Unlocked
-                </h2>
-                <p className='text-yellow-700 mb-4'>
-                  The pantry feature is only available for Plus and Premium
-                  users.
-                </p>
+            {/* Subscription Overview */}
+            <div className='bg-white border border-gray-200 rounded-xl p-6'>
+              <div className='flex justify-between items-center mb-6'>
+                <h3 className='text-xl font-semibold text-gray-900'>
+                  Subscription Details
+                </h3>
+                <span
+                  className={`px-3 py-1 rounded-full text-sm font-medium ${
+                    user?.subscription?.status === "active"
+                      ? "bg-green-100 text-green-800"
+                      : user?.subscription?.status === "past_due"
+                        ? "bg-yellow-100 text-yellow-800"
+                        : user?.subscription?.status === "canceled"
+                          ? "bg-red-100 text-red-800"
+                          : "bg-gray-100 text-gray-800"
+                  }`}>
+                  {user?.subscription?.status
+                    ? user.subscription.status.charAt(0).toUpperCase() +
+                      user.subscription.status.slice(1)
+                    : "Inactive"}
+                </span>
               </div>
-            ) : (
-              <>
-                {/* Add Item Form */}
-                <div className='bg-white rounded-xl shadow-md p-6 '>
-                  <h2 className='text-xl font-semibold text-gray-900 mb-4'>
-                    Add New Item
-                  </h2>
 
-                  <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
-                    <div>
-                      <label className='block text-sm font-medium text-gray-700 mb-1'>
-                        Item Name *
-                      </label>
-                      <input
-                        type='text'
-                        placeholder='e.g., Rice, Olive Oil, Eggs'
-                        className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500'
-                      />
-                    </div>
-
-                    <div>
-                      <label className='block text-sm font-medium text-gray-700 mb-1'>
-                        Quantity
-                      </label>
-                      <input
-                        type='number'
-                        min='0.1'
-                        step='0.1'
-                        defaultValue='1'
-                        className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500'
-                      />
-                    </div>
-
-                    <div>
-                      <label className='block text-sm font-medium text-gray-700 mb-1'>
-                        Unit
-                      </label>
-                      <select className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500'>
-                        <option value='unit'>unit</option>
-                        <option value='cup'>cup</option>
-                        <option value='tbsp'>tbsp</option>
-                        <option value='tsp'>tsp</option>
-                        <option value='oz'>oz</option>
-                        <option value='lb'>lb</option>
-                        <option value='kg'>kg</option>
-                        <option value='g'>g</option>
-                        <option value='ml'>ml</option>
-                        <option value='l'>l</option>
-                      </select>
-                    </div>
-
-                    <div className='flex items-end'>
-                      <button className='w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition font-medium'>
-                        Add to Pantry
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Pantry Items */}
-                <div className='bg-white rounded-xl shadow-md p-6 mb-64'>
-                  <div className='flex justify-between items-center mb-6'>
-                    <h2 className='text-xl font-semibold text-gray-900'>
-                      My Pantry Items (0)
-                    </h2>
-                    <span className='text-sm text-gray-500'>
-                      Last updated: {new Date().toLocaleDateString()}
-                    </span>
-                  </div>
-
-                  <div className='text-center py-12'>
-                    <div className='text-gray-400 text-6xl mb-4'>🏪</div>
-                    <h3 className='text-xl font-semibold text-gray-900 mb-2'>
-                      Your pantry is empty
-                    </h3>
-                    <p className='text-gray-600 mb-6'>
-                      Add items you already have at home to exclude them from
-                      grocery lists.
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+                {/* Plan Details */}
+                <div className='space-y-4'>
+                  <div>
+                    <p className='text-sm text-gray-500 mb-1'>Plan</p>
+                    <p className='text-lg font-semibold text-gray-900'>
+                      {user?.subscription?.tier === "tier2"
+                        ? "PrepCart Plus"
+                        : user?.subscription?.tier === "tier3"
+                          ? "PrepCart Premium"
+                          : "Free Plan"}
                     </p>
                   </div>
 
-                  {/* Link to full pantry page */}
-                  {/* <div className="mt-8 pt-6 border-t border-gray-200 text-center">
-                    <Link
-                      href={`/${locale}/pantry`}
-                      className="inline-flex items-center gap-2 text-teal-600 hover:text-teal-700 font-medium"
-                    >
-                      View Full Pantry Page →
-                    </Link>
-                  </div> */}
+                  <div>
+                    <p className='text-sm text-gray-500 mb-1'>Billing Cycle</p>
+                    <p className='text-lg font-semibold text-gray-900'>
+                      {user?.subscription?.tier === "tier2"
+                        ? "$4.99 / month"
+                        : user?.subscription?.tier === "tier3"
+                          ? "$9.99 / month"
+                          : "Free"}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className='text-sm text-gray-500 mb-1'>
+                      Swaps Available
+                    </p>
+                    <p className='text-lg font-semibold text-gray-900'>
+                      {user?.swapsUsed || 0} / {user?.swapsAllowed || 1} used
+                    </p>
+                  </div>
                 </div>
-              </>
+
+                {/* Dates */}
+                <div className='space-y-4'>
+                  <div>
+                    <p className='text-sm text-gray-500 mb-1'>
+                      Subscription Started
+                    </p>
+                    <p className='text-lg font-semibold text-gray-900'>
+                      {user?.subscription?.startedAt
+                        ? formatDate(user.subscription.startedAt)
+                        : formatDate(user?.createdAt)}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className='text-sm text-gray-500 mb-1'>
+                      {user?.subscription?.cancelAtPeriodEnd
+                        ? "Access Ends On"
+                        : "Next Billing Date"}
+                    </p>
+                    <p className='text-lg font-semibold text-gray-900'>
+                      {user?.subscription?.currentPeriodEnd
+                        ? formatDate(user.subscription.currentPeriodEnd)
+                        : "N/A"}
+                    </p>
+                    {user?.subscription?.cancelAtPeriodEnd && (
+                      <p className='text-sm text-orange-600 mt-1'>
+                        Auto-renewal is cancelled
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <p className='text-sm text-gray-500 mb-1'>
+                      Stripe Customer ID
+                    </p>
+                    <p className='text-sm font-medium text-gray-900 truncate'>
+                      {user?.stripeCustomerId || "N/A"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Billing History */}
+            {user?.subscription?.lastInvoice && (
+              <div className='bg-white border border-gray-200 rounded-xl p-6'>
+                <h3 className='text-xl font-semibold text-gray-900 mb-6'>
+                  Billing History
+                </h3>
+
+                <div className='space-y-4'>
+                  {/* Latest Invoice */}
+                  <div className='border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors'>
+                    <div className='flex flex-col md:flex-row md:items-center justify-between gap-4'>
+                      <div className='flex-1'>
+                        <div className='flex items-center gap-3 mb-2'>
+                          <div className='w-3 h-3 bg-green-500 rounded-full'></div>
+                          <span className='font-medium text-gray-900'>
+                            Latest Payment
+                          </span>
+                        </div>
+                        <div className='grid grid-cols-1 md:grid-cols-3 gap-4 text-sm'>
+                          <div>
+                            <p className='text-gray-500'>Amount</p>
+                            <p className='font-semibold text-gray-900'>
+                              $
+                              {(
+                                user.subscription.lastInvoice.amountPaid / 100
+                              ).toFixed(2)}{" "}
+                              {user.subscription.lastInvoice.currency.toUpperCase()}
+                            </p>
+                          </div>
+                          <div>
+                            <p className='text-gray-500'>Date</p>
+                            <p className='font-semibold text-gray-900'>
+                              {formatDate(user.subscription.lastInvoice.paidAt)}
+                            </p>
+                          </div>
+                          <div>
+                            <p className='text-gray-500'>Invoice ID</p>
+                            <p className='font-medium text-gray-900 text-sm truncate'>
+                              {user.subscription.lastInvoice.invoiceId}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className='flex flex-col sm:flex-row gap-2'>
+                        <a
+                          href={user.subscription.lastInvoice.hostedInvoiceUrl}
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          className='inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm'>
+                          <svg
+                            className='w-4 h-4'
+                            fill='none'
+                            stroke='currentColor'
+                            viewBox='0 0 24 24'>
+                            <path
+                              strokeLinecap='round'
+                              strokeLinejoin='round'
+                              strokeWidth={2}
+                              d='M15 12a3 3 0 11-6 0 3 3 0 016 0z'
+                            />
+                            <path
+                              strokeLinecap='round'
+                              strokeLinejoin='round'
+                              strokeWidth={2}
+                              d='M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z'
+                            />
+                          </svg>
+                          View Invoice
+                        </a>
+                        <a
+                          href={user.subscription.lastInvoice.invoicePdf}
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          className='inline-flex items-center justify-center gap-2 bg-gray-800 hover:bg-black text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm'>
+                          <svg
+                            className='w-4 h-4'
+                            fill='none'
+                            stroke='currentColor'
+                            viewBox='0 0 24 24'>
+                            <path
+                              strokeLinecap='round'
+                              strokeLinejoin='round'
+                              strokeWidth={2}
+                              d='M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'
+                            />
+                          </svg>
+                          Download PDF
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Invoice Details */}
+                  <div className='bg-gray-50 rounded-lg p-4'>
+                    <h4 className='font-medium text-gray-900 mb-3'>
+                      Invoice Details
+                    </h4>
+                    <div className='grid grid-cols-1 md:grid-cols-2 gap-4 text-sm'>
+                      <div>
+                        <p className='text-gray-500'>Payment Method</p>
+                        <p className='font-medium text-gray-900'>
+                          Credit Card (Stripe)
+                        </p>
+                      </div>
+                      <div>
+                        <p className='text-gray-500'>Payment Status</p>
+                        <span className='inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800'>
+                          Paid
+                        </span>
+                      </div>
+                      <div>
+                        <p className='text-gray-500'>Subscription Period</p>
+                        <p className='font-medium text-gray-900'>
+                          {formatDate(
+                            user.subscription?.startedAt || user.createdAt,
+                          )}{" "}
+                          - {formatDate(user.subscription?.currentPeriodEnd)}
+                        </p>
+                      </div>
+                      <div>
+                        <p className='text-gray-500'>Auto-Renewal</p>
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            user.subscription?.cancelAtPeriodEnd
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-green-100 text-green-800"
+                          }`}>
+                          {user.subscription?.cancelAtPeriodEnd
+                            ? "Cancelled"
+                            : "Active"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             )}
+
+            {/* Manage Subscription Section */}
+            <div className='bg-white border border-gray-200 rounded-xl p-6'>
+              <h3 className='text-xl font-semibold text-gray-900 mb-4'>
+                Manage Subscription
+              </h3>
+
+              <div className='space-y-4'>
+                {/* Current Status */}
+                <div className='flex items-center justify-between p-3 bg-gray-50 rounded-lg'>
+                  <div>
+                    <p className='font-medium text-gray-900'>
+                      Auto-Renewal Status
+                    </p>
+                    <p className='text-sm text-gray-600'>
+                      {user?.subscription?.cancelAtPeriodEnd
+                        ? "Will not renew after current period"
+                        : "Will automatically renew on next billing date"}
+                    </p>
+                  </div>
+                  <span
+                    className={`px-3 py-1 rounded-full text-sm font-medium ${
+                      user?.subscription?.cancelAtPeriodEnd
+                        ? "bg-yellow-100 text-yellow-800"
+                        : "bg-green-100 text-green-800"
+                    }`}>
+                    {user?.subscription?.cancelAtPeriodEnd ? "Off" : "On"}
+                  </span>
+                </div>
+
+                {/* Action Buttons */}
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
+                  {!user?.subscription?.cancelAtPeriodEnd ? (
+                    <button
+                      onClick={async () => {
+                        const confirmed = await confirmCancelAutoRenewal();
+                        if (!confirmed) return;
+                        await handleCancelAutoRenewal();
+                      }}
+                      disabled={isCancelling}
+                      className={`w-full py-3 border rounded-lg font-medium transition-colors flex items-center justify-center gap-2 ${
+                        isCancelling
+                          ? "bg-yellow-100 border-yellow-300 text-yellow-700 cursor-not-allowed"
+                          : "bg-yellow-50 border-yellow-200 text-yellow-700 hover:bg-yellow-100"
+                      }`}>
+                      {isCancelling ? (
+                        <>
+                          <div className='animate-spin rounded-full h-4 w-4 border-b-2 border-yellow-700'></div>
+                          Processing...
+                        </>
+                      ) : (
+                        "Cancel Auto-Renewal"
+                      )}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleResumeSubscription}
+                      disabled={isResuming}
+                      className={`w-full py-3 border rounded-lg font-medium transition-colors flex items-center justify-center gap-2 ${
+                        isResuming
+                          ? "bg-green-100 border-green-300 text-green-700 cursor-not-allowed"
+                          : "bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
+                      }`}>
+                      {isResuming ? (
+                        <>
+                          <div className='animate-spin rounded-full h-4 w-4 border-b-2 border-green-700'></div>
+                          Processing...
+                        </>
+                      ) : (
+                        "Resume Auto-Renewal"
+                      )}
+                    </button>
+                  )}
+
+                  <button
+                    onClick={() => {
+                      onClose();
+                      router.push(`/${locale}/#pricing`);
+                    }}
+                    className='w-full py-3 bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 rounded-lg font-medium transition-colors'>
+                    {user?.tier === "tier2"
+                      ? "Upgrade to Premium"
+                      : user?.tier === "tier3"
+                        ? "Downgrade to Plus"
+                        : "View Plans"}
+                  </button>
+
+                  <button
+                    onClick={handleCancelImmediately}
+                    disabled={isCancelling}
+                    className={`w-full py-3 border rounded-lg font-medium transition-colors flex items-center justify-center gap-2 ${
+                      isCancelling
+                        ? "bg-red-100 border-red-300 text-red-700 cursor-not-allowed"
+                        : "bg-red-50 border-red-200 text-red-700 hover:bg-red-100"
+                    }`}>
+                    {isCancelling ? (
+                      <>
+                        <div className='animate-spin rounded-full h-4 w-4 border-b-2 border-red-700'></div>
+                        Processing...
+                      </>
+                    ) : (
+                      "Cancel Immediately"
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         );
       case "Meal Plans":
