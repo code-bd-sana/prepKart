@@ -299,9 +299,9 @@
         "features": [
           "1 plan de repas par mois",
           "Non personnalisé",
-          "Pas d'échange (flou)",
+          "Pas d'échange",
           "Génération de liste d'épicerie – Prêt pour Instacart",
-          "Listes/plans non sauvegardables",
+          "Listes/plans sauvegardables",
           "NO Basculer garde-manger",
           "NO historique"
         ]
@@ -351,8 +351,9 @@
       "upgradePremium": "Passer à Premium",
       "processing": "Traitement...",
       "cancelling": "Annulation...",
-      "cancelPlan": "Annuler l’abonnement",
-      "launchDeal": "Prix de lancement"
+      "cancelPlan": "Annuler immédiatement",
+      "launchDeal": "Prix de lancement",
+      "cancelAutoRenewal": "Annuler le renouvellement automatique dans"
     },
     "alerts": {
       "cancellationSuccess": "Annulation réussie",

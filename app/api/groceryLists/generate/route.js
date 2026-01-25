@@ -33,6 +33,50 @@ export async function POST(request) {
     const userTier = user?.subscription?.tier || user?.tier || "free";
     const impactId = process.env.INSTACART_IMPACT_ID || "6899496";
 
+    // ------------------ New block for new logic ------------------
+    let canGenerate = true;
+    let errorMessage = null;
+
+    if (userTier === "admin") {
+      // Admins: always allow, no limits
+      canGenerate = true;
+    } else if (userTier === "free") {
+      // Free: 1 plan per month
+      const lastPlan = user.last_plan_date;
+      const isNewMonth =
+        !lastPlan ||
+        lastPlan.getMonth() !== new Date().getMonth() ||
+        lastPlan.getFullYear() !== new Date().getFullYear();
+
+      if (!isNewMonth && user.monthly_plan_count >= 1) {
+        canGenerate = false;
+        errorMessage =
+          "You have reached your free plan limit (1 plan per month). Upgrade to Plus or Premium.";
+      }
+    } else if (userTier === "tier2") {
+      // Plus: max 6 per month (your pricing page)
+      if (user.monthly_plan_count >= 6) {
+        canGenerate = false;
+        errorMessage =
+          "You have reached your Plus plan limit (6 plans/month). Upgrade to Premium for unlimited.";
+      }
+    } else if (userTier === "tier3") {
+      // Premium: unlimited → do nothing, allow
+      canGenerate = true;
+    }
+
+    if (!canGenerate) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: errorMessage || "Plan generation limit reached.",
+          limitReached: true,
+        },
+        { status: 403 },
+      );
+    }
+    // ----------------------------------------------------
+
     // Parse request body
     const body = await request.json();
     const { planId, pantryToggle = false, planData } = body;
@@ -47,19 +91,29 @@ export async function POST(request) {
     let plan;
     let isTemporaryPlan = false;
 
+    // if (planId.startsWith("temp_")) {
+    //   isTemporaryPlan = true;
+
+    //   if (!planData) {
+    //     return NextResponse.json(
+    //       {
+    //         error: "Plan data required for temporary plans",
+    //       },
+    //       { status: 400 },
+    //     );
+    //   }
+
+    //   plan = planData;
+    // }
+
+    // New logic - user can only generate meal after saving the plan
     if (planId.startsWith("temp_")) {
-      isTemporaryPlan = true;
-
-      if (!planData) {
-        return NextResponse.json(
-          {
-            error: "Plan data required for temporary plans",
-          },
-          { status: 400 },
-        );
-      }
-
-      plan = planData;
+      return NextResponse.json(
+        {
+          error: "Please save the plan first before generating a grocery list",
+        },
+        { status: 403 },
+      );
     } else {
       // SAVED PLAN: Fetch from database
       plan = await Plan.findOne({
@@ -136,6 +190,19 @@ export async function POST(request) {
 
     const groceryList = await GroceryList.create(groceryListData);
 
+    // for admin save plans
+    await User.findByIdAndUpdate(userId, {
+      $inc: {
+        monthly_plan_count: 1,
+        planGenerationCount: 1,
+      },
+      $set: {
+        last_plan_date: new Date(),
+        lastPlanGeneration: new Date(),
+      },
+    });
+    // ──────────────────────────────────────────────────────────────
+
     // Generate Instacart deep link
     const itemsForInstacart = sortedItems.filter(
       (item) => item.checked === true,
@@ -151,8 +218,8 @@ export async function POST(request) {
     // Update grocery list with Instacart link
     await GroceryList.findByIdAndUpdate(groceryList._id, {
       instacartDeepLink: instacartLink.link, // Save only the link string
-      instacartMethod: instacartLink.method, // Optional: save method separately
-      instacartItems: instacartLink.items, // Optional: save items separately
+      instacartMethod: instacartLink.method,
+      instacartItems: instacartLink.items,
     });
 
     return NextResponse.json({

@@ -23,7 +23,7 @@ const planSchema = new mongoose.Schema(
     // Tier info
     tier: {
       type: String,
-      enum: ["free", "tier2", "tier3"],
+      enum: ["free", "tier2", "tier3", "admin"],
       default: "free",
     },
 
@@ -120,7 +120,7 @@ const planSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Clear the model cache to apply changes

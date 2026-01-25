@@ -37,7 +37,7 @@ export async function GET(request) {
   } catch (error) {
     console.error("Confirm route error:", error);
     return NextResponse.redirect(
-      `${origin}/#pricing?error=${encodeURIComponent(error.message)}`
+      `${origin}/#pricing?error=${encodeURIComponent(error.message)}`,
     );
   }
 }

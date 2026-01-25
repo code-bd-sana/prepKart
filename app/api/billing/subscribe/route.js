@@ -26,7 +26,7 @@ export async function POST(request) {
     if (!tier || !["tier2", "tier3"].includes(tier)) {
       return NextResponse.json(
         { error: "Select tier2 or tier3" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -35,7 +35,6 @@ export async function POST(request) {
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
-
 
     // Get price ID
     const priceId =
@@ -46,7 +45,7 @@ export async function POST(request) {
     if (!priceId) {
       return NextResponse.json(
         { error: "Price not configured" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -76,7 +75,7 @@ export async function POST(request) {
         ? "https://prep-kart.vercel.app"
         : "http://localhost:3000";
 
-    // Use baseUrl 
+    // Use baseUrl
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       line_items: [{ price: priceId, quantity: 1 }],

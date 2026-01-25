@@ -68,7 +68,7 @@ export default function HomeBanner({ locale }) {
   const handleVoiceClick = () => {
     if (!recognitionRef.current) {
       alert(
-        "Speech recognition is not supported in your browser. Please use Chrome, Edge, or Safari."
+        "Speech recognition is not supported in your browser. Please use Chrome, Edge, or Safari.",
       );
       return;
     }
@@ -100,62 +100,58 @@ export default function HomeBanner({ locale }) {
   return (
     <>
       <section
-        className="
+        className='
       w-full 
       px-4 sm:px-10 md:px-12 lg:px-20 
       py-8 md:py-12 lg:py-16 bg-[linear-gradient(to_bottom,#8CC63C1A,#F9FAFB)]
-    "
-      >
+    '>
         <div
-          className="
+          className='
         max-w-[1500px] mx-auto 
         flex flex-col lg:flex-row 
         items-center 
         justify-between 
         gap-10 lg:gap-0 
-      "
-        >
+      '>
           {/* LEFT SIDE */}
-          <div className="w-full lg:w-[45%]">
+          <div className='w-full lg:w-[45%]'>
             {/* Heading */}
             <h1
-              className="
+              className='
             text-[32px] md:text-[60px] 
             leading-10 sm:leading-12 md:leading-[55px] lg:leading-[62px]
             tracking-[-0.5px]
             text-[#1E1E1E]
             mb-5
-          "
-            >
+          '>
               {t("title")}
             </h1>
 
             {/* Subtext */}
             <p
-              className="
+              className='
             text-[15px] md:text-[16px]
             leading-6 md:leading-[26px]
             text-[#666666]
             w-full md:max-w-[500px]
             mb-10
-          "
-            >
+          '>
               {t.rich("subtitle", {
                 highlight: (chunks) => (
-                  <strong className="font-bold text-primary">{chunks}</strong>
+                  <strong className='font-bold text-primary'>{chunks}</strong>
                 ),
               })}
             </p>
 
             {/* Voice/Text Input Section */}
-            <div className="mb-8">
-              <div className="relative">
+            <div className='mb-8'>
+              <div className='relative'>
                 <input
-                  type="text"
+                  type='text'
                   placeholder={t("inputPlaceholder")}
                   value={inputText}
                   onChange={handleInputChange}
-                  className="
+                  className='
                   w-full p-4 pl-4 pr-32 
                   border border-gray-300 
                   rounded-xl 
@@ -165,34 +161,34 @@ export default function HomeBanner({ locale }) {
                   text-gray-700 bg-white 
                   shadow-sm
                   text-[15px]
-                "
+                '
                 />
 
                 {/* Voice Button */}
                 <button
-                  type="button"
+                  type='button'
                   onClick={handleVoiceClick}
                   className={`
                   absolute right-3 top-1/2 
                   transform -translate-y-1/2 
                   px-3 py-2 rounded-lg 
                   flex items-center gap-2
-                  ${isListening
+                  ${
+                    isListening
                       ? "bg-red-50 text-red-600 border border-red-200"
                       : "bg-[#4a9fd8]/10 text-gray-600 hover:bg-[#4a9fd8]/20"
-                    } 
+                  } 
                   transition-colors
                   text-sm font-medium
-                `}
-                >
+                `}>
                   {isListening ? (
                     <>
-                      <div className="h-2 w-2 bg-red-500 rounded-full animate-pulse"></div>
+                      <div className='h-2 w-2 bg-red-500 rounded-full animate-pulse'></div>
                       <span>{t("voiceButtonListening")}</span>
                     </>
                   ) : (
                     <>
-                      <FiMic className="text-base" />
+                      <FiMic className='text-base' />
                       <span>{t("voiceButtonDefault")}</span>
                     </>
                   )}
@@ -201,16 +197,15 @@ export default function HomeBanner({ locale }) {
                 {/* Clear button when there's text */}
                 {inputText && (
                   <button
-                    type="button"
+                    type='button'
                     onClick={handleClearInput}
-                    className="
+                    className='
                     absolute right-28 top-1/2 
                     transform -translate-y-1/2 
                     text-gray-400 hover:text-gray-600
                     text-sm
-                  "
-                    title={t("clearButton")}
-                  >
+                  '
+                    title={t("clearButton")}>
                     ×
                   </button>
                 )}
@@ -218,9 +213,9 @@ export default function HomeBanner({ locale }) {
 
               {/* Voice input tips */}
               {transcript && (
-                <div className="mt-3">
-                  <p className="text-sm text-gray-600">
-                    <span className="font-medium">{t("voiceInput")}</span>{" "}
+                <div className='mt-3'>
+                  <p className='text-sm text-gray-600'>
+                    <span className='font-medium'>{t("voiceInput")}</span>{" "}
                     {transcript}
                   </p>
                 </div>
@@ -230,16 +225,15 @@ export default function HomeBanner({ locale }) {
             <div>
               {/* Buttons */}
               <div
-                className="
+                className='
             flex flex-col sm:flex-row 
             items-start sm:items-center 
             gap-3 
             mt-6
-          "
-              >
+          '>
                 <button
                   onClick={() => setShowModal(true)}
-                  className="
+                  className='
               p-3 text-[14px] font-medium 
               text-white 
               rounded-[10px] 
@@ -249,14 +243,15 @@ export default function HomeBanner({ locale }) {
               shadow-[0px_3px_10px_rgba(0,0,0,0.08)]
               w-full sm:w-auto
               flex items-center justify-center gap-2
-            "
-                >
+            '>
                   {t("generateButton")} <FiArrowRight />
                 </button>
-                <Link
-                  href={`/${locale}/#quickplans`}
-                  className="
-              p-3 text-[14px] font-medium 
+                {isAdmin ? (
+                  <>
+                    <Link
+                      href={`/${locale}/#quickplans`}
+                      className='
+        p-3 text-[14px] font-medium 
         text-[#4a9fd8] hover:text-white
         rounded-[10px] border-2 border-[#E5E5E5]
         bg-white hover:bg-[#4a9fd8]
@@ -264,31 +259,62 @@ export default function HomeBanner({ locale }) {
         shadow-[0px_3px_10px_rgba(0,0,0,0.08)]
         w-full sm:w-auto
         flex items-center justify-center gap-2
-            "
-                >
-                  {t("quickStartButton")} <FiArrowRight />
-                </Link>
+      '>
+                      {t("quickStartButton")} <FiArrowRight />
+                    </Link>
+                    <button
+                      onClick={() => setShowDashboardModal(true)}
+                      className='
+        p-3 text-[14px] font-medium 
+        text-white 
+        rounded-[10px] 
+        bg-[#4a9fd8]
+        hover:bg-[#3b8ec4]
+        transition-colors
+        shadow-[0px_3px_10px_rgba(0,0,0,0.08)]
+        w-full sm:w-auto
+        flex items-center justify-center gap-2 cursor-pointer
+      '>
+                      Dashboard <FiArrowRight />
+                    </button>
+                  </>
+                ) : (
+                  <Link
+                    href={`/${locale}/#quickplans`}
+                    className='
+        p-3 text-[14px] font-medium 
+        text-[#4a9fd8] hover:text-white
+        rounded-[10px] border-2 border-[#E5E5E5]
+        bg-white hover:bg-[#4a9fd8]
+        transition-colors
+        shadow-[0px_3px_10px_rgba(0,0,0,0.08)]
+        w-full sm:w-auto
+        flex items-center justify-center gap-2
+      '>
+                    {t("quickStartButton")} <FiArrowRight />
+                  </Link>
+                )}
               </div>
 
               {/* Badges */}
-              <div className="flex flex-wrap items-center gap-2 mt-4">
-                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-[#4a9fd8] rounded-full border border-blue-100">
-                  <FaCanadianMapleLeaf className="w-3.5 h-3.5" />
-                  <span className="text-xs font-medium">
+              <div className='flex flex-wrap items-center gap-2 mt-4'>
+                <div className='flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-[#4a9fd8] rounded-full border border-blue-100'>
+                  <FaCanadianMapleLeaf className='w-3.5 h-3.5' />
+                  <span className='text-xs font-medium'>
                     {t("badges.trusted")}
                   </span>
                 </div>
 
-                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-[#4a9fd8] rounded-full border border-green-100">
-                  <FaWallet className="w-3.5 h-3.5" />
-                  <span className="text-xs font-medium">
+                <div className='flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-[#4a9fd8] rounded-full border border-green-100'>
+                  <FaWallet className='w-3.5 h-3.5' />
+                  <span className='text-xs font-medium'>
                     {t("badges.budget")}
                   </span>
                 </div>
 
-                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-[#4a9fd8] rounded-full border border-purple-100">
-                  <FaCalendarTimes className="w-3.5 h-3.5" />
-                  <span className="text-xs font-medium">
+                <div className='flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-[#4a9fd8] rounded-full border border-purple-100'>
+                  <FaCalendarTimes className='w-3.5 h-3.5' />
+                  <span className='text-xs font-medium'>
                     {t("badges.noCommitment")}
                   </span>
                 </div>
@@ -297,19 +323,19 @@ export default function HomeBanner({ locale }) {
           </div>
 
           {/* RIGHT SIDE IMAGE */}
-          <div className="w-full lg:w-[55%] flex justify-end">
+          <div className='w-full lg:w-[55%] flex justify-end'>
             <Image
-              src="/HeroImage2.png"
+              src='/HeroImage2.png'
               width={749}
               height={549}
               alt={locale === "fr" ? "Marché" : "Marketplace"}
-              className="
+              className='
       rounded-[22px] 
       w-full 
       max-w-[500px] md:max-w-[600px]
       object-contain
       max-h-[400px] sm:max-h-[450px] lg:max-h-[600px]
-    "
+    '
             />
           </div>
         </div>
