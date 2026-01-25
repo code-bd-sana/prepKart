@@ -23,7 +23,7 @@ export async function POST(request, { params }) {
       console.error("Failed to parse request body:", parseError.message);
       return NextResponse.json(
         { error: "Invalid JSON in request body" },
-        { status: 400 }
+        { status: 400 },
       );
     }
     // Get plan data
@@ -41,17 +41,17 @@ export async function POST(request, { params }) {
     const actualUserTier = user.tier || "free";
 
     // Validate
-    if (actualUserTier === "free") {
-      return NextResponse.json(
-        {
-          error:
-            "Free users cannot save meal plans. Upgrade to Plus or Premium to save plans.",
-          requiresUpgrade: true,
-          tier: actualUserTier,
-        },
-        { status: 403 }
-      );
-    }
+    // if (actualUserTier === "free") {
+    //   return NextResponse.json(
+    //     {
+    //       error:
+    //         "Free users cannot save meal plans. Upgrade to Plus or Premium to save plans.",
+    //       requiresUpgrade: true,
+    //       tier: actualUserTier,
+    //     },
+    //     { status: 403 }
+    //   );
+    // }
     if (
       !planData.days ||
       !Array.isArray(planData.days) ||
@@ -59,7 +59,7 @@ export async function POST(request, { params }) {
     ) {
       return NextResponse.json(
         { error: "Invalid plan data: missing or empty days array" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -76,7 +76,8 @@ export async function POST(request, { params }) {
         days: normalizeDays(planData.days),
         inputs: planData.inputs || {},
         source: planData.source || "openai",
-        swapsAllowed: planData.swaps?.allowed || SWAPS_PER_PLAN[actualUserTier] || 1,
+        swapsAllowed:
+          planData.swaps?.allowed || SWAPS_PER_PLAN[actualUserTier] || 1,
         swapsUsed: planData.swaps?.used || 0,
         isSaved: true,
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
@@ -96,7 +97,7 @@ export async function POST(request, { params }) {
       if (savedPlan.userId.toString() !== userId.toString()) {
         return NextResponse.json(
           { error: "Not authorized to update this plan" },
-          { status: 403 }
+          { status: 403 },
         );
       }
 
@@ -135,7 +136,7 @@ export async function POST(request, { params }) {
     console.error("Save error:", error);
     return NextResponse.json(
       { error: "Failed to save plan: " + error.message },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

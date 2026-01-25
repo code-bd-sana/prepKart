@@ -300,9 +300,9 @@
         "features": [
           "1 meal plan per month",
           "Non-customized",
-          "No Swap (blur)",
+          "No Swap",
           "Grocery list generation – Instacart ready",
-          "Lists/plans cannot be saved",
+          "Lists/plans can be saved",
           "NO Pantry toggle",
           "NO history"
         ]
@@ -352,8 +352,9 @@
       "upgradePremium": "Upgrade to Premium",
       "processing": "Processing...",
       "cancelling": "Cancelling...",
-      "cancelPlan": "Cancel plan",
-      "launchDeal": "Launch Price"
+      "cancelPlan": "Cancel immediately",
+      "launchDeal": "Launch Price",
+      "cancelAutoRenewal": "Cancel Auto-renewal"
     },
     "alerts": {
       "cancellationSuccess": "cancelled successfully",

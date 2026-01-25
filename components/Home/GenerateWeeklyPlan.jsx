@@ -368,13 +368,20 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
 
       // Get user ID
       const userId = user?.id || user?._id;
-      if (!user || user?.tier === "free") {
-        toast.error("Upgrade to Plus or Premium to save plans");
-        window.location.href = "/#pricing";
+      if (!user || !userId) {
+        toast.error("Please login to save plans");
         return;
       }
 
-      // Prepare request body - INCLUDE SOURCE FIELD
+      // free users can't save meal
+      // const userId = user?.id || user?._id;
+      // if (!user || user?.tier === "free") {
+      //   toast.error("Upgrade to Plus or Premium to save plans");
+      //   window.location.href = "/#pricing";
+      //   return;
+      // }
+
+      // Prepare request body
       const requestBody = {
         planData: {
           ...plan,
@@ -487,6 +494,14 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
       // Check if user is logged in
       if (!user) {
         toast.error("Please login to generate grocery lists");
+        return;
+      }
+
+      // Only after saving the meal, user can generate grocery list
+      if (!plan.isSaved) {
+        toast.error(
+          "Please save the plan first before generating a grocery list",
+        );
         return;
       }
 
@@ -685,17 +700,6 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
         <p className='text-center text-3xl md:text-4xl font-semibold text-gray-900 mb-3'>
           {t("title")}
         </p>
-        {/* {plan && (
-          <div className='mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl'>
-            <p className='text-amber-800 font-semibold flex items-center'>
-              Don‘t forget to save!
-            </p>
-            <p className='text-amber-700 text-sm mt-1'>
-              If you close this window without clicking ‘Save Plan’, your meal
-              plan will be lost forever.
-            </p>
-          </div>
-        )} */}
         {/* Error Message */}
         {error && (
           <div className='max-w-6xl mx-auto mb-8'>
@@ -1325,50 +1329,6 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
 
                           {/* Swap Button */}
                           <div className='pt-2 border-t border-gray-100'>
-                            {/* <button
-                              onClick={async () => {
-                                if (!user) {
-                                  toast.error("Please login to swap meals");
-                                  return;
-                                }
-
-                                if (user.tier === "free") {
-                                  toast.error(
-                                    "Upgrade to Plus or Premium to swap meals"
-                                  );
-                                  // window.location.href = "/#pricing";
-                                  return;
-                                }
-
-                                if (plan.swaps.remaining <= 0) {
-                                  toast.error(
-                                    `No swaps remaining! Used ${plan.swaps.used}/${plan.swaps.allowed}`
-                                  );
-                                  return;
-                                }
-
-                                setIsSwapping(true);
-                                const result = await swapMeal(
-                                  plan.id,
-                                  mealIndex,
-                                  dayIndex
-                                );
-
-                                if (!result) {
-                                  // Error already shown by swapMeal function
-                                  setIsSwapping(false);
-                                }
-                              }}
-                              disabled={isSwapping}
-                              className={`w-full text-sm font-medium py-2 rounded transition ${
-                                isSwapping
-                                  ? "bg-gray-300 cursor-not-allowed"
-                                  : "bg-[#4a9fd8] hover:bg-[#3a8ec8] text-white"
-                              }`}
-                            >
-                              {isSwapping ? "Swapping..." : "Swap This Meal"}
-                            </button> */}
-
                             <button
                               onClick={async () => {
                                 const mealKey = `${dayIndex}-${mealIndex}`;
@@ -1453,16 +1413,16 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
                 <div className='flex flex-col md:flex-row gap-4'>
                   <button
                     onClick={savePlan}
-                    disabled={
-                      !plan ||
-                      !user ||
-                      user?.tier === "free" ||
-                      (plan.isSaved && !plan.needsUpdate)
-                    }
+                    // disabled={
+                    //   !plan ||
+                    //   !user ||
+                    //   user?.tier === "free" ||
+                    //   (plan.isSaved && !plan.needsUpdate)
+                    // }
                     className={`px-6 py-3 rounded-lg font-semibold transition-all flex-1 ${
                       !plan ||
                       !user ||
-                      user?.tier === "free" ||
+                      // user?.tier === "free" ||
                       (plan.isSaved && !plan.needsUpdate)
                         ? "bg-gray-300 cursor-not-allowed"
                         : "bg-green-600 hover:bg-green-700 text-white"
@@ -1471,13 +1431,11 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
                       ? "Save Plan"
                       : !user
                         ? "Login to Save"
-                        : user?.tier === "free"
-                          ? "Upgrade to Save"
-                          : plan.needsUpdate
-                            ? "Update Plan"
-                            : plan.isSaved
-                              ? "Plan Saved"
-                              : "Save Plan"}
+                        : plan.needsUpdate
+                          ? "Update Plan"
+                          : plan.isSaved
+                            ? "Plan Saved"
+                            : "Save Plan"}
                   </button>
                   <button
                     onClick={() => {

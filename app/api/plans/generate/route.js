@@ -221,7 +221,7 @@ Return ONLY JSON with this exact format:
     else if (response.text && typeof response.text === "object") {
       console.log(
         "response.text is object, checking structure:",
-        response.text
+        response.text,
       );
       // Try to extract string from object
       if (Array.isArray(response.text)) {
@@ -268,7 +268,7 @@ Return ONLY JSON with this exact format:
               content = contentItem.text.trim();
               console.log(
                 "Found text in content array:",
-                content.substring(0, 100)
+                content.substring(0, 100),
               );
               break;
             }
@@ -292,14 +292,14 @@ Return ONLY JSON with this exact format:
       console.log("ERROR: No extractable content found");
       console.log(
         "Full response structure:",
-        JSON.stringify(response, null, 2).substring(0, 1000)
+        JSON.stringify(response, null, 2).substring(0, 1000),
       );
       throw new Error("No content in response");
     }
 
     console.log(
       "Extracted content (first 200 chars):",
-      content.substring(0, 200)
+      content.substring(0, 200),
     );
 
     // Clean and extract JSON
@@ -491,7 +491,7 @@ function createFallbackMeal(mealType, inputs) {
     if (!allergies.length) return true;
     const ingName = ingredient.name.toLowerCase();
     return !allergies.some((allergy) =>
-      ingName.includes(allergy.toLowerCase())
+      ingName.includes(allergy.toLowerCase()),
     );
   });
 
@@ -546,7 +546,7 @@ async function generateHybridMealPlan(inputs, userTier, userInfo) {
   const mealsPerDay = Math.min(parseInt(inputs.meals_per_day) || 1, 4);
 
   console.log(
-    `Hybrid plan: ${daysCount} days, ${mealsPerDay} meals/day - GENERATING ALL AT ONCE`
+    `Hybrid plan: ${daysCount} days, ${mealsPerDay} meals/day - GENERATING ALL AT ONCE`,
   );
 
   // Build ONE prompt for ALL meals
@@ -717,7 +717,7 @@ export async function POST(request) {
               : "Province and goal are required",
           success: false,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -755,7 +755,7 @@ export async function POST(request) {
             remaining: generationCheck.remaining || 0,
           },
         },
-        { status: 200 }
+        { status: 200 },
       );
     }
 
@@ -770,7 +770,7 @@ export async function POST(request) {
               : "Number of days must be between 1 and 7",
           success: false,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -794,7 +794,7 @@ export async function POST(request) {
         dietaryPreferences: inputs.dietary_preferences || [],
         allergies: inputs.allergies || [],
       },
-      userTier
+      userTier,
     );
 
     console.log("Meal plan generated successfully");
@@ -841,7 +841,7 @@ export async function POST(request) {
         total: generationCheck.plansAllowed,
         remaining: Math.max(
           0,
-          generationCheck.plansAllowed - (generationCheck.plansUsed + 1)
+          generationCheck.plansAllowed - (generationCheck.plansUsed + 1),
         ),
       },
     };
@@ -861,7 +861,7 @@ export async function POST(request) {
       tierName: config.name,
       remainingPlans: Math.max(
         0,
-        generationCheck.plansAllowed - (generationCheck.plansUsed + 1)
+        generationCheck.plansAllowed - (generationCheck.plansUsed + 1),
       ),
     });
   } catch (error) {
@@ -874,7 +874,7 @@ export async function POST(request) {
             : "Failed to generate plan: " + error.message,
         success: false,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
