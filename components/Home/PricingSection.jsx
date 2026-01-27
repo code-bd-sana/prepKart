@@ -406,6 +406,13 @@ export default function PricingSection() {
                     {/* Price */}
                     <div className='mb-4'>
                       <div className='flex justify-center items-baseline gap-1'>
+                        {plan.oldPrice && (
+                          <div className='flex justify-center items-center gap-2 mt-1'>
+                            <span className='text-gray-400 line-through text-sm'>
+                              {plan.oldPrice}
+                            </span>
+                          </div>
+                        )}
                         <span className='text-3xl font-bold text-gray-900'>
                           {plan.price}
                         </span>
@@ -415,16 +422,9 @@ export default function PricingSection() {
                           </span>
                         )}
                       </div>
-                      {plan.oldPrice && (
-                        <div className='flex justify-center items-center gap-2 mt-1'>
-                          {/* <span className='text-gray-400 line-through text-sm'>
-                            {plan.oldPrice}
-                          </span> */}
-                          <span className='bg-linear-to-r from-green-400 to-emerald-500 text-white text-xs px-2 py-0.5 rounded'>
-                            {t("messages.launchDeal")}
-                          </span>
-                        </div>
-                      )}
+                      <span className='bg-linear-to-r from-green-400 to-emerald-500 text-white text-xs px-2 py-0.5 rounded'>
+                        {t("messages.launchDeal")}
+                      </span>
                     </div>
                   </div>
 

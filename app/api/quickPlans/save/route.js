@@ -5,9 +5,9 @@ import User from "@/models/User";
 import { connectDB } from "@/lib/db";
 
 const MONTHLY_PLAN_LIMITS = {
-  free: 1,      // Free: 1 plan per month
-  tier2: 6,     // Plus: 6 plans per month
-  tier3: 999,   // Premium: unlimited (999 is effectively unlimited)
+  free: 1, // Free: 1 plan per month
+  tier2: 6, // Plus: 6 plans per month
+  tier3: 999, // Premium: unlimited (999 is effectively unlimited)
 };
 
 const SWAPS_PER_PLAN = {
@@ -22,7 +22,7 @@ export async function POST(request) {
     if (!auth.success) {
       return NextResponse.json(
         { error: auth.error, message: auth.message },
-        { status: auth.status || 401 }
+        { status: auth.status || 401 },
       );
     }
 
@@ -33,49 +33,46 @@ export async function POST(request) {
     // Get user from database to get correct tier
     const user = await User.findById(auth.userId);
     if (!user) {
-      return NextResponse.json(
-        { error: "User not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     const userTier = user.tier || "free";
     const monthlyLimit = MONTHLY_PLAN_LIMITS[userTier] || 1;
-    
+
     // Check monthly plan limit
     const currentMonth = new Date().getMonth();
     const currentYear = new Date().getFullYear();
-    
+
     // Get user's plan count for current month
     const planCountThisMonth = user.monthly_plan_count || 0;
-    
+
     if (userTier !== "tier3" && planCountThisMonth >= monthlyLimit) {
       return NextResponse.json(
-        { 
-          error: "Monthly limit reached", 
+        {
+          error: "Monthly limit reached",
           message: `You have reached your monthly limit of ${monthlyLimit} plans. ${
-            userTier === "free" 
+            userTier === "free"
               ? "Upgrade to Plus or Premium for more plans."
               : "Upgrade to Premium for unlimited plans."
           }`,
           limit: monthlyLimit,
           used: planCountThisMonth,
-          tier: userTier
+          tier: userTier,
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
     // Check if user can save plans (not free tier)
-    if (userTier === "free") {
-      return NextResponse.json(
-        { 
-          error: "Upgrade required", 
-          message: "Free users cannot save meal plans."
-        },
-        { status: 403 }
-      );
-    }
+    // if (userTier === "free") {
+    //   return NextResponse.json(
+    //     {
+    //       error: "Upgrade required",
+    //       message: "Free users cannot save meal plans."
+    //     },
+    //     { status: 403 }
+    //   );
+    // }
 
     // Calculate expiry date (30 days from now)
     const expiresAt = new Date();
@@ -83,7 +80,7 @@ export async function POST(request) {
 
     // Determine swaps based on user tier
     const swapsAllowed = SWAPS_PER_PLAN[userTier] || 0;
-    
+
     // Create new plan document
     const newPlan = new Plan({
       title: planData?.title || `Quick ${planData?.planType || "Meal"} Plan`,
@@ -100,8 +97,9 @@ export async function POST(request) {
       source: planData?.source || "openai",
       userId: auth.userId,
       userEmail: auth.userEmail,
-      userName: auth.userName || user.email?.split('@')[0] || 'User',
+      userName: auth.userName || user.email?.split("@")[0] || "User",
       planType: planData?.planType || "quick",
+
       isQuickPlan: true,
       isSaved: true,
       expiresAt: expiresAt,
@@ -115,43 +113,45 @@ export async function POST(request) {
     // Update user's plan count for the month
     const updatedUser = await User.findByIdAndUpdate(
       auth.userId,
-      { 
+      {
         $inc: { monthly_plan_count: 1 },
         $push: { savedPlans: savedPlan._id },
-        last_plan_date: new Date()
+        last_plan_date: new Date(),
       },
-      { new: true }
+      { new: true },
     );
 
-    return NextResponse.json({
-      success: true,
-      message: "Quick plan saved successfully!",
-      plan: {
-        id: savedPlan._id,
-        _id: savedPlan._id,
-        title: savedPlan.title,
-        days: savedPlan.days,
-        swaps: savedPlan.swaps,
-        tier: savedPlan.tier,
-        source: savedPlan.source,
-        createdAt: savedPlan.createdAt,
-        expiresAt: savedPlan.expiresAt,
+    return NextResponse.json(
+      {
+        success: true,
+        message: "Quick plan saved successfully!",
+        plan: {
+          id: savedPlan._id,
+          _id: savedPlan._id,
+          title: savedPlan.title,
+          days: savedPlan.days,
+          swaps: savedPlan.swaps,
+          tier: savedPlan.tier,
+          source: savedPlan.source,
+          createdAt: savedPlan.createdAt,
+          expiresAt: savedPlan.expiresAt,
+        },
+        monthlyStats: {
+          limit: monthlyLimit,
+          used: updatedUser.monthly_plan_count,
+          remaining: Math.max(0, monthlyLimit - updatedUser.monthly_plan_count),
+        },
       },
-      monthlyStats: {
-        limit: monthlyLimit,
-        used: updatedUser.monthly_plan_count,
-        remaining: Math.max(0, monthlyLimit - updatedUser.monthly_plan_count)
-      }
-    }, { status: 201 });
-
+      { status: 201 },
+    );
   } catch (error) {
     console.error("Quick plan save error:", error);
     return NextResponse.json(
-      { 
-        error: "Failed to save quick plan", 
-        message: error.message
+      {
+        error: "Failed to save quick plan",
+        message: error.message,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
