@@ -22,7 +22,7 @@ export async function GET(request, { params }) {
     console.error("Error fetching plan:", error);
     return NextResponse.json(
       { error: "Failed to fetch plan: " + error.message },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -45,20 +45,20 @@ export async function DELETE(request, { params }) {
     if (!authResult.success) {
       return NextResponse.json(
         { error: authResult.error, message: authResult.message },
-        { status: authResult.status || 401 }
+        { status: authResult.status || 401 },
       );
     }
 
     const userId = authResult.userId;
-    console.log("👤 Authenticated user ID:", userId);
+    console.log("Authenticated user ID:", userId);
 
     // 2. Find the plan
     const plan = await Plan.findById(id);
-    
+
     if (!plan) {
       return NextResponse.json(
         { error: "Meal plan not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -83,7 +83,7 @@ export async function DELETE(request, { params }) {
       console.log("❌ Permission denied - User doesn't own this plan");
       return NextResponse.json(
         { error: "You don't have permission to delete this plan" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -103,7 +103,7 @@ export async function DELETE(request, { params }) {
         error: "Failed to delete meal plan",
         message: error.message,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

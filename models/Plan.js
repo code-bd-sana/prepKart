@@ -9,7 +9,8 @@ const planSchema = new mongoose.Schema(
     },
 
     userId: {
-      type: mongoose.Schema.Types.Mixed, // Accepts both String and ObjectId
+      // type: mongoose.Schema.Types.Mixed, // Accepts both String and ObjectId
+      type: String,
       ref: "User",
       index: true,
     },
@@ -31,6 +32,15 @@ const planSchema = new mongoose.Schema(
       type: String,
       enum: ["openai", "spoonacular"],
       default: "openai",
+    },
+    isQuickPlan: {
+      type: Boolean,
+      default: false, // Default to false for regular plans
+    },
+
+    planType: {
+      type: String,
+      default: "custom", // "custom", "quick", "vegetarian", "keto", etc.
     },
 
     generationMethod: {

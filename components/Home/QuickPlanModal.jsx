@@ -179,17 +179,17 @@ export default function QuickPlanModal({ isOpen, onClose, planType, locale }) {
         return;
       }
 
-      if (user.tier === "free") {
-        toast.error("Upgrade to Plus or Premium for grocery lists");
-        window.location.href = "/#pricing";
-        return;
-      }
+      // if (user.tier === "free") {
+      //   toast.error("Upgrade to Plus or Premium for grocery lists");
+      //   window.location.href = "/#pricing";
+      //   return;
+      // }
 
       if (!planData.isSaved) {
         toast.warning(
           <div>
-            <p className="font-medium">Please save the plan first!</p>
-            <p className="text-sm mt-1">
+            <p className='font-medium'>Please save the plan first!</p>
+            <p className='text-sm mt-1'>
               Click Save Plan to save your meal plan, then generate grocery
               list.
             </p>
@@ -198,7 +198,7 @@ export default function QuickPlanModal({ isOpen, onClose, planType, locale }) {
             autoClose: 5000,
             closeButton: true,
             closeOnClick: true,
-          }
+          },
         );
         return;
       }
@@ -226,7 +226,7 @@ export default function QuickPlanModal({ isOpen, onClose, planType, locale }) {
         toast.success("Grocery list generated successfully!");
         localStorage.setItem(
           "lastGroceryList",
-          JSON.stringify(data.groceryList)
+          JSON.stringify(data.groceryList),
         );
         window.location.href = `/${locale}/grocery-list/${data.groceryList.id}`;
       } else {
@@ -313,10 +313,10 @@ export default function QuickPlanModal({ isOpen, onClose, planType, locale }) {
               ? {
                   ...day,
                   meals: day.meals.map((meal, mIndex) =>
-                    mIndex === mealIndex ? data.newMeal : meal
+                    mIndex === mealIndex ? data.newMeal : meal,
                   ),
                 }
-              : day
+              : day,
           ),
           swaps: {
             ...prev.swaps,
@@ -340,26 +340,26 @@ export default function QuickPlanModal({ isOpen, onClose, planType, locale }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl max-w-[1400px] w-full max-h-[95vh] overflow-auto">
+    <div className='fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4'>
+      <div className='bg-white rounded-2xl max-w-[1400px] w-full max-h-[95vh] overflow-auto'>
         {/* Header */}
-        <div className="sticky top-0 bg-white border-b p-6 flex justify-between items-center">
+        <div className='sticky top-0 bg-white border-b p-6 flex justify-between items-center'>
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2 className='text-2xl font-bold text-gray-900'>
               {viewMode === "3day"
                 ? "Quick Preview"
                 : viewMode === "5day"
-                ? "5-Day Plan"
-                : "7-Day Plan"}
+                  ? "5-Day Plan"
+                  : "7-Day Plan"}
             </h2>
-            <p className="text-gray-600 mt-1">
+            <p className='text-gray-600 mt-1'>
               {viewMode === "3day"
                 ? "3-day preview"
                 : viewMode === "5day"
-                ? "Complete 5-day plan"
-                : "Complete weekly plan"}
+                  ? "Complete 5-day plan"
+                  : "Complete weekly plan"}
               {planData && (
-                <span className="ml-2 text-sm font-medium">
+                <span className='ml-2 text-sm font-medium'>
                   • {planData.swaps.remaining} of {planData.swaps.allowed} swaps
                   available
                 </span>
@@ -368,31 +368,30 @@ export default function QuickPlanModal({ isOpen, onClose, planType, locale }) {
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg"
-          >
-            <FiX className="w-6 h-6" />
+            className='p-2 hover:bg-gray-100 rounded-lg'>
+            <FiX className='w-6 h-6' />
           </button>
         </div>
-        <div className="mb-4 text-sm text-gray-600">
-          {/* <p className="p-8">
-            Monthly Plans: {monthlyStats.used} of {monthlyStats.limit} used •
-            {monthlyStats.remaining > 0
+        <div className='mb-4 px-5 py-2 text-sm text-gray-600'>
+          <p className=''>
+            Monthly Plans: {monthlyStats.limit} used •
+            {/* {monthlyStats.remaining > 0
               ? ` ${monthlyStats.remaining} remaining`
-              : " Limit reached"}
-          </p> */}
+              : " Limit reached"} */}
+          </p>
           {monthlyStats.remaining <= 0 && userTier !== "tier3" && (
-            <p className="text-red-600 text-xs mt-1">
+            <p className='text-red-600 text-xs mt-1'>
               {userTier === "free"
                 ? "Upgrade to Plus for 6 plans/month or Premium for unlimited"
                 : "Upgrade to Premium for unlimited plans"}
             </p>
           )}
         </div>
-        <div className="p-6">
+        <div className='p-6'>
           {isLoading && (
-            <div className="flex flex-col items-center justify-center py-12">
-              <FiLoader className="w-12 h-12 text-primary animate-spin mb-4" />
-              <p className="text-gray-600">
+            <div className='flex flex-col items-center justify-center py-12'>
+              <FiLoader className='w-12 h-12 text-primary animate-spin mb-4' />
+              <p className='text-gray-600'>
                 {viewMode === "7day"
                   ? "Generating 7-Day Plan..."
                   : "Generating preview..."}
@@ -401,13 +400,12 @@ export default function QuickPlanModal({ isOpen, onClose, planType, locale }) {
           )}
 
           {error && !isLoading && (
-            <div className="bg-red-50 border border-red-200 rounded-xl p-6 mb-6">
-              <h4 className="font-semibold text-red-900 mb-2">Error</h4>
-              <p className="text-red-700 mb-2">{error}</p>
+            <div className='bg-red-50 border border-red-200 rounded-xl p-6 mb-6'>
+              <h4 className='font-semibold text-red-900 mb-2'>Error</h4>
+              <p className='text-red-700 mb-2'>{error}</p>
               <button
                 onClick={() => generatePlan(viewMode === "7day" ? 7 : 3)}
-                className="bg-red-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-700"
-              >
+                className='bg-red-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-700'>
                 Try Again
               </button>
             </div>
@@ -416,37 +414,37 @@ export default function QuickPlanModal({ isOpen, onClose, planType, locale }) {
           {!isLoading && !error && planData && (
             <div>
               {viewMode === "3day" ? (
-                // 3-DAY PREVIEW - SIMPLE STYLE
-                <div className="mb-8">
-                  <h3 className="text-lg font-semibold mb-4">
+                // 3-DAY PREVIEW
+                <div className='mb-8'>
+                  <h3 className='text-lg font-semibold mb-4'>
                     {t("yourQuickPlan")}
                   </h3>
 
                   {planData.days && planData.days.length > 0 ? (
                     planData.days.slice(0, 1).map((day) => (
-                      <div key={day.dayIndex} className="space-y-4">
-                        <h4 className="font-medium text-gray-900">
+                      <div key={day.dayIndex} className='space-y-4'>
+                        <h4 className='font-medium text-gray-900'>
                           {day.dayName}
                         </h4>
                         {day.meals && day.meals.length > 0 ? (
                           day.meals.slice(0, 3).map((meal, idx) => (
-                            <div key={idx} className="border rounded-lg p-4">
-                              <div className="flex justify-between items-start">
+                            <div key={idx} className='border rounded-lg p-4'>
+                              <div className='flex justify-between items-start'>
                                 <div>
-                                  <p className="font-medium">
+                                  <p className='font-medium'>
                                     {meal.recipeName || "Unnamed Recipe"}
                                   </p>
-                                  <p className="text-sm text-gray-600 capitalize">
+                                  <p className='text-sm text-gray-600 capitalize'>
                                     {meal.mealType || "meal"}
                                   </p>
                                 </div>
-                                <span className="text-sm text-gray-500">
+                                <span className='text-sm text-gray-500'>
                                   {meal.cookingTime || 25} min
                                 </span>
                               </div>
                               {meal.ingredients &&
                                 meal.ingredients.length > 0 && (
-                                  <p className="text-sm text-gray-500 mt-2">
+                                  <p className='text-sm text-gray-500 mt-2'>
                                     {meal.ingredients[0].name}:{" "}
                                     {meal.ingredients[0].quantity}{" "}
                                     {meal.ingredients[0].unit}
@@ -455,37 +453,36 @@ export default function QuickPlanModal({ isOpen, onClose, planType, locale }) {
                             </div>
                           ))
                         ) : (
-                          <p className="text-gray-500">No meals generated</p>
+                          <p className='text-gray-500'>No meals generated</p>
                         )}
                       </div>
                     ))
                   ) : (
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                      <p className="text-yellow-800">
+                    <div className='bg-yellow-50 border border-yellow-200 rounded-lg p-4'>
+                      <p className='text-yellow-800'>
                         Plan generation returned empty data
                       </p>
                       <button
                         onClick={() => generatePlan(3)}
-                        className="mt-2 text-sm text-yellow-700 hover:text-yellow-900"
-                      >
+                        className='mt-2 text-sm text-yellow-700 hover:text-yellow-900'>
                         Try Again
                       </button>
                     </div>
                   )}
                 </div>
               ) : (
-                // 7-DAY FULL PLAN - DETAILED STYLE (Same as GenerateWeeklyPlan)
+                // 7-DAY FULL PLAN (Same as GenerateWeeklyPlan)
                 <div>
                   {/* Plan Header */}
-                  <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
+                  <div className='flex flex-col md:flex-row md:items-center justify-between mb-8'>
                     <div>
-                      <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
+                      <h2 className='text-2xl md:text-3xl font-bold text-gray-900'>
                         {planData.title || `${planType} 7-Day Plan`}
                       </h2>
-                      <p className="text-gray-600 mt-2">
+                      <p className='text-gray-600 mt-2'>
                         {planData.days?.length || 7}-Day Plan • Generated for{" "}
                         {user?.email || "you"} •{" "}
-                        <span className="font-semibold text-green-600">
+                        <span className='font-semibold text-green-600'>
                           {planData.swaps.remaining} of {planData.swaps.allowed}{" "}
                           swaps available
                         </span>{" "}
@@ -508,81 +505,76 @@ export default function QuickPlanModal({ isOpen, onClose, planType, locale }) {
                   </div>
 
                   {/* Meal Plan Days */}
-                  <div className="space-y-6 max-h-[500px] overflow-y-auto pr-2">
+                  <div className='space-y-6 max-h-[500px] overflow-y-auto pr-2'>
                     {planData.days?.map((day, dayIndex) => (
                       <div
                         key={dayIndex}
-                        className="border border-gray-200 rounded-xl p-6 hover:border-blue-300 transition"
-                      >
-                        <div className="flex items-center mb-6">
-                          <div className="bg-green-100 text-green-700 font-bold text-lg w-10 h-10 flex items-center justify-center rounded-full mr-4">
+                        className='border border-gray-200 rounded-xl p-6 hover:border-blue-300 transition'>
+                        <div className='flex items-center mb-6'>
+                          <div className='bg-green-100 text-green-700 font-bold text-lg w-10 h-10 flex items-center justify-center rounded-full mr-4'>
                             {dayIndex + 1}
                           </div>
-                          <h3 className="text-xl font-semibold text-gray-900">
+                          <h3 className='text-xl font-semibold text-gray-900'>
                             Day {dayIndex + 1} • {day.dayName}
                           </h3>
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
                           {day.meals?.map((meal, mealIndex) => (
                             <div
                               key={mealIndex}
-                              className="bg-gray-50 rounded-xl p-4 hover:bg-white hover:shadow-md transition flex flex-col h-[400px]"
-                            >
+                              className='bg-gray-50 rounded-xl p-4 hover:bg-white hover:shadow-md transition flex flex-col h-[400px]'>
                               {/* Meal Header */}
-                              <div className="flex items-center justify-between mb-3">
-                                <div className="flex items-center min-w-0 flex-1">
+                              <div className='flex items-center justify-between mb-3'>
+                                <div className='flex items-center min-w-0 flex-1'>
                                   <span
                                     className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-sm font-semibold mr-2 shrink-0 ${
                                       meal.mealType === "breakfast"
                                         ? "bg-green-100 text-green-800"
                                         : meal.mealType === "lunch"
-                                        ? "bg-yellow-100 text-yellow-800"
-                                        : meal.mealType === "dinner"
-                                        ? "bg-red-100 text-red-800"
-                                        : "bg-purple-100 text-purple-800"
-                                    }`}
-                                  >
+                                          ? "bg-yellow-100 text-yellow-800"
+                                          : meal.mealType === "dinner"
+                                            ? "bg-red-100 text-red-800"
+                                            : "bg-purple-100 text-purple-800"
+                                    }`}>
                                     {meal.mealType.charAt(0).toUpperCase()}
                                   </span>
-                                  <h4 className="text-sm font-semibold text-gray-900 truncate flex-1">
+                                  <h4 className='text-sm font-semibold text-gray-900 truncate flex-1'>
                                     {meal.recipeName}
                                   </h4>
                                 </div>
-                                <div className="text-sm text-gray-500 shrink-0 ml-2">
+                                <div className='text-sm text-gray-500 shrink-0 ml-2'>
                                   {meal.cookingTime} min
                                 </div>
                               </div>
 
                               {/* Verified Badge */}
                               {meal.recipeSource === "spoonacular" && (
-                                <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full flex items-center w-fit mb-3">
+                                <span className='text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full flex items-center w-fit mb-3'>
                                   <svg
-                                    className="w-3 h-3 mr-1"
-                                    fill="currentColor"
-                                    viewBox="0 0 20 20"
-                                  >
-                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                    className='w-3 h-3 mr-1'
+                                    fill='currentColor'
+                                    viewBox='0 0 20 20'>
+                                    <path d='M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z' />
                                   </svg>
                                   Verified
                                 </span>
                               )}
 
                               {/* Scrollable Content */}
-                              <div className="flex-1 overflow-y-auto pr-1 mb-3">
+                              <div className='flex-1 overflow-y-auto pr-1 mb-3'>
                                 {/* Ingredients */}
-                                <div className="mb-3">
-                                  <p className="text-sm font-medium text-gray-700 mb-1">
+                                <div className='mb-3'>
+                                  <p className='text-sm font-medium text-gray-700 mb-1'>
                                     Ingredients ({meal.ingredients?.length || 0}
                                     ):
                                   </p>
-                                  <div className="flex flex-wrap gap-1">
+                                  <div className='flex flex-wrap gap-1'>
                                     {meal.ingredients?.map((ing, idx) => (
                                       <span
                                         key={idx}
-                                        className="bg-white border border-gray-200 px-2 py-1 rounded text-sm whitespace-normal wrap-break-words"
-                                        title={`${ing.quantity} ${ing.unit} ${ing.name}`}
-                                      >
+                                        className='bg-white border border-gray-200 px-2 py-1 rounded text-sm whitespace-normal wrap-break-words'
+                                        title={`${ing.quantity} ${ing.unit} ${ing.name}`}>
                                         {ing.quantity} {ing.unit} {ing.name}
                                       </span>
                                     ))}
@@ -592,20 +584,19 @@ export default function QuickPlanModal({ isOpen, onClose, planType, locale }) {
                                 {/* Instructions */}
                                 {meal.instructions &&
                                   meal.instructions.length > 0 && (
-                                    <div className="mb-2">
-                                      <p className="text-sm font-medium text-gray-700 mb-1">
+                                    <div className='mb-2'>
+                                      <p className='text-sm font-medium text-gray-700 mb-1'>
                                         Instructions:
                                       </p>
-                                      <ol className="space-y-1">
+                                      <ol className='space-y-1'>
                                         {meal.instructions.map((step, idx) => (
                                           <li
                                             key={idx}
-                                            className="text-sm text-gray-600 flex"
-                                          >
-                                            <span className="font-semibold text-blue-600 mr-1 shrink-0">
+                                            className='text-sm text-gray-600 flex'>
+                                            <span className='font-semibold text-blue-600 mr-1 shrink-0'>
                                               {idx + 1}.
                                             </span>
-                                            <span className="flex-1">
+                                            <span className='flex-1'>
                                               {step}
                                             </span>
                                           </li>
@@ -616,36 +607,36 @@ export default function QuickPlanModal({ isOpen, onClose, planType, locale }) {
 
                                 {/* Nutrition Info for paid tiers */}
                                 {meal.nutrition && userTier !== "free" && (
-                                  <div className="mt-3 pt-3 border-t border-gray-200">
-                                    <p className="text-sm font-medium text-gray-700 mb-1">
+                                  <div className='mt-3 pt-3 border-t border-gray-200'>
+                                    <p className='text-sm font-medium text-gray-700 mb-1'>
                                       Nutrition (estimated):
                                     </p>
-                                    <div className="grid grid-cols-4 gap-2 text-xs">
-                                      <div className="bg-blue-50 p-2 rounded">
-                                        <p className="font-medium text-blue-700">
+                                    <div className='grid grid-cols-4 gap-2 text-xs'>
+                                      <div className='bg-blue-50 p-2 rounded'>
+                                        <p className='font-medium text-blue-700'>
                                           {meal.nutrition.calories}
                                         </p>
-                                        <p className="text-blue-600">cal</p>
+                                        <p className='text-blue-600'>cal</p>
                                       </div>
-                                      <div className="bg-green-50 p-2 rounded">
-                                        <p className="font-medium text-green-700">
+                                      <div className='bg-green-50 p-2 rounded'>
+                                        <p className='font-medium text-green-700'>
                                           {meal.nutrition.protein_g}g
                                         </p>
-                                        <p className="text-green-600">
+                                        <p className='text-green-600'>
                                           protein
                                         </p>
                                       </div>
-                                      <div className="bg-yellow-50 p-2 rounded">
-                                        <p className="font-medium text-yellow-700">
+                                      <div className='bg-yellow-50 p-2 rounded'>
+                                        <p className='font-medium text-yellow-700'>
                                           {meal.nutrition.carbs_g}g
                                         </p>
-                                        <p className="text-yellow-600">carbs</p>
+                                        <p className='text-yellow-600'>carbs</p>
                                       </div>
-                                      <div className="bg-red-50 p-2 rounded">
-                                        <p className="font-medium text-red-700">
+                                      <div className='bg-red-50 p-2 rounded'>
+                                        <p className='font-medium text-red-700'>
                                           {meal.nutrition.fat_g}g
                                         </p>
-                                        <p className="text-red-600">fat</p>
+                                        <p className='text-red-600'>fat</p>
                                       </div>
                                     </div>
                                   </div>
@@ -655,7 +646,7 @@ export default function QuickPlanModal({ isOpen, onClose, planType, locale }) {
                               {/* Swap Button */}
                               {userTier !== "free" &&
                                 planData.swaps.remaining > 0 && (
-                                  <div className="pt-3 border-t border-gray-200">
+                                  <div className='pt-3 border-t border-gray-200'>
                                     <button
                                       onClick={() =>
                                         swapMeal(dayIndex, mealIndex)
@@ -665,8 +656,7 @@ export default function QuickPlanModal({ isOpen, onClose, planType, locale }) {
                                         isSwapping
                                           ? "bg-gray-300 cursor-not-allowed"
                                           : "bg-blue-600 hover:bg-blue-700 text-white"
-                                      }`}
-                                    >
+                                      }`}>
                                       {isSwapping
                                         ? "Swapping..."
                                         : "Swap This Meal"}
@@ -681,45 +671,40 @@ export default function QuickPlanModal({ isOpen, onClose, planType, locale }) {
                   </div>
 
                   {/* Action Buttons for 7-day plan */}
-                  <div className="mt-8 pt-6 border-t border-gray-200">
+                  <div className='mt-8 pt-6 border-t border-gray-200'>
                     {planData.isSaved && (
-                      <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
-                        <p className="text-green-800">
+                      <div className='bg-green-50 border border-green-200 rounded-xl p-4 mb-6'>
+                        <p className='text-green-800'>
                           This plan is saved to your account. You can now
                           generate grocery lists.
                         </p>
                       </div>
                     )}
 
-                    <div className="flex flex-col md:flex-row gap-4">
+                    <div className='flex flex-col md:flex-row gap-4'>
                       <button
                         onClick={handleSavePlan}
                         disabled={
                           !planData ||
                           !user ||
-                          user?.tier === "free" ||
                           (planData.isSaved && !planData.needsUpdate)
                         }
                         className={`px-6 py-3 rounded-lg font-semibold transition-all flex-1 ${
                           !planData ||
                           !user ||
-                          user?.tier === "free" ||
                           (planData.isSaved && !planData.needsUpdate)
                             ? "bg-gray-300 cursor-not-allowed"
                             : "bg-green-600 hover:bg-green-700 text-white"
-                        }`}
-                      >
+                        }`}>
                         {!planData
                           ? "Save Plan"
                           : !user
-                          ? "Login to Save"
-                          : user?.tier === "free"
-                          ? "Upgrade to Save"
-                          : planData.needsUpdate
-                          ? "Update Plan"
-                          : planData.isSaved
-                          ? "Plan Saved"
-                          : "Save Plan"}
+                            ? "Login to Save"
+                            : planData.needsUpdate
+                              ? "Update Plan"
+                              : planData.isSaved
+                                ? "Plan Saved"
+                                : "Save Plan"}
                       </button>
 
                       <button
@@ -729,8 +714,7 @@ export default function QuickPlanModal({ isOpen, onClose, planType, locale }) {
                           isLoading || !planData.isSaved
                             ? "opacity-50 cursor-not-allowed"
                             : "hover:bg-green-700"
-                        }`}
-                      >
+                        }`}>
                         {isLoading ? "Generating..." : "Generate Grocery List"}
                       </button>
                     </div>
@@ -740,29 +724,27 @@ export default function QuickPlanModal({ isOpen, onClose, planType, locale }) {
 
               {/* ACTION BUTTONS for 3-day view */}
               {viewMode === "3day" && (
-                <div className="flex items-center justify-between bg-gray-50 rounded-xl p-6">
-                  <div className="flex flex-col">
-                    <h4 className="font-semibold text-gray-900 mb-2">
+                <div className='flex items-center justify-between bg-gray-50 rounded-xl p-6'>
+                  <div className='flex flex-col'>
+                    <h4 className='font-semibold text-gray-900 mb-2'>
                       {t("fullPlanTitle")}
                     </h4>
-                    <p className="text-gray-600 mb-4">
+                    <p className='text-gray-600 mb-4'>
                       {t("fullPlanDescription")}
                     </p>
                   </div>
-                  <div className="flex justify-end gap-2">
+                  <div className='flex justify-end gap-2'>
                     <button
                       onClick={handleGet5DayPlan}
-                      className="cursor-pointer bg-[#4a9fd8] text-white px-6 py-3 rounded-lg font-medium hover:bg-[#3b8ec4] flex items-center gap-2"
-                    >
+                      className='cursor-pointer bg-[#4a9fd8] text-white px-6 py-3 rounded-lg font-medium hover:bg-[#3b8ec4] flex items-center gap-2'>
                       Get 5-Day Plan
-                      <FiCheck className="w-4 h-4" />
+                      <FiCheck className='w-4 h-4' />
                     </button>
                     <button
                       onClick={handleGet7DayPlan}
-                      className="cursor-pointer bg-green-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-green-700 flex items-center gap-2"
-                    >
+                      className='cursor-pointer bg-green-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-green-700 flex items-center gap-2'>
                       Get 7-Day Plan
-                      <FiCheck className="w-4 h-4" />
+                      <FiCheck className='w-4 h-4' />
                     </button>
                   </div>
                 </div>
@@ -770,16 +752,15 @@ export default function QuickPlanModal({ isOpen, onClose, planType, locale }) {
 
               {/* UPGRADE PROMPT */}
               {userTier === "free" && viewMode === "3day" && (
-                <div className="mt-4 flex justify-between bg-blue-50 border border-blue-200 rounded-xl p-3">
-                  <div className="flex flex-col">
-                    <h4 className="font-semibold text-blue-900 mb-2">
+                <div className='mt-4 flex justify-between bg-blue-50 border border-blue-200 rounded-xl p-3'>
+                  <div className='flex flex-col'>
+                    <h4 className='font-semibold text-blue-900 mb-2'>
                       Free Plan Limit: 1 Plan/Month
                     </h4>
-                    <p className="text-blue-800 mb-2">
-                      You have generated {monthlyStats.used} of{" "}
-                      {monthlyStats.limit} plans this month.
+                    <p className='text-blue-800 mb-2'>
+                      You have generated {monthlyStats.limit} plans this month.
                     </p>
-                    <p className="text-blue-800 mb-4">
+                    <p className='text-blue-800 mb-4'>
                       Upgrade to Plus (6 plans/month) or Premium (unlimited) for
                       more!
                     </p>

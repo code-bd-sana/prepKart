@@ -1046,11 +1046,37 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
         );
 
       case "Calendar":
+        // Get current date info
+        const today = new Date();
+        const currentYear = today.getFullYear();
+        const currentMonth = today.getMonth(); // 0-indexed (0 = January)
+
+        // Get first day of the month (0 = Sunday, 1 = Monday, etc.)
+        const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
+
+        // Get number of days in the current month
+        const daysInMonth = new Date(
+          currentYear,
+          currentMonth + 1,
+          0,
+        ).getDate();
+
+        // Get number of days in the previous month
+        const daysInPrevMonth = new Date(
+          currentYear,
+          currentMonth,
+          0,
+        ).getDate();
+
         return (
           <div className='space-y-6 mb-72'>
             <div className='bg-white border border-gray-200 rounded-xl p-6'>
               <h3 className='text-xl font-semibold text-gray-900 mb-4'>
-                Meal Plan Calendar
+                Meal Plan Calendar -{" "}
+                {today.toLocaleDateString("en-US", {
+                  month: "long",
+                  year: "numeric",
+                })}
               </h3>
               <div className='grid grid-cols-7 gap-2 mb-6'>
                 {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
@@ -1062,15 +1088,62 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
                     </div>
                   ),
                 )}
-                {Array.from({ length: 35 }).map((_, index) => (
-                  <div
-                    key={index}
-                    className='md:h-20 border border-gray-200 rounded-lg p-2 hover:bg-gray-50'>
-                    <div className='text-sm font-medium text-gray-700'>
-                      {index + 1}
+
+                {/* Previous month's trailing days */}
+                {Array.from({ length: firstDayOfMonth }).map((_, index) => {
+                  const day = daysInPrevMonth - firstDayOfMonth + index + 1;
+                  return (
+                    <div
+                      key={`prev-${index}`}
+                      className='md:h-20 border border-gray-200 rounded-lg p-2 bg-gray-50'>
+                      <div className='text-sm font-medium text-gray-400'>
+                        {day}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
+
+                {/* Current month days */}
+                {Array.from({ length: daysInMonth }).map((_, index) => {
+                  const day = index + 1;
+                  const isToday =
+                    day === today.getDate() &&
+                    currentMonth === new Date().getMonth() &&
+                    currentYear === new Date().getFullYear();
+
+                  return (
+                    <div
+                      key={day}
+                      className={`md:h-20 border border-gray-200 rounded-lg p-2 hover:bg-gray-50 ${
+                        isToday ? "bg-blue-50 border-blue-200" : ""
+                      }`}>
+                      <div className='text-sm font-medium text-gray-700'>
+                        {day}
+                        {isToday && (
+                          <span className='ml-1 text-xs text-blue-600'>
+                            (Today)
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* Next month's leading days (to fill the grid) */}
+                {Array.from({ length: 42 - firstDayOfMonth - daysInMonth }).map(
+                  (_, index) => {
+                    const day = index + 1;
+                    return (
+                      <div
+                        key={`next-${index}`}
+                        className='md:h-20 border border-gray-200 rounded-lg p-2 bg-gray-50'>
+                        <div className='text-sm font-medium text-gray-400'>
+                          {day}
+                        </div>
+                      </div>
+                    );
+                  },
+                )}
               </div>
 
               <div className='space-y-3'>
@@ -1098,7 +1171,6 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
             </div>
           </div>
         );
-
       // later for phase 2
       // case "Budget":
       //   return (
@@ -1572,15 +1644,19 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
         );
       case "Meal Plans":
       default:
-        const regularSavedPlans = savedMealPlans.filter(
-          (plan) =>
-            plan.isSaved === true &&
-            !plan.title?.toLowerCase().includes("quick"),
+        console.log("Saved meal plans", savedMealPlans);
+
+        const quickSavedPlans = savedMealPlans.filter(
+          (plan) => plan.isSaved === true && plan.isQuickPlan === true,
         );
 
-        const quickSavedPlans = savedMealPlans.filter((plan) =>
-          plan.title?.toLowerCase().includes("quick"),
+        const regularSavedPlans = savedMealPlans.filter(
+          (plan) => plan.isSaved === true && plan.isQuickPlan !== true,
         );
+
+        // Debug logging
+        console.log("Dashboard - Quick Plans:", quickSavedPlans);
+        console.log("Dashboard - Regular Plans:", regularSavedPlans);
 
         return (
           <>

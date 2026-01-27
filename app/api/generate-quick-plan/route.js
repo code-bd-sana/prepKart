@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { generateMealPlan } from "@/lib/openai";
 import { generateSpoonacularMealPlan } from "@/lib/spoonacular";
+import { connectDB } from "@/lib/db";
+import User from "@/models/User";
 
 // Monthly plan limits
 const MONTHLY_PLAN_LIMITS = {
@@ -257,50 +259,56 @@ export async function POST(request) {
     console.error("Quick plan API error:", error);
 
     // Return a fallback plan
-    const fallbackPlan = {
-      days: [
-        {
-          dayIndex: 1,
-          dayName: "Monday",
-          meals: [
-            {
-              mealType: "breakfast",
-              recipeName: "Quick Oatmeal",
-              ingredients: [
-                { name: "rolled oats", quantity: 1, unit: "cup" },
-                { name: "milk", quantity: 1, unit: "cup" },
-                { name: "honey", quantity: 1, unit: "tablespoon" },
-              ],
-              cookingTime: 10,
-              instructions: [
-                "Mix oats and milk",
-                "Microwave for 2 minutes",
-                "Add honey",
-              ],
-              recipeSource: "fallback",
-            },
-            {
-              mealType: "lunch",
-              recipeName: "Simple Sandwich",
-              ingredients: [
-                { name: "bread", quantity: 2, unit: "slices" },
-                { name: "turkey", quantity: 100, unit: "grams" },
-                { name: "lettuce", quantity: 2, unit: "leaves" },
-              ],
-              cookingTime: 5,
-              instructions: [
-                "Assemble ingredients between bread slices",
-                "Serve",
-              ],
-              recipeSource: "fallback",
-            },
-          ],
-        },
-      ],
-      _tier: "fallback",
-      _message: "Using fallback plan",
-    };
+    // const fallbackPlan = {
+    //   days: [
+    //     {
+    //       dayIndex: 1,
+    //       dayName: "Monday",
+    //       meals: [
+    //         {
+    //           mealType: "breakfast",
+    //           recipeName: "Quick Oatmeal",
+    //           ingredients: [
+    //             { name: "rolled oats", quantity: 1, unit: "cup" },
+    //             { name: "milk", quantity: 1, unit: "cup" },
+    //             { name: "honey", quantity: 1, unit: "tablespoon" },
+    //           ],
+    //           cookingTime: 10,
+    //           instructions: [
+    //             "Mix oats and milk",
+    //             "Microwave for 2 minutes",
+    //             "Add honey",
+    //           ],
+    //           recipeSource: "fallback",
+    //         },
+    //         {
+    //           mealType: "lunch",
+    //           recipeName: "Simple Sandwich",
+    //           ingredients: [
+    //             { name: "bread", quantity: 2, unit: "slices" },
+    //             { name: "turkey", quantity: 100, unit: "grams" },
+    //             { name: "lettuce", quantity: 2, unit: "leaves" },
+    //           ],
+    //           cookingTime: 5,
+    //           instructions: [
+    //             "Assemble ingredients between bread slices",
+    //             "Serve",
+    //           ],
+    //           recipeSource: "fallback",
+    //         },
+    //       ],
+    //     },
+    //   ],
+    //   _tier: "fallback",
+    //   _message: "Using fallback plan",
+    // };
 
-    return NextResponse.json(fallbackPlan, { status: 200 });
+    return NextResponse.json(
+      {
+        error: error.message || "Failed to generate meal plan",
+        message: "Please try again later",
+      },
+      { status: 500 },
+    );
   }
 }
