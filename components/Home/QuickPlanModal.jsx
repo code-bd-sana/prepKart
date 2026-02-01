@@ -374,7 +374,7 @@ export default function QuickPlanModal({ isOpen, onClose, planType, locale }) {
         </div>
         <div className='mb-4 px-5 py-2 text-sm text-gray-600'>
           <p className=''>
-            Monthly Plans: {monthlyStats.limit} used •
+            Monthly Plans: {monthlyStats.limit} •
             {/* {monthlyStats.remaining > 0
               ? ` ${monthlyStats.remaining} remaining`
               : " Limit reached"} */}
@@ -382,8 +382,8 @@ export default function QuickPlanModal({ isOpen, onClose, planType, locale }) {
           {monthlyStats.remaining <= 0 && userTier !== "tier3" && (
             <p className='text-red-600 text-xs mt-1'>
               {userTier === "free"
-                ? "Upgrade to Plus for 6 plans/month or Premium for unlimited"
-                : "Upgrade to Premium for unlimited plans"}
+                ? "Upgrade to Plus for 10 plans/month or Premium for 25 plans/month"
+                : "Upgrade to Premium for 25 plans/month"}
             </p>
           )}
         </div>

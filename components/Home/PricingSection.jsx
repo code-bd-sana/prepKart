@@ -422,8 +422,9 @@ export default function PricingSection() {
                           </span>
                         )}
                       </div>
-                      <span className='bg-linear-to-r from-green-400 to-emerald-500 text-white text-xs px-2 py-0.5 rounded'>
-                        {t("messages.launchDeal")}
+                      <span
+                        className={`${plan.price === "Free" ? "" : "bg-linear-to-r from-green-400 to-emerald-500 text-white text-xs px-2 py-0.5 rounded"}`}>
+                        {plan.price === "Free" ? "" : t("messages.launchDeal")}
                       </span>
                     </div>
                   </div>
