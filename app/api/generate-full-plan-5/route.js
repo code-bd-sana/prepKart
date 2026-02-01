@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { generateMealPlan } from "@/lib/openai";
 import { generateSpoonacularMealPlan } from "@/lib/spoonacular";
 
-// quick plan 
+// quick plan
 const QUICK_PLAN_PRESETS = {
   vegetarian: {
     days_count: 5,
@@ -156,7 +156,7 @@ export async function POST(request) {
       console.error("No planType provided");
       return NextResponse.json(
         { error: "planType is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -165,10 +165,10 @@ export async function POST(request) {
       return NextResponse.json(
         {
           error: `Invalid plan type: ${planType}. Valid types: ${Object.keys(
-            QUICK_PLAN_PRESETS
+            QUICK_PLAN_PRESETS,
           ).join(", ")}`,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 

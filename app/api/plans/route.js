@@ -17,7 +17,7 @@ export async function GET(request) {
           error: "Method not allowed",
           message: "Use POST request for this endpoint",
         },
-        { status: 405 } // 405 = Method Not Allowed
+        { status: 405 }, // 405 = Method Not Allowed
       );
     }
 
@@ -26,7 +26,7 @@ export async function GET(request) {
     if (!authResult.success) {
       return NextResponse.json(
         { error: authResult.error, message: authResult.message },
-        { status: authResult.status || 401 }
+        { status: authResult.status || 401 },
       );
     }
 
@@ -48,7 +48,7 @@ export async function GET(request) {
       ) {
         return NextResponse.json(
           { error: "Access denied to this plan" },
-          { status: 403 }
+          { status: 403 },
         );
       }
 
