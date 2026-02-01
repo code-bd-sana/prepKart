@@ -374,7 +374,7 @@ export default function QuickPlanModal({ isOpen, onClose, planType, locale }) {
         </div>
         <div className='mb-4 px-5 py-2 text-sm text-gray-600'>
           <p className=''>
-            Monthly Plans: {monthlyStats.limit} used •
+            Monthly Plans: {monthlyStats.limit} •
             {/* {monthlyStats.remaining > 0
               ? ` ${monthlyStats.remaining} remaining`
               : " Limit reached"} */}
