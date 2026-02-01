@@ -10,103 +10,101 @@ import {
   sendAdminNotification,
 } from "@/lib/email";
 
-// Optional: helps with reliability on Vercel
+// Critical: disable Next.js body parsing → must stay
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
+
+// Force dynamic = no caching / static optimization interference
 export const dynamic = "force-dynamic";
 
 export async function POST(request) {
-  // Step 1: Get the EXACT raw body as text (this is critical)
-  const payload = await request.text();
+  let payload;
+  try {
+    payload = await request.text(); // raw body as string
+  } catch (err) {
+    console.error("Cannot read request body", err);
+    return new Response("Bad request body", { status: 400 });
+  }
 
-  // Step 2: Get the signature Stripe sent
   const signature = request.headers.get("stripe-signature");
 
   if (!signature) {
-    console.error("No stripe-signature header received");
-    return new Response("Missing signature", { status: 400 });
+    console.error("MISSING STRIPE-SIGNATURE HEADER");
+    return new Response("No signature", { status: 400 });
   }
 
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET?.trim(); // trim just in case
   if (!webhookSecret) {
-    console.error("STRIPE_WEBHOOK_SECRET is missing in environment variables");
-    return new Response("Server configuration error", { status: 500 });
+    console.error("MISSING STRIPE_WEBHOOK_SECRET ENV VARIABLE");
+    return new Response("Server misconfigured", { status: 500 });
   }
+
+  console.log("Webhook secret length:", webhookSecret.length); // debug: should be ~50-60 chars
 
   let event;
-
   try {
-    // Step 3: Verify using the RAW payload + signature + secret
-    event = stripe.webhooks.constructEvent(
-      payload, // ← must stay exactly as request.text() gave it
-      signature,
-      webhookSecret,
+    event = stripe.webhooks.constructEvent(payload, signature, webhookSecret);
+    console.log(`VERIFIED EVENT: ${event.type} (${event.id})`);
+  } catch (err) {
+    console.error("SIGNATURE VERIFICATION FAILED:", err.message);
+    console.error("Signature prefix:", signature.substring(0, 60));
+    console.error("Payload length:", payload.length);
+    console.error(
+      "Payload start:",
+      payload.substring(0, 180).replace(/\n/g, " "),
     );
 
-    console.log(`SUCCESS: Verified event → ${event.type} (ID: ${event.id})`);
-  } catch (err) {
-    // This is the line that usually prints the real clue
-    console.error("Webhook signature verification FAILED");
-    console.error("Error message:", err.message);
-    console.error("Signature (start):", signature.substring(0, 60));
-    console.error("Payload length:", payload.length);
-    console.error("Payload first 150 chars:", payload.substring(0, 150));
-
-    return new Response(`Signature verification failed: ${err.message}`, {
-      status: 400,
-    });
+    // Return 400 so Stripe retries — but log heavily
+    return new Response(`Webhook Error: ${err.message}`, { status: 400 });
   }
 
-  // ────────────────────────────────────────
-  // From here everything is safe — Stripe really sent this
-  // ────────────────────────────────────────
+  // ────────────────────────────────────────────────
+  // Event is now verified — safe to process
+  // ────────────────────────────────────────────────
 
   try {
     await connectDB();
-  } catch (err) {
-    console.error("Database connection failed in webhook", err);
-    // Still tell Stripe "ok" so it stops retrying
+    console.log("Database connected");
+  } catch (dbError) {
+    console.error("DB connect failed:", dbError.message);
+    // Still return 200 to Stripe (don't want infinite retries on DB issues)
+  }
+
+  try {
+    switch (event.type) {
+      case "checkout.session.completed":
+        await handleCheckoutSessionCompleted(event.data.object);
+        break;
+      case "invoice.payment_succeeded":
+        await handleInvoicePaymentSucceeded(event.data.object);
+        break;
+      case "invoice.paid":
+        await handleInvoicePaid(event.data.object);
+        break;
+      case "customer.subscription.updated":
+        await handleSubscriptionUpdated(event.data.object);
+        break;
+      case "customer.subscription.deleted":
+        await handleSubscriptionDeleted(event.data.object);
+        break;
+      case "invoice.payment_failed":
+        await handleInvoicePaymentFailed(event.data.object);
+        break;
+      default:
+        console.log(`Unhandled event: ${event.type}`);
+    }
+
+    console.log("Webhook processed OK");
+    return NextResponse.json({ received: true });
+  } catch (handlerError) {
+    console.error("Handler crashed:", handlerError);
+    // Still return 200 — Stripe shouldn't retry business logic failures forever
     return NextResponse.json({ received: true });
   }
-
-  // Your existing event handling (keep it the same)
-  switch (event.type) {
-    case "checkout.session.completed":
-      await handleCheckoutSessionCompleted(event.data.object);
-      break;
-
-    case "invoice.payment_succeeded":
-      await handleInvoicePaymentSucceeded(event.data.object);
-      break;
-
-    case "invoice.paid":
-      await handleInvoicePaid(event.data.object);
-      break;
-
-    case "customer.subscription.updated":
-      await handleSubscriptionUpdated(event.data.object);
-      break;
-
-    case "customer.subscription.deleted":
-      await handleSubscriptionDeleted(event.data.object);
-      break;
-
-    case "invoice.payment_failed":
-      await handleInvoicePaymentFailed(event.data.object);
-      break;
-
-    default:
-      console.log(`Ignored event type: ${event.type}`);
-  }
-
-  // Always return 200 OK to Stripe — very important
-  return NextResponse.json({ received: true });
 }
-
-// ────────────────────────────────────────────────
-// Paste ALL your handler functions here (unchanged)
-// handleCheckoutSessionCompleted, handleInvoicePaymentSucceeded, etc.
-// ────────────────────────────────────────────────
-
 // Handler functions
 async function handleCheckoutSessionCompleted(session) {
   console.log("Handling checkout.session.completed");
@@ -269,6 +267,7 @@ async function handleCheckoutSessionCompleted(session) {
     }
   }
 }
+
 async function handleInvoicePaymentSucceeded(invoice) {
   console.log("Handling invoice.payment_succeeded");
 
@@ -508,6 +507,7 @@ async function handleInvoicePaid(invoice) {
     console.error("Error in handleInvoicePaid:", error);
   }
 }
+
 // import { NextResponse } from "next/server";
 // import { stripe } from "@/lib/stripe";
 // import { connectDB } from "@/lib/db";
