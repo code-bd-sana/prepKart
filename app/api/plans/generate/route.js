@@ -24,7 +24,7 @@ const TIER_CONFIG = {
   },
   tier2: {
     name: "Plus",
-    monthlyPlans: 6,
+    monthlyPlans: 10,
     swapsPerPlan: 2,
     generationMethod: "hybrid", // Plus users get hybrid
     canSave: true,
@@ -37,7 +37,7 @@ const TIER_CONFIG = {
   },
   tier3: {
     name: "Premium",
-    monthlyPlans: 999,
+    monthlyPlans: 25,
     swapsPerPlan: 3,
     generationMethod: "hybrid", // Premium users get hybrid
     canSave: true,

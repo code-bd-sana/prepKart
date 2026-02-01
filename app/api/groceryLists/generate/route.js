@@ -54,15 +54,22 @@ export async function POST(request) {
           "You have reached your free plan limit (1 plan per month). Upgrade to Plus or Premium.";
       }
     } else if (userTier === "tier2") {
-      // Plus: max 6 per month (your pricing page)
-      if (user.monthly_plan_count >= 6) {
+      // Plus: max 10 per month (your pricing page)
+      if (user.monthly_plan_count >= 10) {
         canGenerate = false;
         errorMessage =
-          "You have reached your Plus plan limit (6 plans/month). Upgrade to Premium for unlimited.";
+          "You have reached your Plus plan limit (10 plans/month). Upgrade to Premium for more plans.";
       }
     } else if (userTier === "tier3") {
       // Premium: unlimited → do nothing, allow
-      canGenerate = true;
+      // canGenerate = true;
+
+      // Premium: max 25 per month (your pricing page)
+      if (user.monthly_plan_count >= 25) {
+        canGenerate = false;
+        errorMessage =
+          "You have reached your Premium plan limit (25 plans/month).";
+      }
     }
 
     if (!canGenerate) {

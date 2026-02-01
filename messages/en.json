@@ -313,7 +313,7 @@
         "badge": "Most Popular",
         "buttonText": "Start Plus Plan",
         "features": [
-          "Max 6 meals per month",
+          "Max 10 meals per month",
           "Customized",
           "Swap available",
           "Grocery list generation – Instacart ready",
@@ -331,7 +331,7 @@
         "badge": "Unlimited Access",
         "buttonText": "Go Premium",
         "features": [
-          "Unlimited meals",
+          "Max 25 meals per month",
           "Customized",
           "Swap available",
           "Grocery list generation – Instacart ready",

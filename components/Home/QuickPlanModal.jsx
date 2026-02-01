@@ -240,7 +240,7 @@ export default function QuickPlanModal({ isOpen, onClose, planType, locale }) {
     }
   };
   const [monthlyStats, setMonthlyStats] = useState({
-    limit: userTier === "free" ? 1 : userTier === "tier2" ? 6 : 999,
+    limit: userTier === "free" ? 1 : userTier === "tier2" ? 10 : 25,
     used: user?.monthly_plan_count || 0,
     remaining: 0,
   });
@@ -248,7 +248,7 @@ export default function QuickPlanModal({ isOpen, onClose, planType, locale }) {
   // Calculate remaining plans
   useEffect(() => {
     if (user) {
-      const limit = userTier === "free" ? 1 : userTier === "tier2" ? 6 : 999;
+      const limit = userTier === "free" ? 1 : userTier === "tier2" ? 10 : 25;
       const used = user.monthly_plan_count || 0;
       const remaining = Math.max(0, limit - used);
 

@@ -7,9 +7,9 @@ import User from "@/models/User";
 // Monthly plan limits
 const MONTHLY_PLAN_LIMITS = {
   free: 1, // Free: 1 plan per month
-  tier2: 6, // Plus: 6 plans per month
-  tier3: 999, // Premium: unlimited
-  admin: 999, // Premium: unlimited
+  tier2: 10, // Plus: 10 plans per month
+  tier3: 25, // Premium: 25 plans per month
+  admin: 999, // Admin: unlimited
 };
 // quick plan
 const QUICK_PLAN_PRESETS = {
@@ -201,7 +201,6 @@ export async function POST(request) {
       }
     }
     // ========== END MONTHLY PLAN LIMIT CHECK ==========
-
     if (!QUICK_PLAN_PRESETS[planType]) {
       console.error(`Invalid planType: ${planType}`);
       return NextResponse.json(
