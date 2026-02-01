@@ -6,8 +6,8 @@ import { connectDB } from "@/lib/db";
 
 const MONTHLY_PLAN_LIMITS = {
   free: 1, // Free: 1 plan per month
-  tier2: 6, // Plus: 6 plans per month
-  tier3: 999, // Premium: unlimited (999 is effectively unlimited)
+  tier2: 10, // Plus: 10 plans per month
+  tier3: 25, // Premium: unlimited (25 is effectively unlimited)
 };
 
 const SWAPS_PER_PLAN = {
