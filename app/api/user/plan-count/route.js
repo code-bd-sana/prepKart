@@ -9,26 +9,23 @@ export async function GET(request) {
     if (!authHeader) {
       return NextResponse.json({ error: "No token" }, { status: 401 });
     }
-    
+
     const token = authHeader.substring(7);
     await connectDB();
-    
+
     // Find user
     const user = await User.findOne({
-      $or: [
-        { refreshToken: token },
-        { "subscription.refreshToken": token }
-      ]
+      $or: [{ refreshToken: token }, { "subscription.refreshToken": token }],
     });
-    
+
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
-    
+
     return NextResponse.json({
       plansUsed: user.monthly_plan_count || 0,
       tier: user.tier,
-      limit: user.tier === "free" ? 1 : user.tier === "tier2" ? 6 : 999,
+      limit: user.tier === "free" ? 1 : user.tier === "tier2" ? 10 : 25,
     });
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });

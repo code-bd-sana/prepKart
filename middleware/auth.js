@@ -17,7 +17,7 @@ export async function authenticate(request) {
           cookieHeader.split("; ").map((c) => {
             const [key, ...val] = c.split("=");
             return [key, val.join("=")];
-          })
+          }),
         );
         token = cookies.auth_token;
       }

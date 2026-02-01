@@ -48,7 +48,7 @@ export const login = createAsyncThunk(
     const response = await api.post("/auth/login", { email, password });
     saveAuthData(response.data.user, response.data.token);
     return response.data;
-  }
+  },
 );
 
 export const register = createAsyncThunk("auth/register", async (userData) => {
@@ -109,7 +109,7 @@ export const fetchUserData = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.message);
     }
-  }
+  },
 );
 
 // Create slice
@@ -184,7 +184,7 @@ const authSlice = createSlice({
           name: action.payload.user.name,
           province: action.payload.user.province,
           tier: action.payload.user.tier,
-          // Add these fields:
+          //
           monthly_plan_count: action.payload.user.monthly_plan_count || 0,
           weekly_plan_count: action.payload.user.weekly_plan_count || 0,
           planGenerationCount: action.payload.user.planGenerationCount || 0,
@@ -245,7 +245,7 @@ const authSlice = createSlice({
           localStorage.setItem("token", action.payload.tokens.accessToken);
           localStorage.setItem(
             "refreshToken",
-            action.payload.tokens.refreshToken
+            action.payload.tokens.refreshToken,
           );
           localStorage.setItem("user", JSON.stringify(state.user));
         }
@@ -281,7 +281,7 @@ const authSlice = createSlice({
           name: action.payload.name,
           province: action.payload.province,
           tier: action.payload.tier,
-          // Add these fields:
+          //
           monthly_plan_count: action.payload.monthly_plan_count || 0,
           weekly_plan_count: action.payload.weekly_plan_count || 0,
           planGenerationCount: action.payload.planGenerationCount || 0,
