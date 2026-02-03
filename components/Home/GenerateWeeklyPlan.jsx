@@ -503,6 +503,7 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
           "Please save the plan first before generating a grocery list",
         );
         return;
+        // so it won't generate
       }
 
       setLoading(true);
