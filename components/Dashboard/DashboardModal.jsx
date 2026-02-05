@@ -904,7 +904,7 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
                     Add New Item
                   </h2>
 
-                  <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
+                  <div className='grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-4'>
                     <div>
                       <label className='block text-sm font-medium text-gray-700 mb-1'>
                         Item Name *
@@ -1078,13 +1078,16 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
                   year: "numeric",
                 })}
               </h3>
-              <div className='grid grid-cols-7 gap-2 mb-6'>
+              <div className='grid grid-cols-7 gap-1 sm:gap-2 mb-6'>
                 {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
                   (day) => (
                     <div
                       key={day}
-                      className='text-center font-medium text-gray-700 py-2'>
-                      {day}
+                      className='text-center text-xs sm:text-sm font-medium text-gray-700 py-1 sm:py-2'>
+                      {day.substring(0, 1)}
+                      <span className='hidden sm:inline'>
+                        {day.substring(1)}
+                      </span>
                     </div>
                   ),
                 )}
@@ -1120,7 +1123,7 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
                       <div className='text-sm font-medium text-gray-700'>
                         {day}
                         {isToday && (
-                          <span className='ml-1 text-xs text-blue-600'>
+                          <span className='hidden md:flex ml-1 text-xs text-blue-600'>
                             (Today)
                           </span>
                         )}
@@ -1432,7 +1435,7 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
                           </div>
                           <div>
                             <p className='text-gray-500'>Invoice ID</p>
-                            <p className='font-medium text-gray-900 text-sm truncate'>
+                            <p className='font-medium text-gray-900 text-sm '>
                               {user.subscription.lastInvoice.invoiceId}
                             </p>
                           </div>
@@ -1729,7 +1732,7 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
                     </h2>
                   </div>
 
-                  <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6'>
+                  <div className='grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6'>
                     {regularSavedPlans.map((plan) => {
                       const isExpired = isPlanExpired(plan);
                       return (
@@ -2004,62 +2007,70 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
       {/* Modal Content */}
       <div
         ref={modalRef}
-        className='relative bg-white rounded-none md:rounded-2xl w-full h-screen max-h-[95vh]  md:max-w-[1400px] md:max-h-[95vh] md:h-auto overflow-hidden flex flex-col shadow-2xl'
+        className='relative bg-white rounded-none md:rounded-2xl w-full h-screen max-h-[95vh] md:max-w-[1400px] md:max-h-[95vh] md:h-auto overflow-hidden flex flex-col shadow-2xl'
         onClick={(e) => e.stopPropagation()}>
         {/* Header with gradient background */}
         <div className='bg-linear-to-r from-teal-500 to-emerald-400 px-4 md:px-8 py-4 md:py-6 relative'>
-          <div className='flex items-center justify-between'>
+          <div className='flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0'>
             <div>
-              <h1 className='text-3xl font-bold text-white mb-1'>
+              <h1 className='text-2xl md:text-3xl font-bold text-white mb-1'>
                 {user?.name || "User"}s Dashboard
               </h1>
-              <div className='flex flex-wrap items-center gap-3 text-white/90'>
-                <div className='flex items-center gap-1 text-sm'>
-                  <Mail className='w-4 h-4' />
-                  <span className='truncate max-w-[200px]'>{user?.email}</span>
+              <div className='flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-2 sm:gap-3 text-white/90 text-sm'>
+                <div className='flex items-center gap-1'>
+                  <Mail className='w-4 h-4 shrink-0' />
+                  <span className='truncate max-w-[220px] sm:max-w-[250px]'>
+                    {user?.email}
+                  </span>
                 </div>
                 {user?.province && (
-                  <div className='flex items-center gap-1 text-sm'>
-                    <MapPin className='w-4 h-4' />
+                  <div className='flex items-center gap-1'>
+                    <MapPin className='w-4 h-4 shrink-0' />
                     <span>{user.province}</span>
                   </div>
                 )}
                 {user?.createdAt && (
-                  <div className='flex items-center gap-1 text-sm'>
-                    <Calendar className='w-4 h-4' />
+                  <div className='hidden sm:flex items-center gap-1'>
+                    <Calendar className='w-4 h-4 shrink-0' />
                     <span>Member since {formatDate(user.createdAt)}</span>
                   </div>
                 )}
               </div>
             </div>
 
-            <div className='flex items-center gap-3'>
+            <div className='flex items-center gap-2 self-end sm:self-center'>
               {/* Show Upgrade button only if not Premium */}
               {currentTier !== "tier3" && (
-                <button className='flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors shadow-lg'>
-                  <Crown className='w-5 h-5' />
-                  Upgrade to Premium
+                <button
+                  onClick={() => {
+                    onClose();
+                    router.push(`/${locale}/#pricing`);
+                  }}
+                  className='flex items-center gap-1 sm:gap-2 bg-orange-500 hover:bg-orange-600 text-white px-3 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold transition-colors shadow-lg text-sm sm:text-base'>
+                  <Crown className='w-4 h-4 sm:w-5 sm:h-5 shrink-0' />
+                  <span className='hidden sm:inline'>Upgrade to Premium</span>
+                  <span className='sm:hidden'>↑</span>
                 </button>
               )}
 
               <button
                 onClick={onClose}
-                className='p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors text-white'
+                className='p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors text-white shrink-0'
                 aria-label='Close modal'>
-                <X className='w-6 h-6' />
+                <X className='w-5 h-5 sm:w-6 sm:h-6' />
               </button>
             </div>
           </div>
         </div>
 
         {/* Tabs */}
-        <div className='bg-gray-50 border-b border-gray-200 px-4 md:px-8'>
+        <div className='bg-gray-50 border-b border-gray-200 px-4 md:px-8 sm:px-8'>
           <div className='flex overflow-x-auto gap-4 md:gap-8 scrollbar-hide py-2'>
             {tabs.map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-3 py-3 font-medium transition-colors relative whitespace-nowrap shrink-0 ${
+                className={`px-3 py-3 font-medium transition-colors relative whitespace-nowrap shrink-0 text-sm sm:text-base ${
                   activeTab === tab
                     ? "text-teal-600"
                     : "text-gray-600 hover:text-gray-900"
@@ -2074,7 +2085,7 @@ export default function DashboardModal({ isOpen, onClose, locale }) {
         </div>
 
         {/* Content Area */}
-        <div className='flex-1 overflow-y-auto p-8 max-h-[650px]'>
+        <div className='flex-1 overflow-y-auto p-8 sm:p-6 md:p-8 max-h-[calc(100vh-200px)] sm:max-h-[650px]'>
           <div className='max-w-7xl mx-auto h-full'>
             {isInitialLoading ? (
               <div className='flex flex-col items-center justify-center h-[60vh] min-h-[400px]'>
