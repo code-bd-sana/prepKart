@@ -1,9 +1,9 @@
 import { connectDB } from "@/lib/db";
+import {
+  sendSubscriptionNotificationToAdmin,
+  sendSubscriptionWelcomeEmail,
+} from "@/lib/email";
 import Subscription from "@/models/Subscription";
-// import {
-//   sendSubscriptionWelcomeEmail,
-//   sendSubscriptionNotificationToAdmin,
-// } from "@/lib/email";
 
 export async function POST(request) {
   try {
@@ -15,7 +15,7 @@ export async function POST(request) {
     if (!email || !postalCode) {
       return Response.json(
         { success: false, error: "Email and postal code are required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -30,7 +30,7 @@ export async function POST(request) {
       if (existingSubscription.status === "active") {
         return Response.json(
           { success: false, error: "This email is already subscribed" },
-          { status: 409 }
+          { status: 409 },
         );
       } else {
         // Reactivate unsubscribed user
@@ -51,22 +51,19 @@ export async function POST(request) {
       await subscription.save();
     }
 
-    // ✅ Send emails in background (don't wait for them)
     // Send welcome email to user
-    // sendSubscriptionWelcomeEmail(subscription)
-    //   .then((result) => {
-    //     if (result)
-    //       console.log(`✅ Welcome email sent to: ${subscription.email}`);
-    //   })
-    //   .catch((error) => console.error("User email error:", error));
+    sendSubscriptionWelcomeEmail(subscription)
+      .then((result) => {
+        if (result) console.log(`Welcome email sent to: ${subscription.email}`);
+      })
+      .catch((error) => console.error("User email error:", error));
 
-    // // Send notification to admin
-    // sendSubscriptionNotificationToAdmin(subscription)
-    //   .then((result) => {
-    //     if (result)
-    //       console.log(`✅ Admin notified about: ${subscription.email}`);
-    //   })
-    //   .catch((error) => console.error("Admin email error:", error));
+    // Send notification to admin
+    sendSubscriptionNotificationToAdmin(subscription)
+      .then((result) => {
+        if (result) console.log(`Admin notified about: ${subscription.email}`);
+      })
+      .catch((error) => console.error("Admin email error:", error));
 
     return Response.json(
       {
@@ -74,22 +71,22 @@ export async function POST(request) {
         message: "Successfully subscribed! Check your email for confirmation.",
         data: subscription,
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
-    console.error("❌ Subscription error:", error);
+    console.error("Subscription error:", error);
 
     // Handle duplicate email error
     if (error.code === 11000) {
       return Response.json(
         { success: false, error: "This email is already subscribed" },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
     return Response.json(
       { success: false, error: "Failed to subscribe. Please try again." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
