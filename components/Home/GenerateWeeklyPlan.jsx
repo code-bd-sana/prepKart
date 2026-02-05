@@ -1198,7 +1198,7 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
         ) : (
           /* Plan Display */
           <div className='max-w-[1500px] mt-6 mx-auto'>
-            <div className='bg-white rounded-2xl shadow-xl p-6 md:p-6'>
+            <div className='bg-white rounded-2xl shadow-xl p-2 md:p-6'>
               {/* Plan Header */}
               <div className='flex flex-col md:flex-row md:items-center justify-between mb-8'>
                 <div>
@@ -1232,7 +1232,7 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
                 {plan.days?.map((day, dayIndex) => (
                   <div
                     key={dayIndex}
-                    className='border border-gray-200 rounded-xl p-6 hover:border-blue-300 transition'>
+                    className='border border-gray-200 rounded-xl p-2 md:p-6 hover:border-blue-300 transition'>
                     <div className='flex items-center mb-6'>
                       <div className='bg-green-100 text-[#8cc63c] font-bold text-lg w-10 h-10 flex items-center justify-center rounded-full mr-4'>
                         {dayIndex + 1}
@@ -1262,7 +1262,7 @@ export default function GenerateWeeklyPlan({ voiceText, onPlanGenerated }) {
                                 }`}>
                                 {meal.mealType.charAt(0).toUpperCase()}
                               </span>
-                              <h4 className='text-sm font-semibold text-gray-900 truncate flex-1'>
+                              <h4 className='text-sm font-semibold text-gray-900 flex-1'>
                                 {meal.recipeName}
                               </h4>
                             </div>

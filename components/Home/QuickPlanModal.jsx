@@ -340,28 +340,27 @@ export default function QuickPlanModal({ isOpen, onClose, planType, locale }) {
   if (!isOpen) return null;
 
   return (
-    <div className='fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4'>
+    <div className='fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4'>
       <div className='bg-white rounded-2xl max-w-[1400px] w-full max-h-[95vh] overflow-auto'>
         {/* Header */}
-        <div className='sticky top-0 bg-white border-b p-6 flex justify-between items-center'>
+        <div className='sticky top-0 bg-white border-b p-4 sm:p-6 flex justify-between items-center'>
           <div>
-            <h2 className='text-2xl font-bold text-gray-900'>
+            <h2 className='text-xl sm:text-2xl font-bold text-gray-900'>
               {viewMode === "3day"
                 ? "Quick Preview"
                 : viewMode === "5day"
                   ? "5-Day Plan"
                   : "7-Day Plan"}
             </h2>
-            <p className='text-gray-600 mt-1'>
+            <p className='text-gray-600 mt-1 text-sm sm:text-base'>
               {viewMode === "3day"
                 ? "3-day preview"
                 : viewMode === "5day"
                   ? "Complete 5-day plan"
                   : "Complete weekly plan"}
               {planData && (
-                <span className='ml-2 text-sm font-medium'>
-                  • {planData.swaps.remaining} of {planData.swaps.allowed} swaps
-                  available
+                <span className='ml-1 sm:ml-2 text-xs sm:text-sm font-medium'>
+                  • {planData.swaps.remaining}/{planData.swaps.allowed} swaps
                 </span>
               )}
             </p>
@@ -387,7 +386,7 @@ export default function QuickPlanModal({ isOpen, onClose, planType, locale }) {
             </p>
           )}
         </div>
-        <div className='p-6'>
+        <div className='p-3 sm:p-4 md:p-6'>
           {isLoading && (
             <div className='flex flex-col items-center justify-center py-12'>
               <FiLoader className='w-12 h-12 text-primary animate-spin mb-4' />
@@ -428,23 +427,25 @@ export default function QuickPlanModal({ isOpen, onClose, planType, locale }) {
                         </h4>
                         {day.meals && day.meals.length > 0 ? (
                           day.meals.slice(0, 3).map((meal, idx) => (
-                            <div key={idx} className='border rounded-lg p-4'>
-                              <div className='flex justify-between items-start'>
-                                <div>
-                                  <p className='font-medium'>
+                            <div
+                              key={idx}
+                              className='border rounded-lg p-3 sm:p-2'>
+                              <div className='flex justify-between items-start gap-2'>
+                                <div className='flex-1 min-w-0'>
+                                  <p className='font-medium text-sm sm:text-base'>
                                     {meal.recipeName || "Unnamed Recipe"}
                                   </p>
-                                  <p className='text-sm text-gray-600 capitalize'>
+                                  <p className='text-xs sm:text-sm text-gray-600 capitalize'>
                                     {meal.mealType || "meal"}
                                   </p>
                                 </div>
-                                <span className='text-sm text-gray-500'>
+                                <span className='text-xs sm:text-sm text-gray-500 whitespace-nowrap'>
                                   {meal.cookingTime || 25} min
                                 </span>
                               </div>
                               {meal.ingredients &&
                                 meal.ingredients.length > 0 && (
-                                  <p className='text-sm text-gray-500 mt-2'>
+                                  <p className='text-xs sm:text-sm text-gray-500 mt-1 '>
                                     {meal.ingredients[0].name}:{" "}
                                     {meal.ingredients[0].quantity}{" "}
                                     {meal.ingredients[0].unit}
@@ -474,17 +475,17 @@ export default function QuickPlanModal({ isOpen, onClose, planType, locale }) {
                 // 7-DAY FULL PLAN (Same as GenerateWeeklyPlan)
                 <div>
                   {/* Plan Header */}
-                  <div className='flex flex-col md:flex-row md:items-center justify-between mb-8'>
+                  <div className='flex flex-col md:flex-row md:items-center justify-between mb-4 sm:mb-6 md:mb-8'>
                     <div>
-                      <h2 className='text-2xl md:text-3xl font-bold text-gray-900'>
-                        {planData.title || `${planType} 7-Day Plan`}
+                      <h2 className='text-xl sm:text-2xl md:text-3xl font-bold text-gray-900'>
+                        {planData.title ||
+                          `${planType} ${planData.days?.length || 7}-Day Plan`}
                       </h2>
-                      <p className='text-gray-600 mt-2'>
-                        {planData.days?.length || 7}-Day Plan • Generated for{" "}
-                        {user?.email || "you"} •{" "}
+                      <p className='text-gray-600 mt-1 sm:mt-2 text-xs sm:text-sm'>
+                        {planData.days?.length || 7}-Day Plan •{" "}
                         <span className='font-semibold text-green-600'>
-                          {planData.swaps.remaining} of {planData.swaps.allowed}{" "}
-                          swaps available
+                          {planData.swaps.remaining}/{planData.swaps.allowed}{" "}
+                          swaps
                         </span>{" "}
                         •{" "}
                         {planData.tier === "free"
@@ -495,13 +496,6 @@ export default function QuickPlanModal({ isOpen, onClose, planType, locale }) {
                             } Tier`}
                       </p>
                     </div>
-                    {/* <button
-                      onClick={() => generatePlan(3)}
-                      className="mt-4 md:mt-0 text-green-600 hover:text-green-700 font-medium flex items-center gap-2"
-                    >
-                      <FiRefreshCw className="w-4 h-4" />
-                      Generate Another
-                    </button> */}
                   </div>
 
                   {/* Meal Plan Days */}
@@ -509,12 +503,12 @@ export default function QuickPlanModal({ isOpen, onClose, planType, locale }) {
                     {planData.days?.map((day, dayIndex) => (
                       <div
                         key={dayIndex}
-                        className='border border-gray-200 rounded-xl p-6 hover:border-blue-300 transition'>
-                        <div className='flex items-center mb-6'>
-                          <div className='bg-green-100 text-green-700 font-bold text-lg w-10 h-10 flex items-center justify-center rounded-full mr-4'>
+                        className='border border-gray-200 rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 hover:border-blue-300 transition mb-4 sm:mb-6'>
+                        <div className='flex items-center mb-4 sm:mb-6'>
+                          <div className='bg-green-100 text-green-700 font-bold text-base sm:text-lg w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full mr-3 sm:mr-4 flex-shrink-0'>
                             {dayIndex + 1}
                           </div>
-                          <h3 className='text-xl font-semibold text-gray-900'>
+                          <h3 className='text-lg sm:text-xl font-semibold text-gray-900'>
                             Day {dayIndex + 1} • {day.dayName}
                           </h3>
                         </div>
@@ -539,7 +533,7 @@ export default function QuickPlanModal({ isOpen, onClose, planType, locale }) {
                                     }`}>
                                     {meal.mealType.charAt(0).toUpperCase()}
                                   </span>
-                                  <h4 className='text-sm font-semibold text-gray-900 truncate flex-1'>
+                                  <h4 className='text-sm font-semibold text-gray-900  flex-1'>
                                     {meal.recipeName}
                                   </h4>
                                 </div>
@@ -724,7 +718,7 @@ export default function QuickPlanModal({ isOpen, onClose, planType, locale }) {
 
               {/* ACTION BUTTONS for 3-day view */}
               {viewMode === "3day" && (
-                <div className='flex items-center justify-between bg-gray-50 rounded-xl p-6'>
+                <div className='flex flex-col md:flex-row items-center justify-between bg-gray-50 rounded-xl p-6'>
                   <div className='flex flex-col'>
                     <h4 className='font-semibold text-gray-900 mb-2'>
                       {t("fullPlanTitle")}

@@ -131,7 +131,7 @@ export async function POST(request) {
       instructions: ["Add these items to your weekly cart"],
       line_items: line_items,
       landing_page_configuration: {
-        partner_linkback_url: "https://prepcart.com",
+        partner_linkback_url: "https://prepcart.ca",
         enable_pantry_items: true,
       },
     };
