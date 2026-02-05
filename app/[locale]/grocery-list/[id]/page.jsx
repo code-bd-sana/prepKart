@@ -204,7 +204,7 @@ export default function GroceryListPage({ params }) {
 
       return groceryItems.map((item) => ({ ...item, inPantry: false }));
     },
-    [user]
+    [user],
   );
 
   // Optimized toggleSelectAll with immediate UI feedback
@@ -280,11 +280,11 @@ export default function GroceryListPage({ params }) {
                 })),
                 checkedItems: shouldSelectAll
                   ? groceryList.items.filter(
-                      (item) => !(hidePantry && item.inPantry)
+                      (item) => !(hidePantry && item.inPantry),
                     ).length
                   : 0,
               }),
-            }
+            },
           );
 
           if (response.ok) {
@@ -335,7 +335,7 @@ export default function GroceryListPage({ params }) {
 
           // Update localStorage
           const checkedItems = itemsWithPantryStatus.filter(
-            (item) => item.checked
+            (item) => item.checked,
           );
           if (checkedItems.length > 0) {
             const cartData = {
@@ -357,7 +357,7 @@ export default function GroceryListPage({ params }) {
         setLoading(false);
       }
     },
-    [markPantryItems]
+    [markPantryItems],
   );
 
   // Refresh pantry data
@@ -508,20 +508,20 @@ export default function GroceryListPage({ params }) {
       : groceryList.items;
 
     const visibleCheckedCount = progressItems.filter(
-      (item) => item.checked
+      (item) => item.checked,
     ).length;
     const visibleProgressItemsCount = progressItems.length;
     const pantryItemsCount = groceryList.items.filter(
-      (item) => item.inPantry
+      (item) => item.inPantry,
     ).length;
     const checkedItemsCount = groceryList.items.filter(
-      (item) => item.checked
+      (item) => item.checked,
     ).length;
 
     const estimatedTotal =
       groceryList.items.reduce(
         (sum, item) => sum + (item.estimatedPrice || 0),
-        0
+        0,
       ) || 0;
 
     return {
@@ -556,7 +556,7 @@ export default function GroceryListPage({ params }) {
         new StorageEvent("storage", {
           key: "prepcart_cart",
           newValue: JSON.stringify(cartData),
-        })
+        }),
       );
     } else {
       localStorage.removeItem("prepcart_cart");
@@ -564,7 +564,7 @@ export default function GroceryListPage({ params }) {
         new StorageEvent("storage", {
           key: "prepcart_cart",
           newValue: null,
-        })
+        }),
       );
     }
   }, []);
@@ -579,7 +579,7 @@ export default function GroceryListPage({ params }) {
 
       // Update local state immediately
       const updatedItems = groceryList.items.map((item) =>
-        item._id === itemId ? { ...item, checked: !item.checked } : item
+        item._id === itemId ? { ...item, checked: !item.checked } : item,
       );
 
       setGroceryList((prev) => ({
@@ -628,7 +628,7 @@ export default function GroceryListPage({ params }) {
               body: JSON.stringify({
                 items: itemsToSend,
               }),
-            }
+            },
           );
 
           const data = await response.json();
@@ -648,7 +648,7 @@ export default function GroceryListPage({ params }) {
         }
       }, 300); // Reduced debounce time
     },
-    [groceryList, fetchWithAuth, updateCartData]
+    [groceryList, fetchWithAuth, updateCartData],
   );
 
   // Optimized updateQuantity with immediate feedback
@@ -663,7 +663,7 @@ export default function GroceryListPage({ params }) {
           const newPrice = calculateEstimatedPrice(
             item.name,
             parseFloat(newQuantity),
-            item.unit
+            item.unit,
           );
           return {
             ...item,
@@ -680,7 +680,7 @@ export default function GroceryListPage({ params }) {
         items: updatedItems,
         estimatedTotal: updatedItems.reduce(
           (sum, item) => sum + (item.estimatedPrice || 0),
-          0
+          0,
         ),
       });
 
@@ -698,10 +698,10 @@ export default function GroceryListPage({ params }) {
               items: updatedItems,
               estimatedTotal: updatedItems.reduce(
                 (sum, item) => sum + (item.estimatedPrice || 0),
-                0
+                0,
               ),
             }),
-          }
+          },
         );
 
         if (response.ok) {
@@ -732,12 +732,12 @@ export default function GroceryListPage({ params }) {
 
     try {
       const itemToDelete = groceryList.items.find(
-        (item) => item._id === itemId
+        (item) => item._id === itemId,
       );
 
       // Update local state immediately
       const updatedItems = groceryList.items.filter(
-        (item) => item._id !== itemId
+        (item) => item._id !== itemId,
       );
 
       setGroceryList({
@@ -767,7 +767,7 @@ export default function GroceryListPage({ params }) {
         `/api/groceryLists/${groceryList._id}/items/${itemId}`,
         {
           method: "DELETE",
-        }
+        },
       );
 
       if (response.ok) {
@@ -794,7 +794,7 @@ export default function GroceryListPage({ params }) {
 
   const removeItemFallback = async (itemId) => {
     const updatedItems = groceryList.items.filter(
-      (item) => item._id !== itemId
+      (item) => item._id !== itemId,
     );
 
     const response = await fetchWithAuth(
@@ -806,7 +806,7 @@ export default function GroceryListPage({ params }) {
           totalItems: updatedItems.length,
           checkedItems: updatedItems.filter((item) => item.checked).length,
         }),
-      }
+      },
     );
 
     if (response.ok) {
@@ -847,7 +847,7 @@ export default function GroceryListPage({ params }) {
         estimatedPrice: calculateEstimatedPrice(
           newItem.name,
           newItem.quantity,
-          newItem.unit
+          newItem.unit,
         ),
         normalizedName: newItem.name.toLowerCase(),
         recipeSources: [],
@@ -875,11 +875,11 @@ export default function GroceryListPage({ params }) {
             checkedItems: updatedItems.filter((item) => item.checked).length,
             estimatedTotal: updatedItems.reduce(
               (sum, item) => sum + (item.estimatedPrice || 0),
-              0
+              0,
             ),
             updatedAt: new Date().toISOString(),
           }),
-        }
+        },
       );
 
       if (!response.ok) {
@@ -1024,7 +1024,7 @@ export default function GroceryListPage({ params }) {
           calculateEstimatedPrice(
             item.name,
             item.quantity || 1,
-            item.unit || "unit"
+            item.unit || "unit",
           ),
         normalizedName: item.normalizedName || item.name.toLowerCase(),
         recipeSources: item.recipeSources || [],
@@ -1035,7 +1035,7 @@ export default function GroceryListPage({ params }) {
       const checkedItems = processedItems.filter((item) => item.checked).length;
       const estimatedTotal = processedItems.reduce(
         (sum, item) => sum + (item.estimatedPrice || 0),
-        0
+        0,
       );
 
       const response = await fetchWithAuth(
@@ -1049,7 +1049,7 @@ export default function GroceryListPage({ params }) {
             estimatedTotal,
             updatedAt: new Date().toISOString(),
           }),
-        }
+        },
       );
 
       const responseText = await response.text();
@@ -1129,7 +1129,7 @@ export default function GroceryListPage({ params }) {
           This may take a few seconds
         </div>
       </div>,
-      { autoClose: false }
+      { autoClose: false },
     );
 
     try {
@@ -1187,7 +1187,7 @@ export default function GroceryListPage({ params }) {
               Opening shopping list in 2 seconds...
             </div>
           </div>,
-          { autoClose: 5000 }
+          { autoClose: 5000 },
         );
 
         // Open in new tab after a short delay
@@ -1250,7 +1250,7 @@ export default function GroceryListPage({ params }) {
 
   return (
     <section>
-      <div className='container mx-auto px-4 max-w-[1200px] py-8 md:py-16 min-h-screen'>
+      <div className='container mx-auto px-3 sm:px-4 max-w-[1200px] py-4 sm:py-8 md:py-16 min-h-screen'>
         {/* Header with back button */}
         <div className='mb-8'>
           <Link
@@ -1282,12 +1282,12 @@ export default function GroceryListPage({ params }) {
                 </div>
               </div>
 
-              <div className='flex md:flex-row flex-col items-center gap-4'>
+              <div className='flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4'>
                 <button
                   onClick={() => setShowPantryModal(true)}
-                  className='h-9 px-4 rounded-lg bg-[#4a9fd8] hover:bg-[#3b8ec4] transition-colors text-sm font-medium text-white flex items-center gap-2'>
+                  className='h-10 sm:h-9 px-4 rounded-lg bg-[#4a9fd8] hover:bg-[#3b8ec4] transition-colors text-sm font-medium text-white flex items-center justify-center gap-2 py-2'>
                   <Bookmark className='h-4 w-4' />
-                  Pantry
+                  <span>Pantry</span>
                 </button>
                 <button
                   onClick={() => {
@@ -1297,24 +1297,24 @@ export default function GroceryListPage({ params }) {
                       setIsEditing(!isEditing);
                     }
                   }}
-                  className='h-9 px-4 rounded-lg bg-white hover:bg-gray-50 transition-colors text-sm font-medium text-gray-700 flex items-center gap-2 border border-gray-300'>
+                  className='h-10 sm:h-9 px-4 rounded-lg bg-white hover:bg-gray-50 transition-colors text-sm font-medium text-gray-700 flex items-center justify-center gap-2 border border-gray-300 py-2'>
                   {isEditing ? (
                     <>
                       <Save className='h-4 w-4' />
-                      Save Changes
+                      <span>Save Changes</span>
                     </>
                   ) : (
                     <>
                       <Edit2 className='h-4 w-4' />
-                      Edit List
+                      <span>Edit List</span>
                     </>
                   )}
                 </button>
                 <button
                   onClick={toggleSelectAll}
-                  className='h-9 px-4 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors text-sm font-medium text-gray-700 flex items-center gap-2'>
+                  className='h-10 sm:h-9 px-4 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors text-sm font-medium text-gray-700 flex items-center justify-center gap-2 py-2'>
                   <Check className='h-4 w-4' />
-                  {isAllSelected ? "Deselect All" : "Select All"}
+                  <span>{isAllSelected ? "Deselect All" : "Select All"}</span>
                 </button>
 
                 {user?.tier !== "free" && (
@@ -1353,7 +1353,7 @@ export default function GroceryListPage({ params }) {
                 </span>
                 <span className='text-sm text-gray-500'>
                   {Math.round(
-                    (visibleCheckedCount / visibleProgressItemsCount) * 100
+                    (visibleCheckedCount / visibleProgressItemsCount) * 100,
                   ) || 0}
                   %
                 </span>
@@ -1468,7 +1468,7 @@ export default function GroceryListPage({ params }) {
           )}
 
           {/* Grocery Items */}
-          <div className='p-4'>
+          <div className='p-2'>
             {sortedAisles.length === 0 ? (
               <div className='p-8 text-center'>
                 <div className='text-4xl mb-4'>🛒</div>
@@ -1487,13 +1487,13 @@ export default function GroceryListPage({ params }) {
               <div className='space-y-4'>
                 <div
                   className={`
-                    grid gap-4
+                    grid gap-3
                     ${
                       sortedAisles.length === 1
                         ? "grid-cols-1"
                         : sortedAisles.length === 2
-                        ? "grid-cols-1 md:grid-cols-2"
-                        : "grid-cols-1 md:grid-cols-2"
+                          ? "grid-cols-1 md:grid-cols-2"
+                          : "grid-cols-1 md:grid-cols-2"
                     }
                   `}>
                   {sortedAisles.map((aisle) => (
@@ -1525,7 +1525,7 @@ export default function GroceryListPage({ params }) {
                           {groupedItems[aisle].map((item) => (
                             <div
                               key={item._id}
-                              className={`px-4 py-3 flex items-center gap-4 ${
+                              className={`px-3 py-3 flex items-center gap-4 ${
                                 item.checked ? "bg-green-50" : ""
                               }`}>
                               <button
@@ -1565,7 +1565,7 @@ export default function GroceryListPage({ params }) {
                                     onClick={() =>
                                       updateQuantity(
                                         item._id,
-                                        item.quantity - 0.5
+                                        item.quantity - 0.5,
                                       )
                                     }
                                     className='h-6 w-6 rounded border border-gray-300 flex items-center justify-center hover:bg-gray-50 text-gray-600'>
@@ -1579,7 +1579,7 @@ export default function GroceryListPage({ params }) {
                                     onChange={(e) =>
                                       updateQuantity(
                                         item._id,
-                                        parseFloat(e.target.value) || 0.1
+                                        parseFloat(e.target.value) || 0.1,
                                       )
                                     }
                                     className='w-16 px-2 py-1 border border-gray-300 rounded text-center'
@@ -1588,7 +1588,7 @@ export default function GroceryListPage({ params }) {
                                     onClick={() =>
                                       updateQuantity(
                                         item._id,
-                                        item.quantity + 0.5
+                                        item.quantity + 0.5,
                                       )
                                     }
                                     className='h-6 w-6 rounded border border-gray-300 flex items-center justify-center hover:bg-gray-50 text-gray-600'>
@@ -1602,7 +1602,7 @@ export default function GroceryListPage({ params }) {
                                         groceryList.items.map((i) =>
                                           i._id === item._id
                                             ? { ...i, unit: e.target.value }
-                                            : i
+                                            : i,
                                         );
                                       setGroceryList({
                                         ...groceryList,
@@ -1692,7 +1692,7 @@ export default function GroceryListPage({ params }) {
             <button
               onClick={() => {
                 toast.info(
-                  "Please select at least one item to add to your Instacart cart"
+                  "Please select at least one item to add to your Instacart cart",
                 );
               }}
               className='bg-white text-[#5a9e3a] py-3 px-8 rounded-lg font-bold hover:bg-green-50 flex items-center mx-auto'>
@@ -1703,7 +1703,7 @@ export default function GroceryListPage({ params }) {
             <button
               onClick={() => {
                 toast.error(
-                  "Instacart link not available. Please try refreshing."
+                  "Instacart link not available. Please try refreshing.",
                 );
               }}
               className='bg-gray-300 text-gray-500 py-3 px-8 rounded-lg font-bold flex items-center mx-auto cursor-not-allowed'
@@ -1807,7 +1807,7 @@ function PantryModal({
             const items = data.pantry.items || [];
             const itemNames = items.map((item) => item.name.toLowerCase());
             const duplicates = itemNames.filter(
-              (name, index) => itemNames.indexOf(name) !== index
+              (name, index) => itemNames.indexOf(name) !== index,
             );
 
             if (duplicates.length > 0) {
@@ -1846,7 +1846,7 @@ function PantryModal({
         onClose();
       }
     },
-    [onClose]
+    [onClose],
   );
 
   const addPantryItem = async () => {
