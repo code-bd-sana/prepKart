@@ -51,19 +51,22 @@ export async function POST(request) {
       await subscription.save();
     }
 
-    // Send welcome email to user
-    sendSubscriptionWelcomeEmail(subscription)
-      .then((result) => {
-        if (result) console.log(`Welcome email sent to: ${subscription.email}`);
-      })
-      .catch((error) => console.error("User email error:", error));
+    // Send emails in background
+    sendSubscriptionWelcomeEmail({
+      email: subscription.email,
+      postalCode: subscription.postalCode,
+      name: subscription.name,
+    }).catch((error) => {
+      console.error("Subscription email failed:", error);
+    });
 
     // Send notification to admin
-    sendSubscriptionNotificationToAdmin(subscription)
-      .then((result) => {
-        if (result) console.log(`Admin notified about: ${subscription.email}`);
-      })
-      .catch((error) => console.error("Admin email error:", error));
+    sendSubscriptionNotificationToAdmin({
+      email: subscription.email,
+      postalCode: subscription.postalCode,
+    }).catch((error) => {
+      console.error("Admin notification failed:", error);
+    });
 
     return Response.json(
       {
